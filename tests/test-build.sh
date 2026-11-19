@@ -42,7 +42,8 @@ case " $* " in
     [[ $maps == 3 ]]
     test -f "$boot/plymouth.cpio"
     grep -Fq '($root)/blackcomb-boot/plymouth.cpio' "$grub"
-    grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"
+    grep -Fq 'menuentry "Boot Blackcomb"' "$grub"
+    if grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"; then exit 1; fi
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
