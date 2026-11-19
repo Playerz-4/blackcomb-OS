@@ -1,0 +1,50 @@
+name: Build Blackcomb ISO
+
+on:
+  workflow_dispatch:
+    inputs:
+      iso_sha256:
+        description: 'Verified SHA-256 of Fedora 45-1.4 KDE x86_64 live ISO'
+        required: true
+        type: string
+        default: '79703d9f3b21a4f7873f2874ec129d6511cb00a08532d8f9b36daacaa96e97a5'
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:45
+      # The build mounts Fedora's live filesystem read-only to preserve its metadata.
+      options: --privileged
+    timeout-minutes: 360
+    env:
+      EROFS_COMPRESSION_LEVEL: '9'
+    steps:
+      - name: Install Fedora build tools
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils erofs-utils util-linux attr rsync
+      - uses: actions/checkout@v4
+      - name: Check scripts and mock assembly
+        run: |
+          bash -n scripts/*.sh tests/*.sh
+          bash tests/test-build.sh
+          bash tests/test-erofs.sh
+      - name: Build ISO
+        env:
+          ISO_SHA256: ${{ inputs.iso_sha256 }}
+        run: bash ./scripts/build-iso.sh
+      - name: Report ISO size
+        run: |
+          bytes=$(stat -c %s blackcomb-fedora-45-x86_64.iso)
+          echo "ISO size: $bytes bytes"
+          if [ "$bytes" -gt 2147483648 ]; then
+            echo "::warning::ISO exceeds the 2 GiB target; Fedora's installer and live filesystem are preserved."
+          fi
+      - name: Upload ISO and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcomb-fedora-45-x86_64
+          path: |
+            blackcomb-fedora-45-x86_64.iso
+            blackcomb-fedora-45-x86_64.iso.sha256
+          if-no-files-found: error
+          retention-days: 3
