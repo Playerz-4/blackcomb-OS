@@ -2,7 +2,6 @@
 """Prepare the Fedora live GRUB menu and Plymouth files, without rebuilding initrd."""
 import re
 import sys
-import textwrap
 from pathlib import Path
 
 
@@ -50,7 +49,9 @@ def patch_grub(text):
             else line.group(1) + ' rhgb', match.group(2), flags=re.M)
         if count != 1:
             fail('unexpected normal kernel entry')
-        return match.group(1) + body + match.group(3)
+        header = re.sub(r'^(menuentry\s+)["\']Start Fedora[^"\']*["\']',
+                        r'\1"Boot Blackcomb"', match.group(1), count=1)
+        return header + body + match.group(3)
     text, normal = re.subn(normal_pattern, enable_splash, text, flags=re.M)
     if normal != 1:
         fail('expected one normal Fedora start entry')
@@ -67,25 +68,9 @@ def patch_grub(text):
     if len(re.findall(r'^[ \t]*initrd(?:efi)?[ \t]', text, re.M)) != initrds:
         fail('unexpected initrd entry')
 
-    # Make Fedora's existing basic-graphics entry visible at the top level.
-    # Disable the splash in this recovery entry to aid black-screen diagnosis.
-    basic_pattern = (r'^[ \t]+menuentry[ \t]+["\'][^"\']*basic graphics mode[^"\']*["\']'
-                     r'[^\n]*\{[^\n]*\n(?:[^\n]*\n)*?^[ \t]+\}[ \t]*$')
-    basic_entries = re.findall(basic_pattern, text, re.I | re.M)
-    if len(basic_entries) != 1:
-        fail('expected one basic graphics entry')
-    basic = textwrap.dedent(basic_entries[0])
-    if '${basicgfx}' not in basic and not re.search(r'\bnomodeset\b', basic):
-        fail('basic graphics entry lacks nomodeset')
-    if '${basicgfx}' in basic and not re.search(r'set[ \t]+basicgfx=["\']?nomodeset\b', text):
-        fail('basic graphics variable does not enable nomodeset')
-    basic = re.sub(r'^(menuentry[ \t]+)["\'][^"\']*["\']',
-                   r'\1"Start Blackcomb (basic graphics, no splash)"', basic, count=1)
-    basic, count = re.subn(r'^([ \t]*linux(?:efi)?[ \t]+[^\n]*)$',
-                           lambda m: m.group(1) + ' plymouth.enable=0', basic, flags=re.M)
-    if count != 1:
-        fail('unexpected basic graphics kernel entry')
-    return text.rstrip() + '\n\n' + basic.rstrip() + '\n'
+    # Retain Fedora's existing troubleshooting submenu, without adding a
+    # second top-level basic-graphics entry.
+    return text
 
 
 def main():

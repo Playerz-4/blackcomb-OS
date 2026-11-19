@@ -60,7 +60,9 @@ Blackcomb intends to establish its own visual identity rather than simply copyin
 
 ## 🚀 Fedora Boot Experience
 
-Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The live menu includes a **Start Blackcomb (basic graphics, no splash)** troubleshooting option for black screens; it may help with some virtual-machine display issues, but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
+Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The main boot entry is **Boot Blackcomb**; Fedora's original basic graphics mode remains in the **Troubleshooting** submenu. It may help with some virtual-machine black screens but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
+
+For VirtualBox, try shutting down the VM and setting Display to VMSVGA, 128 MB video memory, and 3D acceleration disabled. If that does not help, try enabling 3D acceleration instead. To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` and `rhgb` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO.
 
 The installed system receives the Blackcomb splash and other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
 

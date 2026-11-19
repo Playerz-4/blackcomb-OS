@@ -1,10 +1,17 @@
 BLACKCOMB FEDORA 45 SETUP KIT
 
 This media contains the Fedora KDE Plasma Desktop live environment and Fedora's
-Anaconda installer, with a Blackcomb live boot splash. If the live desktop is
-black in a VM, reboot and choose "Start Blackcomb (basic graphics, no splash)"
-in the boot menu. This fallback disables accelerated graphics and the splash;
-it is for troubleshooting, and may not work on every VM.
+Anaconda installer, with a Blackcomb live boot splash. The normal boot entry is
+named "Boot Blackcomb"; Fedora's basic graphics mode remains in the
+Troubleshooting submenu. It may help with a black screen, but is not a
+confirmed fix.
+
+For VirtualBox, power off the VM and try Display settings: VMSVGA graphics
+controller, 128 MB video memory and 3D acceleration disabled. If that does
+not help, try enabling 3D acceleration instead. To see boot messages, select
+"Boot Blackcomb", press e, remove quiet and rhgb from the linux line, append
+plymouth.enable=0 to that line, then press Ctrl+X or F10 to boot. These edits
+apply only to that boot.
 
 The installer does not automatically copy or run the Blackcomb kit. Install
 Fedora normally and reboot into the installed system. Connect to the internet,
