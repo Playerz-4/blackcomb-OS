@@ -1,4 +1,3 @@
-<<<<<<< arena/15f162a1-blackcomb-os
 # Blackcomb OS
 
 Blackcomb is an experimental Fedora-based KDE Plasma desktop concept featuring Kim the macaque. The base is **Fedora 45 KDE Plasma Desktop**, x86_64.
