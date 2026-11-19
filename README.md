@@ -62,7 +62,13 @@ Blackcomb intends to establish its own visual identity rather than simply copyin
 
 Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The main boot entry is **Boot Blackcomb**; Fedora's original basic graphics mode remains in the **Troubleshooting** submenu. It may help with some virtual-machine black screens but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
 
-For VirtualBox, try shutting down the VM and setting Display to VMSVGA, 128 MB video memory, and 3D acceleration disabled. If that does not help, try enabling 3D acceleration instead. To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` and `rhgb` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO.
+### VirtualBox black-screen workaround
+
+Some Fedora KDE users have reported that switching the VirtualBox graphics controller from VMSVGA to **VBoxSVGA** brings the installer back ([Fedora Forum](https://forums.fedoraforum.org/showthread.php?332533-Fedora-40-KDE-VM-boots-to-black-screen-after-39-gt-40-upgrade)). Power the VM off completely, then under **Settings → Display** try VBoxSVGA, 128 MB video memory, and 3D acceleration off. This is a host-side workaround, not a confirmed fix for every black screen, and can reduce graphics performance.
+
+On Windows hosts, `scripts/virtualbox-display-workaround.ps1 -VMName "blackcomb"` applies those display settings to the named powered-off VM. It prints the previous settings and a restore command first. It does not change the guest, ISO, disk, firmware, or saved VM state. Use `-WhatIf` to preview instead. The script is also in the ISO's `blackcomb` directory.
+
+To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` and `rhgb` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO.
 
 The installed system receives the Blackcomb splash and other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
 
