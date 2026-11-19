@@ -16,18 +16,34 @@ case " $* " in
   *' -find '*)
     [[ ${FAIL_FIND:-0} != 1 ]]
     [[ $* == *'-find /LiveOS/squashfs.img -type f'* ]] ;;
+  *' -extract '*)
+    while (($#)); do
+      if [[ $1 == -extract ]]; then
+        if [[ $2 == /boot/grub2/grub.cfg ]]; then cp "$TEST_ROOT/tests/fixtures/fedora-live-grub.cfg" "$3"; else printf 'fake initrd' > "$3"; fi
+        shift 3
+      else shift; fi
+    done ;;
   *' -map '*)
     maps=0
     while (($#)); do
       case "$1" in
         -outdev) output=$2; shift 2 ;;
         -map)
-          [[ $3 == /blackcomb ]] || { echo "Unexpected ISO modification: $3" >&2; exit 1; }
-          payload=$2; maps=$((maps + 1)); shift 3 ;;
+          case "$3" in
+            /blackcomb) payload=$2 ;;
+            /blackcomb-boot) boot=$2 ;;
+            /boot/grub2/grub.cfg) grub=$2 ;;
+            *) echo "Unexpected ISO modification: $3" >&2; exit 1 ;;
+          esac
+          maps=$((maps + 1)); shift 3 ;;
         *) shift ;;
       esac
     done
-    [[ $maps == 1 ]]
+    [[ $maps == 3 ]]
+    test -f "$boot/plymouth.cpio"
+    grep -Fq '($root)/blackcomb-boot/plymouth.cpio' "$grub"
+    grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"
+    if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
@@ -35,6 +51,21 @@ case " $* " in
     printf 'fake output ISO\n' > "$output" ;;
   *) exit 1 ;;
 esac
+MOCK
+cat > "$tmp/bin/lsinitrd" <<'MOCK'
+#!/usr/bin/env bash
+set -eu
+printf 'usr/sbin/plymouthd\nusr/lib64/plymouth/two-step.so\n'
+if [[ ${MISSING_SPINNER:-0} != 1 ]]; then echo 'usr/share/plymouth/themes/spinner/throbber-0001.png'; fi
+MOCK
+cat > "$tmp/bin/cpio" <<'MOCK'
+#!/usr/bin/env bash
+set -eu
+[[ $* == '--null -o -H newc --owner 0:0 --quiet' ]]
+test -f usr/share/plymouth/themes/spinner/watermark.png
+test -f usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth
+grep -qx 'Theme=blackcomb-live' etc/plymouth/plymouthd.conf
+printf 'mock archive'
 MOCK
 cat > "$tmp/bin/implantisomd5" <<'MOCK'
 #!/usr/bin/env bash
@@ -50,7 +81,7 @@ printf 'check\n' >> "$TEST_LOG"
 [[ ${FAIL_MEDIA_CHECK:-0} != 1 ]]
 MOCK
 chmod +x "$tmp/bin/"*
-export PATH="$tmp/bin:$PATH" TEST_LOG="$tmp/log"
+export PATH="$tmp/bin:$PATH" TEST_LOG="$tmp/log" TEST_ROOT="$root"
 export FEDORA_ISO="$tmp/input.iso" ISO_SHA256
 ISO_SHA256=$(sha256sum "$FEDORA_ISO" | cut -d' ' -f1)
 export OUTPUT_ISO="$tmp/output.iso" WORK_DIR="$tmp/work"
@@ -68,6 +99,9 @@ fi
 if FAIL_FIND=1 "$root/scripts/build-iso.sh" 2>/dev/null; then
   echo 'Missing LiveOS filesystem accepted' >&2; exit 1
 fi
+if MISSING_SPINNER=1 "$root/scripts/build-iso.sh" 2>/dev/null; then
+  echo 'Missing Plymouth assets accepted' >&2; exit 1
+fi
 if OUTPUT_ISO="$FEDORA_ISO" "$root/scripts/build-iso.sh" 2>/dev/null; then
   echo 'Input and output may not be the same' >&2; exit 1
 fi
@@ -84,4 +118,5 @@ bash "$root/scripts/create-plymouth-theme.sh" "$tmp/spinner/spinner.plymouth" "$
 cmp "$tmp/theme/watermark.png" "$root/assets/branding/blackcomb-boot-watermark.png"
 grep -Fxq "ImageDir=$tmp/theme" "$tmp/theme/blackcomb.plymouth"
 grep -Fxq 'ModuleName=two-step' "$tmp/theme/blackcomb.plymouth"
+python3 "$root/tests/test-live-boot.py"
 echo 'Mock assembly and Plymouth theme tests passed.'

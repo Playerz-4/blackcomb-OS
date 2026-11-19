@@ -60,9 +60,9 @@ Blackcomb intends to establish its own visual identity rather than simply copyin
 
 ## 🚀 Fedora Boot Experience
 
-Blackcomb retains Fedora's boot experience.
+Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The live menu includes a **Start Blackcomb (basic graphics, no splash)** troubleshooting option for black screens; it may help with some virtual-machine display issues, but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
 
-This provides a familiar startup experience while keeping the underlying operating system based on Fedora.
+The installed system receives the Blackcomb splash and other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
 
 ## 💿 Anaconda Installer
 
@@ -85,3 +85,5 @@ sudo dnf upgrade --refresh
 sudo dnf install firefox
 sudo dnf remove firefox
 sudo dnf autoremove
+
+```

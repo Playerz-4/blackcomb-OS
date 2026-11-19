@@ -16,12 +16,13 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Install Fedora build tools
-        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils diffutils
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils diffutils python3 dracut cpio
       - uses: actions/checkout@v4
       - name: Check scripts and mock assembly
         run: |
           bash -n scripts/*.sh tests/*.sh
           bash tests/test-build.sh
+          bash tests/test-live-archive.sh
       - name: Build ISO
         env:
           ISO_SHA256: ${{ inputs.iso_sha256 }}

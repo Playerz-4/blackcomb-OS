@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Add the Blackcomb post-install kit to Fedora KDE's live installer media.
 set -Eeuo pipefail
+umask 022
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 ISO_URL=${FEDORA_ISO_URL:-https://download.fedoraproject.org/pub/fedora/linux/releases/45/KDE/x86_64/iso/Fedora-KDE-Desktop-Live-45-1.4.x86_64.iso}
 OUTPUT_ISO=${OUTPUT_ISO:-$ROOT_DIR/blackcomb-fedora-45-x86_64.iso}
@@ -13,22 +14,23 @@ Usage: ./scripts/build-iso.sh
 
 Add the Blackcomb setup kit to Fedora 45 KDE x86_64 live media.
 Fedora's live filesystem, desktop and Anaconda installer remain unchanged.
+The live boot menu and Plymouth theme are customized for Blackcomb.
 FEDORA_ISO              Path to the Fedora 45 KDE x86_64 ISO (otherwise download).
 FEDORA_ISO_URL          Override download URL.
 ISO_SHA256              Trusted input SHA-256 (defaults to Fedora 45-1.4 hash).
 OUTPUT_ISO              Output path (default: ./blackcomb-fedora-45-x86_64.iso).
 WORK_DIR                Temporary directory (default: ./.build).
-Requires xorriso, curl, isomd5sum utilities, and ample disk space.
+Requires xorriso, curl, Python 3, cpio, lsinitrd, isomd5sum utilities, and ample disk space.
 Root access is not required.
 HELP
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
 if (($#)); then usage >&2; exit 2; fi
-for cmd in xorriso curl sha256sum realpath implantisomd5 checkisomd5; do
+for cmd in xorriso curl sha256sum realpath implantisomd5 checkisomd5 python3 lsinitrd cpio; do
   command -v "$cmd" >/dev/null || { echo "Missing dependency: $cmd" >&2; exit 1; }
 done
 mkdir -p "$WORK_DIR" "$(dirname -- "$OUTPUT_ISO")"
-work=$(mktemp -d "$WORK_DIR/blackcomb.XXXXXXXX")
+work=$(realpath -- "$(mktemp -d "$WORK_DIR/blackcomb.XXXXXXXX")")
 trap 'rm -rf -- "$work"' EXIT
 if [[ -n ${FEDORA_ISO:-} ]]; then
   input=$(realpath -- "$FEDORA_ISO")
@@ -46,6 +48,19 @@ xorriso -indev "$input" -pvd_info > "$work/pvd-info" 2>&1
 grep -Fq 'Fedora-KDE-Live-45' "$work/pvd-info" || { echo 'Expected Fedora 45 KDE live media volume label.' >&2; exit 1; }
 # Verify the live filesystem is present; never extract or replace it.
 xorriso -indev "$input" -find /LiveOS/squashfs.img -type f -exec lsdl -- >/dev/null
+# Verify the original live initrd contains Plymouth and the two-step spinner
+# before pointing GRUB at a small, uncompressed logo/theme overlay.
+xorriso -osirrox on -indev "$input" \
+  -extract /boot/grub2/grub.cfg "$work/original-grub.cfg" \
+  -extract /boot/x86_64/loader/initrd "$work/live-initrd"
+lsinitrd "$work/live-initrd" > "$work/initrd-list"
+for pattern in '(^|/)plymouthd([[:space:]]|$)' '(^|/)two-step\.so([[:space:]]|$)' 'usr/share/plymouth/themes/spinner/'; do
+  grep -Eq "$pattern" "$work/initrd-list" || { echo "Live initrd missing Plymouth component: $pattern" >&2; exit 1; }
+done
+python3 "$ROOT_DIR/scripts/prepare-live-boot.py" "$work/original-grub.cfg" "$work/grub.cfg" "$work/boot-overlay"
+mkdir -p "$work/blackcomb-boot"
+"$ROOT_DIR/scripts/create-live-boot-archive.sh" "$work/boot-overlay" \
+  "$ROOT_DIR/assets/branding/blackcomb-boot-watermark.png" "$work/blackcomb-boot/plymouth.cpio"
 mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
 for script in blackcomb-wallpaper.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
@@ -57,6 +72,8 @@ install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.s
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"
 echo 'Writing Fedora installer media with the Blackcomb kit...'
 xorriso -indev "$input" -outdev "$OUTPUT_ISO" -boot_image any replay \
+  -map "$work/grub.cfg" /boot/grub2/grub.cfg \
+  -map "$work/blackcomb-boot" /blackcomb-boot \
   -map "$work/blackcomb" /blackcomb -commit
 # Fedora's boot-time media check uses the embedded ISO checksum, not a sidecar.
 implantisomd5 --force "$OUTPUT_ISO"
