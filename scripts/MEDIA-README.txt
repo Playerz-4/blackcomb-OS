@@ -27,13 +27,11 @@ named "Boot Blackcomb"; Fedora's basic graphics mode remains in the
 Troubleshooting submenu. It may help with a black screen, but is not a
 confirmed fix.
 
-For VirtualBox, power off the VM completely, then try Display settings:
-VBoxSVGA graphics controller, 128 MB video memory and 3D acceleration off.
-This has helped some Fedora KDE users, but may not work for every VM; it can
-reduce graphics performance. Windows hosts can alternatively run the optional
-virtualbox-display-workaround.ps1 script from this folder, specifying the VM
-name. The script prints the old settings and how to restore them. The VM must
-be powered off (not saved). These settings are on the host, not inside the ISO.
+VirtualBox normally uses VMSVGA for Linux guests. Changing to VBoxSVGA is not
+a confirmed fix and caused a kernel panic in one reported Blackcomb VM. If it
+causes trouble, power off the VM and restore its previous display settings.
+A kernel panic can have many causes; capture the full panic message and lines
+above it, as well as the VirtualBox version and VM settings, for diagnosis.
 
 To see boot messages, select "Boot Blackcomb", press e, remove quiet and rhgb
 from the linux line, append plymouth.enable=0 to that line, then press Ctrl+X

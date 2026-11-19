@@ -70,7 +70,6 @@ install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/
 install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/blackcomb/backgrounds/"
 install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/blackcomb/assets/branding/"
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"
-install -m 644 "$ROOT_DIR/scripts/virtualbox-display-workaround.ps1" "$work/blackcomb/virtualbox-display-workaround.ps1"
 echo 'Writing Fedora installer media with the Blackcomb kit...'
 xorriso -indev "$input" -outdev "$OUTPUT_ISO" -boot_image any replay \
   -map "$work/grub.cfg" /boot/grub2/grub.cfg \

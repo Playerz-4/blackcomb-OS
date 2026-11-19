@@ -46,7 +46,6 @@ case " $* " in
     if grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"; then exit 1; fi
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
-    test -f "$payload/virtualbox-display-workaround.ps1"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
     test -f "$payload/backgrounds/kim-sunrise.png"
