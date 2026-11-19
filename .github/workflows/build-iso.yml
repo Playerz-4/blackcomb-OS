@@ -4,41 +4,41 @@ on:
   workflow_dispatch:
     inputs:
       iso_sha256:
-        description: 'SHA-256 of the official Ubuntu 26.04.1 desktop amd64 ISO'
+        description: 'Verified SHA-256 of Fedora 45-1.4 KDE x86_64 live ISO'
         required: true
         type: string
+        default: '79703d9f3b21a4f7873f2874ec129d6511cb00a08532d8f9b36daacaa96e97a5'
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    container: fedora:45
     timeout-minutes: 360
     steps:
+      - name: Install Fedora build tools
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils
       - uses: actions/checkout@v4
-      - name: Free space on the hosted runner
+      - name: Check scripts and mock assembly
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-          df -h /
-      - name: Install build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xorriso curl
+          bash -n scripts/*.sh tests/*.sh
+          bash tests/test-build.sh
       - name: Build ISO
         env:
           ISO_SHA256: ${{ inputs.iso_sha256 }}
-        run: ./scripts/build-iso.sh
+        run: bash ./scripts/build-iso.sh
       - name: Report ISO size
         run: |
-          bytes=$(stat -c %s blackcomb-26.04-amd64.iso)
-          echo "Bootable ISO size: $bytes bytes"
+          bytes=$(stat -c %s blackcomb-fedora-45-x86_64.iso)
+          echo "ISO size: $bytes bytes"
           if [ "$bytes" -gt 2147483648 ]; then
-            echo "::warning::ISO exceeds the 2 GiB target; the Ubuntu installer and its compressed filesystem layers are preserved."
+            echo "::warning::ISO exceeds the 2 GiB target; Fedora's installer and live filesystem are preserved."
           fi
-      - name: Upload bootable ISO and checksum
+      - name: Upload ISO and checksum
         uses: actions/upload-artifact@v4
         with:
-          name: blackcomb-26.04-amd64
+          name: blackcomb-fedora-45-x86_64
           path: |
-            blackcomb-26.04-amd64.iso
-            blackcomb-26.04-amd64.iso.sha256
+            blackcomb-fedora-45-x86_64.iso
+            blackcomb-fedora-45-x86_64.iso.sha256
           if-no-files-found: error
           retention-days: 3

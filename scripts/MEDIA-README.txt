@@ -1,24 +1,23 @@
-BLACKCOMB 26.04 SETUP KIT
+BLACKCOMB FEDORA 45 SETUP KIT
 
-This media boots the original Ubuntu 26.04 desktop and Flutter-based Ubuntu
-Desktop Bootstrap installer, not a preconfigured Plasma live session. Install
-Ubuntu normally and reboot into the installed system. Connect to the internet,
-then open a terminal and run:
+This media contains the original Fedora KDE Plasma Desktop live environment
+and Fedora's Anaconda installer. The installer does not automatically copy or
+run the Blackcomb kit. Install Fedora normally and reboot into the installed
+system. Connect to the internet, mount this media, and run:
 
   sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
 
-Replace /path/to/mounted-installer-media with the actual mount path of this
-USB drive or ISO. The installer does not automatically copy or run this kit.
-Setup installs the Kubuntu desktop, Firefox, VLC, LibreOffice Writer and KCalc,
-selects SDDM, sets the Blackcomb Plymouth boot theme (Ubuntu's spinner with the
-Blackcomb logo), and installs wallpapers and branding. Firefox comes from the
-Snap Store; setup requires internet access. Reboot, and select Plasma at login.
-Existing Ubuntu desktop packages are not removed. The installer media's own
-splash remains Ubuntu's.
-After setup, run 'sudo blackcomb-plymouth --restore-ubuntu' to restore the
-original Ubuntu BGRT loading screen.
+Replace the example path with the actual mount path. Setup uses Fedora's DNF
+repositories for Firefox, VLC, LibreOffice Writer and KCalc; it installs the
+wallpapers and the Blackcomb Plymouth theme, using the transparent logo. Reboot
+to see the theme. It does not change the installer's own boot splash. Some
+media formats may require additional codecs not supplied by Fedora.
 
-To opt in to the GRUB menu background after setup, run:
+To return to Fedora's default Plymouth theme, run:
+
+  sudo blackcomb-plymouth --restore-fedora
+
+For the optional GRUB menu background after setup, run:
 
   sudo blackcomb-grub-background
 

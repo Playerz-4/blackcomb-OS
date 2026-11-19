@@ -1,74 +1,64 @@
 #!/usr/bin/env bash
-# Add the Blackcomb setup kit to the official Ubuntu 26.04 installer ISO.
+# Add the Blackcomb post-install kit to Fedora KDE's live installer media.
 set -Eeuo pipefail
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-ISO_URL=${UBUNTU_ISO_URL:-https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.iso}
-OUTPUT_ISO=${OUTPUT_ISO:-$ROOT_DIR/blackcomb-26.04-amd64.iso}
+ISO_URL=${FEDORA_ISO_URL:-https://download.fedoraproject.org/pub/fedora/linux/releases/45/KDE/x86_64/iso/Fedora-KDE-Desktop-Live-45-1.4.x86_64.iso}
+OUTPUT_ISO=${OUTPUT_ISO:-$ROOT_DIR/blackcomb-fedora-45-x86_64.iso}
 WORK_DIR=${WORK_DIR:-$ROOT_DIR/.build}
-
+# Published by Fedora for this exact image. Override only with a trusted checksum.
+ISO_SHA256=${ISO_SHA256:-79703d9f3b21a4f7873f2874ec129d6511cb00a08532d8f9b36daacaa96e97a5}
 usage() {
   cat <<'HELP'
 Usage: ./scripts/build-iso.sh
 
-Build a bootable Ubuntu 26.04 installer ISO with the Blackcomb post-install kit.
-The Ubuntu Desktop Bootstrap Flutter installer remains unchanged; install Plasma after installation.
-UBUNTU_ISO      Existing official Ubuntu 26.04 desktop amd64 ISO, or download it.
-UBUNTU_ISO_URL  Download URL if UBUNTU_ISO is unset.
-ISO_SHA256      Expected input SHA-256 (strongly recommended).
-OUTPUT_ISO      Output path (default: ./blackcomb-26.04-amd64.iso).
-WORK_DIR        Temporary file directory (default: ./.build).
-Requires xorriso, curl, and roughly 20 GB free. Root is not required.
+Add the Blackcomb post-install kit to Fedora 45 KDE x86_64 live media.
+The live environment and Fedora's Anaconda installer are not customized.
+FEDORA_ISO      Path to the official Fedora 45 KDE x86_64 ISO (otherwise download).
+FEDORA_ISO_URL  Override download URL.
+ISO_SHA256      Trusted input SHA-256 (defaults to the Fedora 45-1.4 image hash).
+OUTPUT_ISO      Output path (default: ./blackcomb-fedora-45-x86_64.iso).
+WORK_DIR        Temporary directory (default: ./.build).
+Requires xorriso, curl, isomd5sum utilities and sufficient disk space.
 HELP
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
 if (($#)); then usage >&2; exit 2; fi
-for cmd in xorriso curl sha256sum md5sum realpath; do
+for cmd in xorriso curl sha256sum realpath implantisomd5 checkisomd5; do
   command -v "$cmd" >/dev/null || { echo "Missing dependency: $cmd" >&2; exit 1; }
 done
 mkdir -p "$WORK_DIR" "$(dirname -- "$OUTPUT_ISO")"
 work=$(mktemp -d "$WORK_DIR/blackcomb.XXXXXXXX")
 trap 'rm -rf -- "$work"' EXIT
-
-if [[ -n ${UBUNTU_ISO:-} ]]; then
-  input=$(realpath -- "$UBUNTU_ISO")
+if [[ -n ${FEDORA_ISO:-} ]]; then
+  input=$(realpath -- "$FEDORA_ISO")
   [[ -f $input ]] || { echo 'Input ISO not found.' >&2; exit 1; }
 else
-  input=$work/ubuntu.iso
+  input=$work/fedora.iso
   echo "Downloading $ISO_URL"
   curl --fail --location --retry 3 --output "$input" "$ISO_URL"
 fi
 [[ $(realpath -m -- "$OUTPUT_ISO") != "$input" ]] || { echo 'Input and output ISO must differ.' >&2; exit 1; }
-if [[ -n ${ISO_SHA256:-} ]]; then
-  printf '%s  %s\n' "$ISO_SHA256" "$input" | sha256sum --check --status || { echo 'Input ISO SHA-256 mismatch.' >&2; exit 1; }
-else
-  echo 'WARNING: input ISO is not checksum-verified. Set ISO_SHA256 to a trusted published hash.' >&2
-fi
-
-# Check the release before modifying anything; keep all layered filesystems,
-# Ubuntu's installer, and its kernel and initramfs intact.
-xorriso -osirrox on -indev "$input" \
-  -extract /.disk/info "$work/ubuntu-info" \
-  -extract /casper/install-sources.yaml "$work/install-sources.yaml" \
-  -extract /md5sum.txt "$work/md5sum.txt"
-grep -Eiq 'Ubuntu 26\.04' "$work/ubuntu-info" || { echo 'Expected the official Ubuntu 26.04 desktop ISO.' >&2; exit 1; }
-
-mkdir -p "$work/payload/scripts" "$work/payload/backgrounds" "$work/payload/assets/branding"
-install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/payload/setup-blackcomb.sh"
-install -m 755 "$ROOT_DIR/scripts/blackcomb-wallpaper.sh" "$work/payload/scripts/blackcomb-wallpaper.sh"
-install -m 755 "$ROOT_DIR/scripts/install-grub-background.sh" "$work/payload/scripts/install-grub-background.sh"
-install -m 755 "$ROOT_DIR/scripts/create-plymouth-theme.sh" "$work/payload/scripts/create-plymouth-theme.sh"
-install -m 755 "$ROOT_DIR/scripts/install-plymouth-theme.sh" "$work/payload/scripts/install-plymouth-theme.sh"
-install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/payload/scripts/blackcomb-wallpaper.desktop"
-install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/payload/backgrounds/"
-install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/payload/assets/branding/"
-install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/payload/README.txt"
-# The input ISO's checksum list remains valid; add the new payload entries.
-(cd "$work" && mv payload blackcomb && find blackcomb -type f -print0 | sort -z | xargs -0 md5sum | sed 's|  blackcomb/|  ./blackcomb/|' >> md5sum.txt)
-
-echo 'Writing installer media (Ubuntu live session and installer remain unchanged)...'
+[[ $ISO_SHA256 =~ ^[[:xdigit:]]{64}$ ]] || { echo 'Invalid ISO_SHA256.' >&2; exit 1; }
+printf '%s  %s\n' "$ISO_SHA256" "$input" | sha256sum --check --status || { echo 'Input ISO SHA-256 mismatch.' >&2; exit 1; }
+# Do not change the ISO volume ID: dracut's root=live:CDLABEL refers to it.
+xorriso -indev "$input" -pvd_info > "$work/pvd-info" 2>&1
+grep -Fq 'Fedora-KDE-Live-45' "$work/pvd-info" || { echo 'Expected Fedora 45 KDE live media volume label.' >&2; exit 1; }
+xorriso -indev "$input" -find /LiveOS/squashfs.img -type f -exec lsdl -- >/dev/null
+mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding"
+install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
+for script in blackcomb-wallpaper.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
+  install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
+done
+install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/scripts/"
+install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/blackcomb/backgrounds/"
+install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/blackcomb/assets/branding/"
+install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"
+echo 'Writing Fedora installer media with the Blackcomb kit...'
 xorriso -indev "$input" -outdev "$OUTPUT_ISO" -boot_image any replay \
-  -map "$work/blackcomb" /blackcomb \
-  -map "$work/md5sum.txt" /md5sum.txt -commit
+  -map "$work/blackcomb" /blackcomb -commit
+# Fedora's boot-time media check uses the embedded ISO checksum, not a sidecar.
+implantisomd5 --force "$OUTPUT_ISO"
+checkisomd5 "$OUTPUT_ISO"
 (cd "$(dirname -- "$OUTPUT_ISO")" && sha256sum "$(basename -- "$OUTPUT_ISO")") > "$OUTPUT_ISO.sha256"
 echo "Done: $OUTPUT_ISO"
-echo 'Install Ubuntu first, then run blackcomb/setup-blackcomb.sh from the media.'
+echo 'Install Fedora first, then run blackcomb/setup-blackcomb.sh from the media.'

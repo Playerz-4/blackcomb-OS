@@ -1,78 +1,56 @@
 # Blackcomb OS
 
-Blackcomb is an experimental Ubuntu-based desktop concept with KDE Plasma and Kim the macaque. The current target is **Ubuntu 26.04 LTS** (Resolute Raccoon), using the 26.04.1 desktop image. Standard Ubuntu security maintenance runs through April 2031.
+Blackcomb is an experimental Fedora-based KDE Plasma desktop concept featuring Kim the macaque. The base is **Fedora 45 KDE Plasma Desktop**, x86_64.
 
 ## What this builds
 
-The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.04 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and **Flutter-based Ubuntu Desktop Bootstrap installer** (with Subiquity as its backend). The build leaves the installer unchanged; it does not replace it with Ubiquity. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
-
-Blackcomb keeps Ubuntu 26.04's desktop installer and layered, compressed live filesystem images. This kit is not an official Ubuntu or Kubuntu image.
+The build adds a Blackcomb post-install kit and wallpapers to the official Fedora KDE live ISO. It preserves Fedora's live desktop, compressed live filesystem and **Anaconda installer**. It does not modify the live desktop, live boot screen, or installer, and does not automatically install the kit. After installing Fedora and rebooting, run the kit to install Blackcomb artwork, a Plymouth boot theme and everyday apps. This is not an official Fedora image.
 
 ## Build installer media
 
-You need an amd64 host with `xorriso`, `curl`, `sha256sum`, and about 20 GB free disk space (more may be needed); no root access is needed to build. On Ubuntu:
+On a Fedora build machine install `xorriso`, `curl`, `isomd5sum` and `coreutils` with DNF. Allow ample free disk space for the input and output images, and build without root:
 
 ```sh
-sudo apt update
-sudo apt install xorriso curl
+sudo dnf install xorriso curl isomd5sum coreutils
+FEDORA_ISO=/path/to/Fedora-KDE-Desktop-Live-45-1.4.x86_64.iso ./scripts/build-iso.sh
 ```
 
-Download the official `ubuntu-26.04.1-desktop-amd64.iso` and verify its SHA-256 against Ubuntu's [published checksums](https://releases.ubuntu.com/26.04/SHA256SUMS). For authenticity, verify the signed checksum file using Ubuntu's published signing keys and instructions. The build script verifies a supplied hash, but does not verify the signature itself.
+The input defaults to a download from the [Fedora KDE download page](https://fedoraproject.org/kde/download/). Its default SHA-256 is Fedora's published hash for the 45-1.4 x86_64 ISO. For authenticity, verify Fedora's signed checksum file using the instructions on that page. Set `ISO_SHA256` to a separately verified hash if using a different source; changing the hash does not bypass the Fedora 45 KDE volume and live filesystem checks. Run `./scripts/build-iso.sh --help` for overrides.
 
-```sh
-UBUNTU_ISO=/path/to/ubuntu-26.04.1-desktop-amd64.iso \
-ISO_SHA256='<verified sha256>' ./scripts/build-iso.sh
-```
-
-If `UBUNTU_ISO` is omitted the script downloads the official image. It warns if no `ISO_SHA256` is supplied. Run `./scripts/build-iso.sh --help` for output and working-directory overrides. It replays the original image's boot metadata and appends the kit under `/blackcomb`, leaving Ubuntu's boot files, filesystem layers and installer intact. It also updates `md5sum.txt` for the added files.
-
-The output is `blackcomb-26.04-amd64.iso` and its `.sha256` file. Check the result with `sha256sum -c blackcomb-26.04-amd64.iso.sha256` from the output directory. Use a USB drive large enough for the ISO, or attach it to a VM.
+The script preserves the ISO volume label used by Fedora's boot configuration, replays boot metadata, adds `/blackcomb`, implants and checks a new Fedora media checksum, and writes `blackcomb-fedora-45-x86_64.iso` and its SHA-256 sidecar. Verify with `sha256sum -c blackcomb-fedora-45-x86_64.iso.sha256` from the output directory. Use a sufficiently large USB drive or attach the ISO to a VM. Boot compatibility is not guaranteed without testing.
 
 ## Install and configure
 
-1. Boot the media and use the **Ubuntu Desktop Bootstrap Flutter installer** to install Ubuntu normally. The live environment is Ubuntu's standard desktop, not Plasma.
-2. Reboot into the installed system and connect to the internet. Mount the installer media again if necessary.
-3. Open a terminal and run the kit from the mounted media, replacing the example path with its actual location:
+1. Boot the ISO and install Fedora KDE using Anaconda. The live environment is Fedora's standard KDE desktop.
+2. Reboot into the installed system, connect to the internet and mount the installer media. Run:
 
    ```sh
    sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
    ```
 
-   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, Firefox, everyday apps, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.04 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories and the Snap Store, so this step requires network access.
+   Replace the example path with the actual mount path. Alternatively run `sudo ./scripts/setup-blackcomb.sh` from a checkout. This targets the standard installed Fedora 45 system, not an immutable variant or the live session. It uses DNF to install Firefox, VLC, LibreOffice Writer, KCalc and the Plymouth spinner theme, and installs Blackcomb artwork and a boot splash. Reboot afterward. Some media codecs are not included in Fedora's repositories; no third-party repositories are enabled by this kit.
 
-The everyday app selection is Firefox (Ubuntu's Snap), VLC for media, LibreOffice Writer for documents and KCalc for calculations. The APT apps omit recommended extras to reduce downloads; additional codecs or features may require optional packages. These apps are installed by the post-install setup and are **not** preinstalled in the live ISO. The installed system requires much more than 2 GiB of disk space.
+The setup copies wallpapers to `/usr/share/backgrounds/blackcomb/`. A Plasma autostart helper sets `blackcomb-midnight.png` once per user; later wallpaper choices remain yours. The original supplied artwork is in `assets/reference/`.
 
-The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png`, `kim-alpine.png`, `blackcomb-blue-hour.png`, `kim-stargazer.png`, `blackcomb-aurora.png`, `kim-sunrise.png`, and `blackcomb-moonlit-forest.png`. The Plasma autostart helper applies `blackcomb-midnight.png` once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
+## Boot logo, launcher and GRUB
 
-## Branding, launcher and GRUB
-
-The setup kit includes a transparent Blackcomb logo, a white crescent moon launcher SVG and a GRUB image from `assets/branding/`, installed to `/usr/share/blackcomb/branding/`. To use the launcher icon, right-click Plasma's application launcher, open its settings, click the icon and browse to `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice; the setup does not modify an existing panel.
-
-Setup also installs a separate Plymouth theme based on Ubuntu's BGRT spinner, using the transparent Blackcomb logo as its watermark and fallback image. It does not overwrite the Ubuntu theme files. If you already ran an older version of setup, update the kit and rerun setup to install the theme. After setup, `sudo blackcomb-plymouth` refreshes it and rebuilds the initramfs. To go back to Ubuntu's original BGRT theme, run `sudo blackcomb-plymouth --restore-ubuntu`. The manufacturer logo may still appear on BGRT-capable hardware. The original installer media's splash remains Ubuntu's; only the installed system is changed.
-
-The GRUB menu background is **optional** and separate from the Plymouth loading screen. After setup, enable it with:
+Setup creates a separate Plymouth spinner theme using the transparent Blackcomb logo and rebuilds the installed system's initramfs. It does not overwrite Fedora's original spinner. Boot visuals depend on the graphics hardware and boot configuration. The installer media's own splash remains Fedora's. To refresh or reset the installed theme:
 
 ```sh
-sudo blackcomb-grub-background
+sudo blackcomb-plymouth
+sudo blackcomb-plymouth --restore-fedora
 ```
 
-This installs the image under `/boot/grub/`, adds `/etc/default/grub.d/60-blackcomb-background.cfg`, and runs `update-grub`. The menu may be hidden by default; holding Shift or pressing Esc during boot can display it. To undo the change, remove the drop-in and image and regenerate the menu:
+To use the white crescent launcher SVG, right-click Plasma's application launcher, open its settings, click the icon and select `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice, not an automatic panel change.
 
-```sh
-sudo rm -f /etc/default/grub.d/60-blackcomb-background.cfg /boot/grub/blackcomb-background.png
-sudo update-grub
-```
+The optional GRUB menu background is separate from Plymouth. On a standard Fedora GRUB installation, `sudo blackcomb-grub-background` installs the image under `/boot/grub2/`, adds a managed setting in `/etc/default/grub`, and regenerates `/boot/grub2/grub.cfg`, never the EFI stub. To remove it, run `sudo blackcomb-grub-background --remove`. An existing GRUB theme or console mode, hidden menu, Secure Boot, firmware, or graphics support may prevent it from appearing. Test in a VM and back up first.
 
-Bootloader configuration varies by hardware; test in a VM first. Neither the optional GRUB background nor the launcher setting is applied to the original Ubuntu installer live environment.
+## GitHub Actions and size
 
-## GitHub Actions
+Run **Build Blackcomb ISO** manually from Actions, supplying the verified input SHA-256. The build runs Fedora tools inside a Fedora container on a GitHub-hosted runner and uploads the `.iso` and checksum as a three-day artifact. GitHub wraps artifacts in a ZIP; extract that download to obtain the ordinary `.iso`. A locally built ISO needs no extraction.
 
-Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow uploads the bootable `.iso` and its checksum as a three-day artifact, with the Ubuntu installer intact. GitHub Actions wraps downloaded artifacts in a ZIP: extract that ZIP to obtain the normal `.iso`, then verify it with `sha256sum -c blackcomb-26.04-amd64.iso.sha256`. A locally built `.iso` needs no extraction.
+The job warns above the **2 GiB target**. Fedora's official KDE ISO is already about 3.3 GiB, before adding artwork, so this recipe does not achieve 2 GiB. It neither removes the installer nor recompresses the existing live filesystem; artifact ZIP compression does not reduce the actual ISO size. The installed system also requires more disk space. Hosted runner disk or artifact limits may require building on a larger machine.
 
-The job reports the ISO size and warns if it exceeds the **2 GiB target**. Ubuntu's 26.04.1 desktop ISO is already about 6 GB and its filesystem layers are already compressed, so this recipe cannot meet that target without changing the installer image. ISO builds can exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
+## Testing and updates
 
-## Updates and testing
-
-Ubuntu 26.04 LTS provides standard security maintenance through April 2031, with extended coverage available under separate terms. Packages do not automatically become the newest versions yearly. This kit does not configure automatic release upgrades; follow Ubuntu's supported upgrade path and back up your data before upgrading.
-
-This is an **untested experimental recipe**. Neither the generated ISO nor the post-install setup has been tested end-to-end. Test in a disposable VM before using real hardware, especially the installer, Plasma login, the resulting boot splash, BIOS/UEFI boot, and secure boot. Ubuntu and KDE retain their own names, trademarks and licenses.
+This is an **experimental, unverified recipe**: the resulting image and post-install setup have not been tested end-to-end. Test media verification, BIOS and UEFI/secure boot, Anaconda installation, the Plasma login and Plymouth on a disposable VM and relevant hardware before relying on them. Follow Fedora's supported update and release-upgrade procedures. Fedora and KDE retain their own names, trademarks and licenses.
