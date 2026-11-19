@@ -21,7 +21,7 @@ jobs:
       EROFS_COMPRESSION_LEVEL: '9'
     steps:
       - name: Install Fedora build tools
-        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils erofs-utils util-linux attr rsync
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils erofs-utils util-linux attr rsync diffutils
       - uses: actions/checkout@v4
       - name: Check scripts and mock assembly
         run: |
