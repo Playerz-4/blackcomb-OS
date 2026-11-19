@@ -4,20 +4,20 @@ Blackcomb is an experimental Fedora-based KDE Plasma desktop concept featuring K
 
 ## What this builds
 
-The build adds a Blackcomb post-install kit and wallpapers to the official Fedora KDE live ISO. It preserves Fedora's live desktop, compressed live filesystem and **Anaconda installer**. It does not modify the live desktop, live boot screen, or installer, and does not automatically install the kit. After installing Fedora and rebooting, run the kit to install Blackcomb artwork, a Plymouth boot theme and everyday apps. This is not an official Fedora image.
+The build recompresses the Fedora KDE live filesystem inside the ISO and adds a Blackcomb post-install kit and wallpapers. It retains Fedora's live desktop and **Anaconda installer** rather than removing content. It does not otherwise customize the live desktop, live boot screen, or installer, and does not automatically install the kit. After installing Fedora and rebooting, run the kit to install Blackcomb artwork, a Plymouth boot theme and everyday apps. This is not an official Fedora image.
 
 ## Build installer media
 
-On a Fedora build machine install `xorriso`, `curl`, `isomd5sum` and `coreutils` with DNF. Allow ample free disk space for the input and output images, and build without root:
+On a Fedora build machine install the build tools with DNF. The builder requires root and EROFS loop-mount support to read the original filesystem with its metadata intact. Allow ample free space for the input ISO, two copies of the live filesystem and output ISO:
 
 ```sh
-sudo dnf install xorriso curl isomd5sum coreutils
-FEDORA_ISO=/path/to/Fedora-KDE-Desktop-Live-45-1.4.x86_64.iso ./scripts/build-iso.sh
+sudo dnf install xorriso curl isomd5sum coreutils erofs-utils util-linux rsync
+sudo env FEDORA_ISO=/path/to/Fedora-KDE-Desktop-Live-45-1.4.x86_64.iso ./scripts/build-iso.sh
 ```
 
 The input defaults to a download from the [Fedora KDE download page](https://fedoraproject.org/kde/download/). Its default SHA-256 is Fedora's published hash for the 45-1.4 x86_64 ISO. For authenticity, verify Fedora's signed checksum file using the instructions on that page. Set `ISO_SHA256` to a separately verified hash if using a different source; changing the hash does not bypass the Fedora 45 KDE volume and live filesystem checks. Run `./scripts/build-iso.sh --help` for overrides.
 
-The script preserves the ISO volume label used by Fedora's boot configuration, replays boot metadata, adds `/blackcomb`, implants and checks a new Fedora media checksum, and writes `blackcomb-fedora-45-x86_64.iso` and its SHA-256 sidecar. Verify with `sha256sum -c blackcomb-fedora-45-x86_64.iso.sha256` from the output directory. Use a sufficiently large USB drive or attach the ISO to a VM. Boot compatibility is not guaranteed without testing.
+The script mounts the live EROFS filesystem read-only and rebuilds it using LZMA level 9, 1 MiB clusters and fragment deduplication. It then mounts both images and checks content and metadata with rsync before proceeding. The original ISO volume label and boot metadata are retained, `/blackcomb` is added, and a new Fedora media checksum is implanted and checked. The output is `blackcomb-fedora-45-x86_64.iso` and its SHA-256 sidecar. Verify with `sha256sum -c blackcomb-fedora-45-x86_64.iso.sha256` from the output directory. Use a sufficiently large USB drive or attach the ISO to a VM. Boot and installer compatibility must still be tested.
 
 ## Install and configure
 
@@ -47,9 +47,9 @@ The optional GRUB menu background is separate from Plymouth. On a standard Fedor
 
 ## GitHub Actions and size
 
-Run **Build Blackcomb ISO** manually from Actions, supplying the verified input SHA-256. The build runs Fedora tools inside a Fedora container on a GitHub-hosted runner and uploads the `.iso` and checksum as a three-day artifact. GitHub wraps artifacts in a ZIP; extract that download to obtain the ordinary `.iso`. A locally built ISO needs no extraction.
+Run **Build Blackcomb ISO** manually from Actions, supplying the verified input SHA-256. Every build recompresses the live filesystem inside the ISO using the `EROFS_COMPRESSION_LEVEL` set in the workflow YAML. The build runs Fedora tools in a privileged Fedora container on a GitHub-hosted runner; loop mounts require those privileges. It uploads the normal `.iso` and checksum as a three-day artifact. GitHub wraps artifact downloads in a ZIP; extract that download to obtain the `.iso`. A locally built ISO needs no extraction.
 
-The job warns above the **2 GiB target**. Fedora's official KDE ISO is already about 3.3 GiB, before adding artwork, so this recipe does not achieve 2 GiB. It neither removes the installer nor recompresses the existing live filesystem; artifact ZIP compression does not reduce the actual ISO size. The installed system also requires more disk space. Hosted runner disk or artifact limits may require building on a larger machine.
+The job prints the original and recompressed live filesystem sizes and warns when the final ISO exceeds the **2 GiB target**. Fedora's original KDE ISO is about 3.3 GiB and already compressed; the final size depends on the actual build and is not guaranteed to reach 2 GiB. No installer or other content is intentionally removed. Higher compression can slow building and live operation; the installed system also needs more disk space. Hosted runner disk, time or artifact limits may require building on a larger machine.
 
 ## Testing and updates
 

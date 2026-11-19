@@ -12,16 +12,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    container: fedora:45
+    container:
+      image: fedora:45
+      # The build mounts Fedora's live filesystem read-only to preserve its metadata.
+      options: --privileged
     timeout-minutes: 360
+    env:
+      EROFS_COMPRESSION_LEVEL: '9'
     steps:
       - name: Install Fedora build tools
-        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils erofs-utils util-linux attr rsync
       - uses: actions/checkout@v4
       - name: Check scripts and mock assembly
         run: |
           bash -n scripts/*.sh tests/*.sh
           bash tests/test-build.sh
+          bash tests/test-erofs.sh
       - name: Build ISO
         env:
           ISO_SHA256: ${{ inputs.iso_sha256 }}
