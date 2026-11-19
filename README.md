@@ -44,7 +44,7 @@ The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-
 
 ## Branding, launcher and GRUB
 
-The setup kit includes a transparent Blackcomb logo, a white Kim launcher SVG and a GRUB image from `assets/branding/`, installed to `/usr/share/blackcomb/branding/`. To use the launcher icon, right-click Plasma's application launcher, open its settings, click the icon and browse to `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice; the setup does not modify an existing panel. The transparent `blackcomb-logo.png` is available for future boot-screen branding; it is not applied to Plymouth, so the Ubuntu loading screen remains unchanged.
+The setup kit includes a transparent Blackcomb logo, a white crescent moon launcher SVG and a GRUB image from `assets/branding/`, installed to `/usr/share/blackcomb/branding/`. To use the launcher icon, right-click Plasma's application launcher, open its settings, click the icon and browse to `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice; the setup does not modify an existing panel. The transparent `blackcomb-logo.png` is available for future boot-screen branding; it is not applied to Plymouth, so the Ubuntu loading screen remains unchanged.
 
 The GRUB menu background is **optional** and separate from the Ubuntu Plymouth loading screen. After setup, enable it with:
 
