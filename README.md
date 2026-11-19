@@ -95,9 +95,9 @@ Blackcomb intends to establish its own visual identity rather than simply copyin
 
 Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The main boot entry is **Boot Blackcomb**; Fedora's original basic graphics mode remains in the **Troubleshooting** submenu. It may help with some virtual-machine black screens but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
 
-#### Black-screen fix: no `rhgb` on the default boot entry
+#### Black-screen fix: splash kept, DRM handoff corrected
 
-Fedora KDE 43 and later have a known Plymouth-to-SDDM handoff race when the `rhgb` kernel argument is present: Plymouth keeps the graphics device busy while SDDM starts, so the splash is shown but the Plasma desktop never appears — a boot screen followed by nothing but black ([Red Hat bug 2404966](https://bugzilla.redhat.com/show_bug.cgi?id=2404966)). Blackcomb therefore **removes `rhgb`** from the default live boot entry when building the ISO, and the post-install setup removes it from every installed kernel (and from the GRUB defaults) as well. Plymouth still runs later in the boot, from the real root, once the graphics device is ready. This is the fix for a boot that reaches the splash and then shows no desktop.
+Fedora KDE 43+ can boot to a black screen because Plymouth holds a `/dev/dri/card*` device while SDDM/KWin starts ([Red Hat bug 2404966](https://bugzilla.redhat.com/show_bug.cgi?id=2404966)). Removing `rhgb` stops the splash but does not fix a VM whose framebuffer driver is also claiming a card. Blackcomb therefore **keeps `rhgb`** so the Blackcomb splash still appears, and adds `plymouth.use-simpledrm=0` — Fedora's documented switch that makes Plymouth wait for the real GPU driver instead of the early EFI framebuffer. The default entry also sets `video=1024x768` so the live desktop fits a typical VirtualBox window instead of scrolling. Hardware acceleration is **not** disabled: no `nomodeset` is used. The post-install setup applies the same Plymouth setting to installed kernels.
 
 If a machine still boots to black, a one-time test with Plymouth fully disabled can isolate the handoff: select **Boot Blackcomb**, press `e`, append `plymouth.enable=0` to the line beginning with `linux`, and press Ctrl+X or F10.
 
@@ -105,7 +105,7 @@ If a machine still boots to black, a one-time test with Plymouth fully disabled 
 
 VirtualBox normally uses VMSVGA for Linux guests. Switching to VBoxSVGA is **not a confirmed fix** and has caused a kernel panic in a reported Blackcomb VM. If it causes trouble, power off the VM and restore its previous display settings.
 
-A kernel panic has multiple possible causes. Capture a screenshot of the **complete panic message and lines above it**, along with your VirtualBox version and VM settings; do not assume it is the graphics controller. To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` and `rhgb` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO. If the screen remains black, include that result too.
+A kernel panic has multiple possible causes. Capture a screenshot of the **complete panic message and lines above it**, along with your VirtualBox version and VM settings; do not assume it is the graphics controller. To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO. If the screen remains black, include that result too.
 
 The installed system receives the Blackcomb splash and other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
 

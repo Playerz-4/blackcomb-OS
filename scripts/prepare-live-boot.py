@@ -38,32 +38,35 @@ def patch_grub(text):
     text = ''.join(result)
     if 'rd.live.check' in text:
         fail('media check occurs outside the expected entry')
-    # Do NOT add "rhgb" here. Fedora KDE 43+ has a known Plymouth-to-SDDM
-    # handoff race when that argument is present: Plymouth starts inside the
-    # initramfs, keeps the DRM device busy, and SDDM's greeter fails to open
-    # /dev/dri/card* ("Device or resource busy"). The result is exactly a
-    # working boot splash followed by a black desktop with nothing on it
-    # (Red Hat bug 2404966, upstream sddm#1917). Removing "rhgb" is the
-    # documented fix and still allows Plymouth to show later, from the real
-    # root, once the graphics device is ready. Troubleshooting entries are
-    # left as Fedora supplies them.
+    # Keep "rhgb" so Plymouth displays the Blackcomb splash. The Plasma black
+    # screen is a DRM handoff race (RHBZ 2404966): on Fedora 42+ Plymouth uses
+    # the early EFI framebuffer (simpledrm) and can hold a /dev/dri/card device
+    # while the real guest driver and SDDM try to claim it. Tell Plymouth to
+    # wait for the real GPU driver instead - the documented way to keep the
+    # splash without the early framebuffer owning a DRM card - and pin a
+    # modest 1024x768 framebuffer so the desktop fits a VirtualBox window.
+    # Hardware acceleration is NOT disabled: no nomodeset/basicgfx is added.
+    # Troubleshooting entries are left as Fedora supplies them.
     normal_pattern = (r'(^menuentry\s+["\']Start Fedora[^"\']*["\'][^\n]*\{\n)'
                       r'((?:[^\n]*\n)*?)(^}[ \t]*$)')
-    def safe_boot(match):
-        def strip_rhgb(line):
+    def splash_boot(match):
+        def harden(line):
             text = line.group(1)
             indent = re.match(r'^[ \t]*', text).group(0)
-            args = re.sub(r'\brhgb\b', '', text[len(indent):])
-            return indent + re.sub(r'[ \t]{2,}', ' ', args).strip()
+            args = re.sub(r'[ \t]{2,}', ' ', text[len(indent):]).strip()
+            for arg in ('rhgb', 'plymouth.use-simpledrm=0', 'video=1024x768'):
+                if not re.search(r'(?<!\S)' + re.escape(arg) + r'(?!\S)', args):
+                    args += ' ' + arg
+            return indent + args
         body, count = re.subn(
             r'^([ \t]*linux(?:efi)?[ \t]+[^\n]*)$',
-            strip_rhgb, match.group(2), flags=re.M)
+            harden, match.group(2), flags=re.M)
         if count != 1:
             fail('unexpected normal kernel entry')
         header = re.sub(r'^(menuentry\s+)["\']Start Fedora[^"\']*["\']',
                         r'\1"Boot Blackcomb"', match.group(1), count=1)
         return header + body + match.group(3)
-    text, normal = re.subn(normal_pattern, safe_boot, text, flags=re.M)
+    text, normal = re.subn(normal_pattern, splash_boot, text, flags=re.M)
     if normal != 1:
         fail('expected one normal Fedora start entry')
     text, defaults = re.subn(r'^([ \t]*set[ \t]+default[ \t]*=[ \t]*)["\']?\d+["\']?[ \t]*$', r'\g<1>"0"', text, flags=re.M)

@@ -8,7 +8,7 @@ command -v plasma-apply-wallpaperimage >/dev/null 2>&1 || exit 0
 # Plasma's desktop service may not be available immediately at autostart.
 i=0
 while [ "$i" -lt 12 ]; do
-  if plasma-apply-wallpaperimage /usr/share/backgrounds/blackcomb/blackcomb-midnight.png; then
+  if plasma-apply-wallpaperimage /usr/share/backgrounds/blackcomb/kim-stargazer.png; then
     mkdir -p "$state_dir"
     touch "$marker"
     exit 0

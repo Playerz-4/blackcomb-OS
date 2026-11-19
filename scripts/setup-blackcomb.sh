@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/blackcomb-midnight.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -42,17 +42,14 @@ install -m 755 "$HERE/scripts/create-plymouth-theme.sh" /usr/local/lib/blackcomb
 install -m 644 "$HERE/scripts/blackcomb-wallpaper.desktop" /etc/xdg/autostart/
 /usr/local/sbin/blackcomb-plymouth
 
-# Fedora KDE 43+ can boot to a black screen with the "rhgb" argument: Plymouth
-# holds the DRM device while SDDM starts, so the greeter cannot open the
-# graphics card and no Plasma session appears (Red Hat bug 2404966). Remove it
-# from every installed kernel - and from the GRUB defaults so an updated
-# kernel cannot bring it back - before handing the system to the user.
+# Fedora 42+ starts Plymouth on the early EFI framebuffer (simpledrm), which
+# can keep a /dev/dri/card device busy while SDDM/KWin starts and leave the
+# Plasma desktop black (Red Hat bug 2404966). Keep "rhgb" so the Blackcomb
+# splash is still shown, but ask Plymouth to wait for the real GPU driver
+# instead. This is Fedora's documented plymouth.use-simpledrm=0 switch.
 if command -v grubby >/dev/null 2>&1; then
-  if ! grubby --update-kernel=ALL --remove-args=rhgb; then
-    echo 'Warning: could not remove rhgb from the installed kernels; the desktop may stay black.' >&2
+  if ! grubby --update-kernel=ALL --args="plymouth.use-simpledrm=0"; then
+    echo 'Warning: could not apply the Plymouth DRM fix to the installed kernels.' >&2
   fi
-fi
-if [[ -f /etc/default/grub ]] && grep -qw rhgb /etc/default/grub; then
-  sed -i -E 's/(^|[[:space:]])rhgb([[:space:]]|$)/ /g; s/[[:space:]]{2,}/ /g' /etc/default/grub
 fi
 printf '\nBlackcomb setup complete. Reboot to use the new boot splash.\n'
