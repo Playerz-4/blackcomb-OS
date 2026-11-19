@@ -46,8 +46,9 @@ cat > "$tmp/bin/mkfs.erofs" <<'MOCK'
 #!/usr/bin/env bash
 set -eu
 printf 'mkfs %s\n' "$*" >> "$TEST_LOG"
-[[ $1 == -zlzma,9 && $2 == -C1048576 && $3 == -Eall-fragments,fragdedupe=inode ]]
-printf 'compressed erofs\n' > "$4"
+[[ $1 == --quiet && $2 == -zlzma,9 && $3 == -C1048576 && $4 == -Eall-fragments,fragdedupe=inode ]]
+if [[ ${FAIL_MKFS:-0} == 1 ]]; then echo 'mock compression error' >&2; exit 42; fi
+printf 'compressed erofs\n' > "$5"
 MOCK
 cat > "$tmp/bin/mount" <<'MOCK'
 #!/usr/bin/env bash
@@ -89,7 +90,7 @@ export OUTPUT_ISO="$tmp/output.iso" WORK_DIR="$tmp/work"
 "$root/scripts/build-iso.sh"
 (cd "$tmp" && sha256sum -c output.iso.sha256)
 grep -q -- '-boot_image any replay' "$TEST_LOG"
-grep -q '^mkfs -zlzma,9 -C1048576' "$TEST_LOG"
+grep -q '^mkfs --quiet -zlzma,9 -C1048576' "$TEST_LOG"
 grep -q '/LiveOS/squashfs.img' "$TEST_LOG"
 grep -q '^implant$' "$TEST_LOG"
 grep -q '^check$' "$TEST_LOG"
@@ -102,6 +103,10 @@ fi
 if FAIL_COMPARE=1 "$root/scripts/build-iso.sh" 2>/dev/null; then
   echo 'Filesystem differences accepted' >&2; exit 1
 fi
+if FAIL_MKFS=1 "$root/scripts/build-iso.sh" > "$tmp/compression-error.log" 2>&1; then
+  echo 'Compression failure accepted' >&2; exit 1
+fi
+grep -q 'mock compression error' "$tmp/compression-error.log"
 mkdir -p "$tmp/spinner"
 printf '[Plymouth Theme]\nName=Spinner\nModuleName=two-step\n[two-step]\nImageDir=/usr/share/plymouth/themes/spinner\n' > "$tmp/spinner/spinner.plymouth"
 printf 'spinner data' > "$tmp/spinner/throbber-0001.png"

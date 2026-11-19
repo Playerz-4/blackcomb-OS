@@ -51,7 +51,7 @@ if [[ -n ${FEDORA_ISO:-} ]]; then
 else
   input=$work/fedora.iso
   echo "Downloading $ISO_URL"
-  curl --fail --location --retry 3 --output "$input" "$ISO_URL"
+  curl --silent --show-error --fail --location --retry 3 --output "$input" "$ISO_URL"
 fi
 [[ $(realpath -m -- "$OUTPUT_ISO") != "$input" ]] || { echo 'Input and output ISO must differ.' >&2; exit 1; }
 [[ $ISO_SHA256 =~ ^[[:xdigit:]]{64}$ ]] || { echo 'Invalid ISO_SHA256.' >&2; exit 1; }
@@ -64,15 +64,20 @@ grep -Fq 'Fedora-KDE-Live-45' "$work/pvd-info" || { echo 'Expected Fedora 45 KDE
 # such as ownership, hardlinks, capabilities, SELinux labels and other xattrs.
 # mkfs.erofs rebuild mode cannot import already-compressed EROFS files.
 xorriso -osirrox on -indev "$input" -extract /LiveOS/squashfs.img "$work/original.erofs"
-echo 'Checking and recompressing the Fedora live filesystem (this can take a while)...'
+echo 'Checking the original Fedora live filesystem...'
 fsck.erofs --extract "$work/original.erofs"
 original_size=$(stat -c %s "$work/original.erofs")
 mkdir "$work/live-root" "$work/new-root"
 mount -t erofs -o loop,ro "$work/original.erofs" "$work/live-root"
-mkfs.erofs -zlzma,"$EROFS_COMPRESSION_LEVEL" -C1048576 \
+# Without --quiet, mkfs writes a progress message for every file, overwhelming
+# CI logs. Errors remain visible and a nonzero exit still stops the build.
+echo 'Recompressing the live filesystem (this may take a long time; per-file output is disabled)...'
+mkfs.erofs --quiet -zlzma,"$EROFS_COMPRESSION_LEVEL" -C1048576 \
   -Eall-fragments,fragdedupe=inode "$work/compressed.erofs" "$work/live-root"
+echo 'Checking the recompressed filesystem...'
 fsck.erofs --extract "$work/compressed.erofs"
 # Verify readable content and metadata before accepting the replacement image.
+echo 'Comparing live filesystem contents and metadata...'
 mount -t erofs -o loop,ro "$work/compressed.erofs" "$work/new-root"
 rsync -aHAXnc --delete --numeric-ids --itemize-changes \
   "$work/live-root/" "$work/new-root/" > "$work/differences"
