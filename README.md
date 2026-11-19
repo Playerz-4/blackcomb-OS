@@ -40,7 +40,26 @@ The output is `blackcomb-26.10-amd64.iso` and its `.sha256` file. Check the resu
 
    Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop` and changing the default display manager to SDDM. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories, so this step requires network access.
 
-The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png` and `kim-alpine.png`. The Plasma autostart helper applies the first once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
+The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png`, `kim-alpine.png`, `blackcomb-blue-hour.png`, and `kim-stargazer.png`. The Plasma autostart helper applies the first once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
+
+## Branding, launcher and GRUB
+
+The setup kit includes a transparent Blackcomb logo, a white Kim launcher SVG and a GRUB image from `assets/branding/`, installed to `/usr/share/blackcomb/branding/`. To use the launcher icon, right-click Plasma's application launcher, open its settings, click the icon and browse to `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice; the setup does not modify an existing panel. The transparent `blackcomb-logo.png` is available for future boot-screen branding; it is not applied to Plymouth, so the Ubuntu loading screen remains unchanged.
+
+The GRUB menu background is **optional** and separate from the Ubuntu Plymouth loading screen. After setup, enable it with:
+
+```sh
+sudo blackcomb-grub-background
+```
+
+This installs the image under `/boot/grub/`, adds `/etc/default/grub.d/60-blackcomb-background.cfg`, and runs `update-grub`. The menu may be hidden by default; holding Shift or pressing Esc during boot can display it. To undo the change, remove the drop-in and image and regenerate the menu:
+
+```sh
+sudo rm -f /etc/default/grub.d/60-blackcomb-background.cfg /boot/grub/blackcomb-background.png
+sudo update-grub
+```
+
+Bootloader configuration varies by hardware; test in a VM first. Neither the optional GRUB background nor the launcher setting is applied to the original Ubuntu installer live environment.
 
 ## GitHub Actions
 

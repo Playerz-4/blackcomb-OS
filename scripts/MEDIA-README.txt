@@ -9,6 +9,16 @@ installed system. Connect to the internet, then open a terminal and run:
 Replace /path/to/mounted-installer-media with the actual mount path of this
 USB drive or ISO. The installer does not automatically copy or run this kit.
 Setup installs the Kubuntu desktop, selects SDDM, sets the Ubuntu boot theme,
-and installs the Blackcomb wallpapers. Reboot, and select Plasma at login.
-Existing Ubuntu desktop packages are not removed. See the project README for
-limitations and testing notes.
+and installs the Blackcomb wallpapers and branding. Reboot, and select Plasma
+at login. Existing Ubuntu desktop packages are not removed.
+
+To opt in to the GRUB menu background after setup, run:
+
+  sudo blackcomb-grub-background
+
+To use the launcher icon, right-click Plasma's application launcher, open its
+settings, click the icon and choose the custom image at:
+
+  /usr/share/blackcomb/branding/blackcomb-launcher.svg
+
+See the project README for details, removal instructions and testing notes.

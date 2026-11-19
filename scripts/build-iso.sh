@@ -52,11 +52,13 @@ xorriso -osirrox on -indev "$input" \
   -extract /md5sum.txt "$work/md5sum.txt"
 grep -Eiq 'Ubuntu 26\.10' "$work/ubuntu-info" || { echo 'Expected the official Ubuntu 26.10 desktop ISO.' >&2; exit 1; }
 
-mkdir -p "$work/payload/scripts" "$work/payload/backgrounds"
+mkdir -p "$work/payload/scripts" "$work/payload/backgrounds" "$work/payload/assets/branding"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/payload/setup-blackcomb.sh"
 install -m 755 "$ROOT_DIR/scripts/blackcomb-wallpaper.sh" "$work/payload/scripts/blackcomb-wallpaper.sh"
+install -m 755 "$ROOT_DIR/scripts/install-grub-background.sh" "$work/payload/scripts/install-grub-background.sh"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/payload/scripts/blackcomb-wallpaper.desktop"
 install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/payload/backgrounds/"
+install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/payload/assets/branding/"
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/payload/README.txt"
 # The input ISO's checksum list remains valid; add the new payload entries.
 (cd "$work" && mv payload blackcomb && find blackcomb -type f -print0 | sort -z | xargs -0 md5sum | sed 's|  blackcomb/|  ./blackcomb/|' >> md5sum.txt)
