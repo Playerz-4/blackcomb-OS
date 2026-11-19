@@ -1,8 +1,9 @@
 BLACKCOMB 26.04 SETUP KIT
 
-This media boots the original Ubuntu 26.04 desktop and installer, not a
-preconfigured Plasma live session. Install Ubuntu normally and reboot into the
-installed system. Connect to the internet, then open a terminal and run:
+This media boots the original Ubuntu 26.04 desktop and Flutter-based Ubuntu
+Desktop Bootstrap installer, not a preconfigured Plasma live session. Install
+Ubuntu normally and reboot into the installed system. Connect to the internet,
+then open a terminal and run:
 
   sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
 

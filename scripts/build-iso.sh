@@ -11,7 +11,7 @@ usage() {
 Usage: ./scripts/build-iso.sh
 
 Build a bootable Ubuntu 26.04 installer ISO with the Blackcomb post-install kit.
-The live session and installer remain Ubuntu; install Plasma after installation.
+The Ubuntu Desktop Bootstrap Flutter installer remains unchanged; install Plasma after installation.
 UBUNTU_ISO      Existing official Ubuntu 26.04 desktop amd64 ISO, or download it.
 UBUNTU_ISO_URL  Download URL if UBUNTU_ISO is unset.
 ISO_SHA256      Expected input SHA-256 (strongly recommended).

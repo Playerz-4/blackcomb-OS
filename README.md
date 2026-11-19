@@ -4,7 +4,7 @@ Blackcomb is an experimental Ubuntu-based desktop concept with KDE Plasma and Ki
 
 ## What this builds
 
-The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.04 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and interactive installer. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
+The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.04 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and **Flutter-based Ubuntu Desktop Bootstrap installer** (with Subiquity as its backend). The build leaves the installer unchanged; it does not replace it with Ubiquity. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
 
 Blackcomb keeps Ubuntu 26.04's desktop installer and layered, compressed live filesystem images. This kit is not an official Ubuntu or Kubuntu image.
 
@@ -30,7 +30,7 @@ The output is `blackcomb-26.04-amd64.iso` and its `.sha256` file. Check the resu
 
 ## Install and configure
 
-1. Boot the media and use the **Ubuntu installer** to install Ubuntu normally. The live environment is Ubuntu's standard desktop, not Plasma.
+1. Boot the media and use the **Ubuntu Desktop Bootstrap Flutter installer** to install Ubuntu normally. The live environment is Ubuntu's standard desktop, not Plasma.
 2. Reboot into the installed system and connect to the internet. Mount the installer media again if necessary.
 3. Open a terminal and run the kit from the mounted media, replacing the example path with its actual location:
 
