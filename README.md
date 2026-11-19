@@ -4,7 +4,7 @@ Blackcomb is an experimental Ubuntu-based desktop concept with KDE Plasma and Ki
 
 ## What this builds
 
-The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.10 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and interactive installer. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM and the wallpapers. The setup selects Ubuntu's BGRT Plymouth theme and refreshes the installed system's initramfs; the visible boot screen can vary by hardware and firmware.
+The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.10 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and interactive installer. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
 
 Ubuntu's newer installer uses layered filesystem images instead of the single 22.04 Ubiquity filesystem. The old 22.04 remaster recipe is therefore not compatible with 26.10. This kit deliberately leaves the layers and installer unchanged rather than presenting an untested remaster as a working distribution. It is not an official Ubuntu or Kubuntu image.
 
@@ -38,15 +38,17 @@ The output is `blackcomb-26.10-amd64.iso` and its `.sha256` file. Check the resu
    sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
    ```
 
-   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop` and changing the default display manager to SDDM. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories, so this step requires network access.
+   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories, so this step requires network access.
 
 The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png`, `kim-alpine.png`, `blackcomb-blue-hour.png`, and `kim-stargazer.png`. The Plasma autostart helper applies the first once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
 
 ## Branding, launcher and GRUB
 
-The setup kit includes a transparent Blackcomb logo, a white crescent moon launcher SVG and a GRUB image from `assets/branding/`, installed to `/usr/share/blackcomb/branding/`. To use the launcher icon, right-click Plasma's application launcher, open its settings, click the icon and browse to `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice; the setup does not modify an existing panel. The transparent `blackcomb-logo.png` is available for future boot-screen branding; it is not applied to Plymouth, so the Ubuntu loading screen remains unchanged.
+The setup kit includes a transparent Blackcomb logo, a white crescent moon launcher SVG and a GRUB image from `assets/branding/`, installed to `/usr/share/blackcomb/branding/`. To use the launcher icon, right-click Plasma's application launcher, open its settings, click the icon and browse to `/usr/share/blackcomb/branding/blackcomb-launcher.svg`. This is a per-user choice; the setup does not modify an existing panel.
 
-The GRUB menu background is **optional** and separate from the Ubuntu Plymouth loading screen. After setup, enable it with:
+Setup also installs a separate Plymouth theme based on Ubuntu's BGRT spinner, using the transparent Blackcomb logo as its watermark and fallback image. It does not overwrite the Ubuntu theme files. If you already ran an older version of setup, update the kit and rerun setup to install the theme. After setup, `sudo blackcomb-plymouth` refreshes it and rebuilds the initramfs. To go back to Ubuntu's original BGRT theme, run `sudo blackcomb-plymouth --restore-ubuntu`. The manufacturer logo may still appear on BGRT-capable hardware. The original installer media's splash remains Ubuntu's; only the installed system is changed.
+
+The GRUB menu background is **optional** and separate from the Plymouth loading screen. After setup, enable it with:
 
 ```sh
 sudo blackcomb-grub-background

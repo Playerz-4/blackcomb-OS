@@ -7,8 +7,8 @@ Usage: sudo blackcomb-grub-background
 
 Install the Blackcomb GRUB menu background on an installed Ubuntu system and
 regenerate grub.cfg. Existing GRUB settings are not replaced. GRUB may hide its
-menu by default; use Shift or Esc during boot to show it. The Ubuntu Plymouth
-loading screen is not changed.
+menu by default; use Shift or Esc during boot to show it. The Plymouth loading
+screen is not changed.
 HELP
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
@@ -24,4 +24,4 @@ install -d /boot/grub /etc/default/grub.d
 install -m 644 "$image" /boot/grub/blackcomb-background.png
 printf 'GRUB_BACKGROUND="/boot/grub/blackcomb-background.png"\n' > /etc/default/grub.d/60-blackcomb-background.cfg
 update-grub
-printf 'Blackcomb GRUB background enabled. The Ubuntu loading splash is unchanged.\n'
+printf 'Blackcomb GRUB background enabled. The Plymouth loading splash is unchanged.\n'

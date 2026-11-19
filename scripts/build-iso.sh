@@ -56,6 +56,8 @@ mkdir -p "$work/payload/scripts" "$work/payload/backgrounds" "$work/payload/asse
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/payload/setup-blackcomb.sh"
 install -m 755 "$ROOT_DIR/scripts/blackcomb-wallpaper.sh" "$work/payload/scripts/blackcomb-wallpaper.sh"
 install -m 755 "$ROOT_DIR/scripts/install-grub-background.sh" "$work/payload/scripts/install-grub-background.sh"
+install -m 755 "$ROOT_DIR/scripts/create-plymouth-theme.sh" "$work/payload/scripts/create-plymouth-theme.sh"
+install -m 755 "$ROOT_DIR/scripts/install-plymouth-theme.sh" "$work/payload/scripts/install-plymouth-theme.sh"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/payload/scripts/blackcomb-wallpaper.desktop"
 install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/payload/backgrounds/"
 install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/payload/assets/branding/"
