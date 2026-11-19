@@ -1,6 +1,6 @@
-BLACKCOMB 26.10 SETUP KIT
+BLACKCOMB 26.04 SETUP KIT
 
-This media boots the original Ubuntu 26.10 desktop and installer, not a
+This media boots the original Ubuntu 26.04 desktop and installer, not a
 preconfigured Plasma live session. Install Ubuntu normally and reboot into the
 installed system. Connect to the internet, then open a terminal and run:
 

@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# Add the Blackcomb setup kit to the official Ubuntu 26.10 installer ISO.
+# Add the Blackcomb setup kit to the official Ubuntu 26.04 installer ISO.
 set -Eeuo pipefail
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-ISO_URL=${UBUNTU_ISO_URL:-https://releases.ubuntu.com/26.10/ubuntu-26.10-desktop-amd64.iso}
-OUTPUT_ISO=${OUTPUT_ISO:-$ROOT_DIR/blackcomb-26.10-amd64.iso}
+ISO_URL=${UBUNTU_ISO_URL:-https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.iso}
+OUTPUT_ISO=${OUTPUT_ISO:-$ROOT_DIR/blackcomb-26.04-amd64.iso}
 WORK_DIR=${WORK_DIR:-$ROOT_DIR/.build}
 
 usage() {
   cat <<'HELP'
 Usage: ./scripts/build-iso.sh
 
-Build a bootable Ubuntu 26.10 installer ISO with the Blackcomb post-install kit.
+Build a bootable Ubuntu 26.04 installer ISO with the Blackcomb post-install kit.
 The live session and installer remain Ubuntu; install Plasma after installation.
-UBUNTU_ISO      Existing official Ubuntu 26.10 desktop amd64 ISO, or download it.
+UBUNTU_ISO      Existing official Ubuntu 26.04 desktop amd64 ISO, or download it.
 UBUNTU_ISO_URL  Download URL if UBUNTU_ISO is unset.
 ISO_SHA256      Expected input SHA-256 (strongly recommended).
-OUTPUT_ISO      Output path (default: ./blackcomb-26.10-amd64.iso).
+OUTPUT_ISO      Output path (default: ./blackcomb-26.04-amd64.iso).
 WORK_DIR        Temporary file directory (default: ./.build).
 Requires xorriso, curl, and roughly 20 GB free. Root is not required.
 HELP
@@ -50,7 +50,7 @@ xorriso -osirrox on -indev "$input" \
   -extract /.disk/info "$work/ubuntu-info" \
   -extract /casper/install-sources.yaml "$work/install-sources.yaml" \
   -extract /md5sum.txt "$work/md5sum.txt"
-grep -Eiq 'Ubuntu 26\.10' "$work/ubuntu-info" || { echo 'Expected the official Ubuntu 26.10 desktop ISO.' >&2; exit 1; }
+grep -Eiq 'Ubuntu 26\.04' "$work/ubuntu-info" || { echo 'Expected the official Ubuntu 26.04 desktop ISO.' >&2; exit 1; }
 
 mkdir -p "$work/payload/scripts" "$work/payload/backgrounds" "$work/payload/assets/branding"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/payload/setup-blackcomb.sh"

@@ -1,12 +1,12 @@
 # Blackcomb OS
 
-Blackcomb is an experimental Ubuntu-based desktop concept with KDE Plasma and Kim the macaque. The current target is **Ubuntu 26.10** (Stonking Stingray), the latest Ubuntu release as of November 2026. It is an interim release, supported for nine months, until July 2027; it is not an LTS release.
+Blackcomb is an experimental Ubuntu-based desktop concept with KDE Plasma and Kim the macaque. The current target is **Ubuntu 26.04 LTS** (Resolute Raccoon), using the 26.04.1 desktop image. Standard Ubuntu security maintenance runs through April 2031.
 
 ## What this builds
 
-The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.10 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and interactive installer. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
+The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.04 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and interactive installer. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
 
-Blackcomb keeps Ubuntu 26.10's desktop installer and layered, compressed live filesystem images. This kit is not an official Ubuntu or Kubuntu image.
+Blackcomb keeps Ubuntu 26.04's desktop installer and layered, compressed live filesystem images. This kit is not an official Ubuntu or Kubuntu image.
 
 ## Build installer media
 
@@ -17,16 +17,16 @@ sudo apt update
 sudo apt install xorriso curl
 ```
 
-Download the official `ubuntu-26.10-desktop-amd64.iso` and verify its SHA-256 against Ubuntu's [published checksums](https://releases.ubuntu.com/26.10/SHA256SUMS). For authenticity, verify the signed checksum file using Ubuntu's published signing keys and instructions. The build script verifies a supplied hash, but does not verify the signature itself.
+Download the official `ubuntu-26.04.1-desktop-amd64.iso` and verify its SHA-256 against Ubuntu's [published checksums](https://releases.ubuntu.com/26.04/SHA256SUMS). For authenticity, verify the signed checksum file using Ubuntu's published signing keys and instructions. The build script verifies a supplied hash, but does not verify the signature itself.
 
 ```sh
-UBUNTU_ISO=/path/to/ubuntu-26.10-desktop-amd64.iso \
+UBUNTU_ISO=/path/to/ubuntu-26.04.1-desktop-amd64.iso \
 ISO_SHA256='<verified sha256>' ./scripts/build-iso.sh
 ```
 
 If `UBUNTU_ISO` is omitted the script downloads the official image. It warns if no `ISO_SHA256` is supplied. Run `./scripts/build-iso.sh --help` for output and working-directory overrides. It replays the original image's boot metadata and appends the kit under `/blackcomb`, leaving Ubuntu's boot files, filesystem layers and installer intact. It also updates `md5sum.txt` for the added files.
 
-The output is `blackcomb-26.10-amd64.iso` and its `.sha256` file. Check the result with `sha256sum -c blackcomb-26.10-amd64.iso.sha256` from the output directory. Use a USB drive large enough for the ISO, or attach it to a VM.
+The output is `blackcomb-26.04-amd64.iso` and its `.sha256` file. Check the result with `sha256sum -c blackcomb-26.04-amd64.iso.sha256` from the output directory. Use a USB drive large enough for the ISO, or attach it to a VM.
 
 ## Install and configure
 
@@ -38,7 +38,7 @@ The output is `blackcomb-26.10-amd64.iso` and its `.sha256` file. Check the resu
    sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
    ```
 
-   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, Firefox, everyday apps, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories and the Snap Store, so this step requires network access.
+   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, Firefox, everyday apps, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.04 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories and the Snap Store, so this step requires network access.
 
 The everyday app selection is Firefox (Ubuntu's Snap), VLC for media, LibreOffice Writer for documents and KCalc for calculations. The APT apps omit recommended extras to reduce downloads; additional codecs or features may require optional packages. These apps are installed by the post-install setup and are **not** preinstalled in the live ISO. The installed system requires much more than 2 GiB of disk space.
 
@@ -67,12 +67,12 @@ Bootloader configuration varies by hardware; test in a VM first. Neither the opt
 
 ## GitHub Actions
 
-Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow uploads the bootable `.iso` and its checksum as a three-day artifact, with the Ubuntu installer intact. GitHub Actions wraps downloaded artifacts in a ZIP: extract that ZIP to obtain the normal `.iso`, then verify it with `sha256sum -c blackcomb-26.10-amd64.iso.sha256`. A locally built `.iso` needs no extraction.
+Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow uploads the bootable `.iso` and its checksum as a three-day artifact, with the Ubuntu installer intact. GitHub Actions wraps downloaded artifacts in a ZIP: extract that ZIP to obtain the normal `.iso`, then verify it with `sha256sum -c blackcomb-26.04-amd64.iso.sha256`. A locally built `.iso` needs no extraction.
 
-The job reports the ISO size and warns if it exceeds the **2 GiB target**. Ubuntu's desktop ISO is already about 6.2 GB and its filesystem layers are already compressed, so this recipe cannot meet that target without changing the installer image. ISO builds can exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
+The job reports the ISO size and warns if it exceeds the **2 GiB target**. Ubuntu's 26.04.1 desktop ISO is already about 6 GB and its filesystem layers are already compressed, so this recipe cannot meet that target without changing the installer image. ISO builds can exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
 
 ## Updates and testing
 
-Ubuntu provides security and maintenance updates during the release's support window, but packages do not automatically become the latest versions yearly. This kit does not configure automatic release upgrades; follow Ubuntu's supported upgrade path and back up your data before upgrading. For longer support, Ubuntu 26.04 LTS is available, but it is not the latest release.
+Ubuntu 26.04 LTS provides standard security maintenance through April 2031, with extended coverage available under separate terms. Packages do not automatically become the newest versions yearly. This kit does not configure automatic release upgrades; follow Ubuntu's supported upgrade path and back up your data before upgrading.
 
 This is an **untested experimental recipe**. Neither the generated ISO nor the post-install setup has been tested end-to-end. Test in a disposable VM before using real hardware, especially the installer, Plasma login, the resulting boot splash, BIOS/UEFI boot, and secure boot. Ubuntu and KDE retain their own names, trademarks and licenses.

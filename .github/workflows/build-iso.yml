@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       iso_sha256:
-        description: 'SHA-256 of the official Ubuntu 26.10 desktop amd64 ISO'
+        description: 'SHA-256 of the official Ubuntu 26.04.1 desktop amd64 ISO'
         required: true
         type: string
 
@@ -28,7 +28,7 @@ jobs:
         run: ./scripts/build-iso.sh
       - name: Report ISO size
         run: |
-          bytes=$(stat -c %s blackcomb-26.10-amd64.iso)
+          bytes=$(stat -c %s blackcomb-26.04-amd64.iso)
           echo "Bootable ISO size: $bytes bytes"
           if [ "$bytes" -gt 2147483648 ]; then
             echo "::warning::ISO exceeds the 2 GiB target; the Ubuntu installer and its compressed filesystem layers are preserved."
@@ -36,9 +36,9 @@ jobs:
       - name: Upload bootable ISO and checksum
         uses: actions/upload-artifact@v4
         with:
-          name: blackcomb-26.10-amd64
+          name: blackcomb-26.04-amd64
           path: |
-            blackcomb-26.10-amd64.iso
-            blackcomb-26.10-amd64.iso.sha256
+            blackcomb-26.04-amd64.iso
+            blackcomb-26.04-amd64.iso.sha256
           if-no-files-found: error
           retention-days: 3

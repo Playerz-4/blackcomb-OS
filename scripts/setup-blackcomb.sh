@@ -8,7 +8,7 @@ usage() {
   cat <<'HELP'
 Usage: sudo ./setup-blackcomb.sh [--yes]
 
-Install KDE Plasma, Firefox, everyday apps and Blackcomb artwork on Ubuntu 26.10.
+Install KDE Plasma, Firefox, everyday apps and Blackcomb artwork on Ubuntu 26.04.
 This changes the default login manager to SDDM and installs the Blackcomb boot splash.
 Internet access and a reboot are required. It does not remove the Ubuntu desktop.
 The separate GRUB background and launcher icon must be enabled manually.
@@ -19,7 +19,7 @@ if (($# > 1)) || [[ ${1:-} != '' && ${1:-} != --yes ]]; then usage >&2; exit 2; 
 [[ $EUID == 0 ]] || { echo 'Run as root using sudo.' >&2; exit 1; }
 [[ -r /etc/os-release ]] || { echo 'Cannot identify this system.' >&2; exit 1; }
 . /etc/os-release
-[[ ${ID:-} == ubuntu && ${VERSION_ID:-} == 26.10 ]] || { echo 'This setup is intended only for installed Ubuntu 26.10.' >&2; exit 1; }
+[[ ${ID:-} == ubuntu && ${VERSION_ID:-} == 26.04 ]] || { echo 'This setup is intended only for installed Ubuntu 26.04.' >&2; exit 1; }
 if grep -Eq '(^| )boot=casper( |$)' /proc/cmdline; then
   echo 'This appears to be the live session. Install Ubuntu and reboot first.' >&2
   exit 1

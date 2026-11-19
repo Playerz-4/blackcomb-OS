@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Fail-closed compatibility check for an experimental Ubuntu 26.10 Ubiquity ISO.
+# Fail-closed compatibility check for an experimental Ubuntu 26.04 Ubiquity ISO.
 set -Eeuo pipefail
 usage() {
   cat <<'HELP'
 Usage: ./scripts/check-ubiquity-iso.sh IMAGE.iso
 
-Inspect a local Ubuntu 26.10 image for a single Ubiquity-compatible live
+Inspect a local Ubuntu 26.04 image for a single Ubiquity-compatible live
 filesystem and Ubiquity's GTK frontend. This is a preliminary check, not an
 installer or a boot test; it does not modify the ISO. Requires xorriso.
 HELP
@@ -25,11 +25,11 @@ if ! xorriso -osirrox on -indev "$input" \
   echo 'Unable to read Ubuntu live-image metadata.' >&2
   exit 1
 fi
-if ! grep -Eiq 'Ubuntu 26\.10' "$work/info"; then
-  echo 'Expected an Ubuntu 26.10-based image.' >&2
+if ! grep -Eiq 'Ubuntu 26\.04' "$work/info"; then
+  echo 'Expected an Ubuntu 26.04-based image.' >&2
   exit 1
 fi
-# The official 26.10 desktop ISO uses multiple minimal.* layers. Ubiquity
+# The official 26.04 desktop ISO uses multiple minimal.* layers. Ubiquity
 # requires a separately rebuilt, single-filesystem image and its metadata.
 if ! xorriso -indev "$input" -find /casper -name filesystem.squashfs -type f -print 2>/dev/null | grep -Fq '/casper/filesystem.squashfs'; then
   echo 'Not Ubiquity-ready: /casper/filesystem.squashfs is missing (a layered image must be rebuilt).' >&2
