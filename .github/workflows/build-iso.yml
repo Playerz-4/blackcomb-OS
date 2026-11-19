@@ -21,17 +21,21 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y xorriso curl
+          sudo apt-get install -y xorriso curl zstd
       - name: Build ISO
         env:
           ISO_SHA256: ${{ inputs.iso_sha256 }}
         run: ./scripts/build-iso.sh
-      - name: Upload ISO and checksum
+      - name: Compress the complete ISO
+        run: ./scripts/compress-iso.sh blackcomb-26.10-amd64.iso
+      - name: Upload compressed ISO and checksums
         uses: actions/upload-artifact@v4
         with:
-          name: blackcomb-26.10-amd64
+          name: blackcomb-26.10-amd64-compressed
           path: |
-            blackcomb-26.10-amd64.iso
+            blackcomb-26.10-amd64.iso.zst
+            blackcomb-26.10-amd64.iso.zst.sha256
             blackcomb-26.10-amd64.iso.sha256
+          compression-level: 0
           if-no-files-found: error
           retention-days: 3

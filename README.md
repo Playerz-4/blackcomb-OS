@@ -38,7 +38,9 @@ The output is `blackcomb-26.10-amd64.iso` and its `.sha256` file. Check the resu
    sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
    ```
 
-   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories, so this step requires network access.
+   Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, Firefox, everyday apps, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories and the Snap Store, so this step requires network access.
+
+The everyday app selection is Firefox (Ubuntu's Snap), VLC for media, LibreOffice Writer for documents and KCalc for calculations. The APT apps omit recommended extras to reduce downloads; additional codecs or features may require optional packages. These apps are installed by the post-install setup and are **not** preinstalled in the live ISO. The installed system requires much more than 2 GiB of disk space.
 
 The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png`, `kim-alpine.png`, `blackcomb-blue-hour.png`, `kim-stargazer.png`, `blackcomb-aurora.png`, `kim-sunrise.png`, and `blackcomb-moonlit-forest.png`. The Plasma autostart helper applies `blackcomb-midnight.png` once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
 
@@ -65,7 +67,18 @@ Bootloader configuration varies by hardware; test in a VM first. Neither the opt
 
 ## GitHub Actions
 
-Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow uploads the installer media and checksum as a three-day artifact. ISO builds are large and may exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
+Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow builds the complete ISO, compresses it with zstd, and uploads the `.iso.zst` plus compressed and uncompressed SHA-256 files as a three-day artifact. Compression does not remove or modify the installer or any ISO contents. The job logs the compressed size and warns if it exceeds the **2 GiB target**; it does not guarantee that size. Ubuntu's desktop ISO is already about 6.2 GB and its filesystem data is already compressed, so reaching 2 GiB without removing contents is unlikely. ISO builds can exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
+
+After downloading and extracting the GitHub artifact, verify and decompress it before writing it to USB or booting it:
+
+```sh
+sudo apt install zstd
+sha256sum -c blackcomb-26.10-amd64.iso.zst.sha256
+zstd -d blackcomb-26.10-amd64.iso.zst
+sha256sum -c blackcomb-26.10-amd64.iso.sha256
+```
+
+The `.iso.zst` archive itself is not bootable; use the extracted `.iso`. To compress a local build, install `zstd` and run `./scripts/compress-iso.sh blackcomb-26.10-amd64.iso`. Pass `--require-target` before the ISO path to make the script return an error when the compressed output exceeds 2 GiB; it retains the output for inspection. Compression requires disk space for both the original and compressed images.
 
 ## Updates and testing
 

@@ -8,10 +8,12 @@ installed system. Connect to the internet, then open a terminal and run:
 
 Replace /path/to/mounted-installer-media with the actual mount path of this
 USB drive or ISO. The installer does not automatically copy or run this kit.
-Setup installs the Kubuntu desktop, selects SDDM, sets the Blackcomb Plymouth
-boot theme (Ubuntu's spinner with the Blackcomb logo), and installs wallpapers
-and branding. Reboot, and select Plasma at login. Existing Ubuntu desktop
-packages are not removed. The installer media's own splash remains Ubuntu's.
+Setup installs the Kubuntu desktop, Firefox, VLC, LibreOffice Writer and KCalc,
+selects SDDM, sets the Blackcomb Plymouth boot theme (Ubuntu's spinner with the
+Blackcomb logo), and installs wallpapers and branding. Firefox comes from the
+Snap Store; setup requires internet access. Reboot, and select Plasma at login.
+Existing Ubuntu desktop packages are not removed. The installer media's own
+splash remains Ubuntu's.
 After setup, run 'sudo blackcomb-plymouth --restore-ubuntu' to restore the
 original Ubuntu BGRT loading screen.
 

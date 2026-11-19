@@ -8,7 +8,7 @@ usage() {
   cat <<'HELP'
 Usage: sudo ./setup-blackcomb.sh [--yes]
 
-Install KDE Plasma and Blackcomb artwork on an installed Ubuntu 26.10 system.
+Install KDE Plasma, Firefox, everyday apps and Blackcomb artwork on Ubuntu 26.10.
 This changes the default login manager to SDDM and installs the Blackcomb boot splash.
 Internet access and a reboot are required. It does not remove the Ubuntu desktop.
 The separate GRUB background and launcher icon must be enabled manually.
@@ -28,14 +28,21 @@ for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wall
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
-  printf 'This installs KDE Plasma, changes the boot splash and switches to SDDM. Continue? [y/N] '
+  printf 'This installs KDE Plasma, Firefox and everyday apps, changes the boot splash and switches to SDDM. Continue? [y/N] '
   read -r answer
   [[ $answer == y || $answer == Y || $answer == yes || $answer == YES ]] || exit 0
 fi
 export DEBIAN_FRONTEND=noninteractive
 printf 'sddm shared/default-x-display-manager select sddm\n' | debconf-set-selections
 apt-get update
-apt-get install -y kubuntu-desktop plymouth-theme-spinner
+# The Ubuntu desktop installer and the apps below are downloaded separately;
+# these packages are not baked into the installer ISO.
+apt-get install -y kubuntu-desktop plymouth-theme-spinner snapd
+apt-get install -y --no-install-recommends vlc libreoffice-writer kcalc
+# Ubuntu distributes Firefox as a snap. Avoid re-downloading it if already installed.
+if ! snap list firefox >/dev/null 2>&1; then
+  snap install firefox
+fi
 install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /etc/xdg/autostart
 install -m 644 "$HERE"/backgrounds/*.png /usr/share/backgrounds/blackcomb/
 install -m 644 "$HERE"/assets/branding/*.png "$HERE"/assets/branding/*.svg /usr/share/blackcomb/branding/
