@@ -1,0 +1,37 @@
+name: Build Blackcomb ISO
+
+on:
+  workflow_dispatch:
+    inputs:
+      iso_sha256:
+        description: 'SHA-256 of the official Ubuntu 26.10 desktop amd64 ISO'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free space on the hosted runner
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h /
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xorriso curl
+      - name: Build ISO
+        env:
+          ISO_SHA256: ${{ inputs.iso_sha256 }}
+        run: ./scripts/build-iso.sh
+      - name: Upload ISO and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackcomb-26.10-amd64
+          path: |
+            blackcomb-26.10-amd64.iso
+            blackcomb-26.10-amd64.iso.sha256
+          if-no-files-found: error
+          retention-days: 3
