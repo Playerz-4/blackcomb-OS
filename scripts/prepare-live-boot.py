@@ -87,6 +87,49 @@ def patch_grub(text):
     return text
 
 
+def write_live_session_fixes(boot_dir):
+    """Inject best-effort live-session fixes into the boot overlay.
+
+    A unit in the initramfs runs just before switch-root and copies these
+    files into the writable live-root overlay. That lets the live session
+    answer the keyboard polkit prompt and fit a VirtualBox window without
+    rebuilding Fedora's live filesystem.
+    """
+    scripts = Path(__file__).resolve().parent
+    live = boot_dir / 'usr/share/blackcomb/live'
+    live.mkdir(parents=True, exist_ok=True)
+    for name in ('live-vm-display.sh', 'live-vm-display.desktop',
+                 'live-keyboard.rules', 'live-setup.service'):
+        (live / name).write_text((scripts / name).read_text())
+
+    setup = boot_dir / 'usr/sbin/blackcomb-live-setup'
+    setup.parent.mkdir(parents=True, exist_ok=True)
+    setup.write_text('''#!/bin/sh
+# Runs in the initramfs, before switch-root. /sysroot is the writable live
+# root overlay; copy the Blackcomb session fixes into it.
+set -eu
+src=/usr/share/blackcomb/live
+dst=/sysroot
+[ -d "$dst/etc" ] || exit 0
+mkdir -p "$dst/usr/local/bin" "$dst/etc/xdg/autostart" "$dst/etc/polkit-1/rules.d"
+cp "$src/live-vm-display.sh" "$dst/usr/local/bin/blackcomb-vm-display"
+chmod 755 "$dst/usr/local/bin/blackcomb-vm-display"
+cp "$src/live-vm-display.desktop" "$dst/etc/xdg/autostart/blackcomb-vm-display.desktop"
+cp "$src/live-keyboard.rules" "$dst/etc/polkit-1/rules.d/49-blackcomb-live-keyboard.rules"
+exit 0
+''')
+    setup.chmod(0o755)
+
+    unit = (live / 'live-setup.service').read_text()
+    unit_dir = boot_dir / 'etc/systemd/system'
+    wants = unit_dir / 'initrd-switch-root.target.wants'
+    wants.mkdir(parents=True, exist_ok=True)
+    (unit_dir / 'blackcomb-live-setup.service').write_text(unit)
+    # systemd pulls in every unit named in a .wants directory; a regular file
+    # with the unit content works as well as a symlink to the real unit.
+    (wants / 'blackcomb-live-setup.service').write_text(unit)
+
+
 def main():
     if len(sys.argv) != 4:
         raise SystemExit('Usage: prepare-live-boot.py ORIGINAL_GRUB OUTPUT_GRUB BOOT_DIR')
@@ -115,6 +158,7 @@ BackgroundStartColor=0x000000
 BackgroundEndColor=0x000000
 MessageBelowAnimation=true
 ''')
+    write_live_session_fixes(boot_dir)
     output.write_text(patched)
 
 

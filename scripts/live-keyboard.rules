@@ -1,0 +1,10 @@
+// Live media has no root password, so the normal polkit prompt for changing
+// the system keyboard layout can never be answered. Allow the active local
+// user (the live session user) to make that one change without a password.
+// This file is copied into the disposable live root only, not installed.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.locale1.set-keyboard" &&
+        subject.active && subject.local) {
+        return polkit.Result.YES;
+    }
+});

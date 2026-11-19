@@ -1,0 +1,11 @@
+[Unit]
+Description=Blackcomb live-session setup
+DefaultDependencies=no
+After=initrd-root-fs.target
+Before=dracut-switch-root.service initrd-switch-root.target
+ConditionPathExists=/sysroot/etc/os-release
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/blackcomb-live-setup

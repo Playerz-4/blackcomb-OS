@@ -101,6 +101,15 @@ Fedora KDE 43+ can boot to a black screen because Plymouth holds a `/dev/dri/car
 
 If a machine still boots to black, a one-time test with Plymouth fully disabled can isolate the handoff: select **Boot Blackcomb**, press `e`, append `plymouth.enable=0` to the line beginning with `linux`, and press Ctrl+X or F10.
 
+#### Live-session keyboard and VM display
+
+The live ISO places two best-effort fixes into the disposable live root at boot:
+
+- KDE's **"Authentication is required to change the system keyboard layout"** prompt is answered automatically for the active live user. Live media has no root password, so that polkit prompt could never otherwise be completed — you can now change the keyboard layout in System Settings normally.
+- In a virtual machine, a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) so the Plasma desktop fits a typical VirtualBox window. This does not affect physical hardware.
+
+VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**.
+
 ### VirtualBox black-screen and kernel-panic diagnostics
 
 VirtualBox normally uses VMSVGA for Linux guests. Switching to VBoxSVGA is **not a confirmed fix** and has caused a kernel panic in a reported Blackcomb VM. If it causes trouble, power off the VM and restore its previous display settings.

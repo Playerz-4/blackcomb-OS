@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Blackcomb VM display setup
+Exec=/usr/local/bin/blackcomb-vm-display
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

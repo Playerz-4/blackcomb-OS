@@ -38,6 +38,18 @@ acceleration is not disabled. If a machine still boots to black, edit the
 boot line once and append plymouth.enable=0 to test whether Plymouth is
 still involved.
 
+LIVE SESSION KEYBOARD AND SCREEN SIZE:
+Changing the system keyboard layout in KDE System Settings normally asks for
+a root password, which live media does not have. This media allows the active
+live user to make that one change without a password. In a virtual machine,
+the live session also selects a modest screen mode (preferring 1024x768) at
+login so the desktop fits a typical VirtualBox window.
+
+VirtualBox cannot truly follow the host window without Guest Additions. For
+exact window-following with this live media, use View > Scaled Mode on the
+host. In the installed system, install Guest Additions and enable View >
+Auto-resize Guest Display.
+
 VirtualBox normally uses VMSVGA for Linux guests. Changing to VBoxSVGA is not
 a confirmed fix and caused a kernel panic in one reported Blackcomb VM. If it
 causes trouble, power off the VM and restore its previous display settings.
