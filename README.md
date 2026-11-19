@@ -95,6 +95,12 @@ Blackcomb intends to establish its own visual identity rather than simply copyin
 
 Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The main boot entry is **Boot Blackcomb**; Fedora's original basic graphics mode remains in the **Troubleshooting** submenu. It may help with some virtual-machine black screens but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
 
+#### Black-screen fix: no `rhgb` on the default boot entry
+
+Fedora KDE 43 and later have a known Plymouth-to-SDDM handoff race when the `rhgb` kernel argument is present: Plymouth keeps the graphics device busy while SDDM starts, so the splash is shown but the Plasma desktop never appears — a boot screen followed by nothing but black ([Red Hat bug 2404966](https://bugzilla.redhat.com/show_bug.cgi?id=2404966)). Blackcomb therefore **removes `rhgb`** from the default live boot entry when building the ISO, and the post-install setup removes it from every installed kernel (and from the GRUB defaults) as well. Plymouth still runs later in the boot, from the real root, once the graphics device is ready. This is the fix for a boot that reaches the splash and then shows no desktop.
+
+If a machine still boots to black, a one-time test with Plymouth fully disabled can isolate the handoff: select **Boot Blackcomb**, press `e`, append `plymouth.enable=0` to the line beginning with `linux`, and press Ctrl+X or F10.
+
 ### VirtualBox black-screen and kernel-panic diagnostics
 
 VirtualBox normally uses VMSVGA for Linux guests. Switching to VBoxSVGA is **not a confirmed fix** and has caused a kernel panic in a reported Blackcomb VM. If it causes trouble, power off the VM and restore its previous display settings.

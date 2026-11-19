@@ -41,4 +41,18 @@ install -m 755 "$HERE/scripts/install-plymouth-theme.sh" /usr/local/sbin/blackco
 install -m 755 "$HERE/scripts/create-plymouth-theme.sh" /usr/local/lib/blackcomb/create-plymouth-theme.sh
 install -m 644 "$HERE/scripts/blackcomb-wallpaper.desktop" /etc/xdg/autostart/
 /usr/local/sbin/blackcomb-plymouth
+
+# Fedora KDE 43+ can boot to a black screen with the "rhgb" argument: Plymouth
+# holds the DRM device while SDDM starts, so the greeter cannot open the
+# graphics card and no Plasma session appears (Red Hat bug 2404966). Remove it
+# from every installed kernel - and from the GRUB defaults so an updated
+# kernel cannot bring it back - before handing the system to the user.
+if command -v grubby >/dev/null 2>&1; then
+  if ! grubby --update-kernel=ALL --remove-args=rhgb; then
+    echo 'Warning: could not remove rhgb from the installed kernels; the desktop may stay black.' >&2
+  fi
+fi
+if [[ -f /etc/default/grub ]] && grep -qw rhgb /etc/default/grub; then
+  sed -i -E 's/(^|[[:space:]])rhgb([[:space:]]|$)/ /g; s/[[:space:]]{2,}/ /g' /etc/default/grub
+fi
 printf '\nBlackcomb setup complete. Reboot to use the new boot splash.\n'

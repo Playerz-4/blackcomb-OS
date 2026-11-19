@@ -38,21 +38,32 @@ def patch_grub(text):
     text = ''.join(result)
     if 'rd.live.check' in text:
         fail('media check occurs outside the expected entry')
-    # Fedora's live image may not request a graphical Plymouth splash. Enable
-    # it for the normal entry, leaving troubleshooting entries as supplied.
+    # Do NOT add "rhgb" here. Fedora KDE 43+ has a known Plymouth-to-SDDM
+    # handoff race when that argument is present: Plymouth starts inside the
+    # initramfs, keeps the DRM device busy, and SDDM's greeter fails to open
+    # /dev/dri/card* ("Device or resource busy"). The result is exactly a
+    # working boot splash followed by a black desktop with nothing on it
+    # (Red Hat bug 2404966, upstream sddm#1917). Removing "rhgb" is the
+    # documented fix and still allows Plymouth to show later, from the real
+    # root, once the graphics device is ready. Troubleshooting entries are
+    # left as Fedora supplies them.
     normal_pattern = (r'(^menuentry\s+["\']Start Fedora[^"\']*["\'][^\n]*\{\n)'
                       r'((?:[^\n]*\n)*?)(^}[ \t]*$)')
-    def enable_splash(match):
+    def safe_boot(match):
+        def strip_rhgb(line):
+            text = line.group(1)
+            indent = re.match(r'^[ \t]*', text).group(0)
+            args = re.sub(r'\brhgb\b', '', text[len(indent):])
+            return indent + re.sub(r'[ \t]{2,}', ' ', args).strip()
         body, count = re.subn(
             r'^([ \t]*linux(?:efi)?[ \t]+[^\n]*)$',
-            lambda line: line.group(1) if re.search(r'\b(?:rhgb|splash)\b', line.group(1))
-            else line.group(1) + ' rhgb', match.group(2), flags=re.M)
+            strip_rhgb, match.group(2), flags=re.M)
         if count != 1:
             fail('unexpected normal kernel entry')
         header = re.sub(r'^(menuentry\s+)["\']Start Fedora[^"\']*["\']',
                         r'\1"Boot Blackcomb"', match.group(1), count=1)
         return header + body + match.group(3)
-    text, normal = re.subn(normal_pattern, enable_splash, text, flags=re.M)
+    text, normal = re.subn(normal_pattern, safe_boot, text, flags=re.M)
     if normal != 1:
         fail('expected one normal Fedora start entry')
     text, defaults = re.subn(r'^([ \t]*set[ \t]+default[ \t]*=[ \t]*)["\']?\d+["\']?[ \t]*$', r'\g<1>"0"', text, flags=re.M)

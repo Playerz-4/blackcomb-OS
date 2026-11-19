@@ -27,6 +27,15 @@ named "Boot Blackcomb"; Fedora's basic graphics mode remains in the
 Troubleshooting submenu. It may help with a black screen, but is not a
 confirmed fix.
 
+BLACK SCREEN AFTER THE BOOT SPLASH:
+Fedora KDE 43+ has a known race where Plymouth holds the graphics device while
+the SDDM login manager starts, leaving a black screen instead of the desktop
+(Red Hat bug 2404966). The "rhgb" kernel argument triggers it. Blackcomb's
+default boot entry has "rhgb" removed so the Plasma desktop appears. The
+post-install setup removes it from installed kernels too. If a machine still
+boots to black, edit the boot line once and append plymouth.enable=0 to test
+whether the Plymouth handoff is the cause.
+
 VirtualBox normally uses VMSVGA for Linux guests. Changing to VBoxSVGA is not
 a confirmed fix and caused a kernel panic in one reported Blackcomb VM. If it
 causes trouble, power off the VM and restore its previous display settings.

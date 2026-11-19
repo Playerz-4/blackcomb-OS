@@ -21,11 +21,17 @@ original_troubleshooting = original.split('submenu "Troubleshooting -->"')[1]
 assert troubleshooting == original_troubleshooting.replace(
     '/boot/x86_64/loader/initrd\n',
     '/boot/x86_64/loader/initrd ($root)/blackcomb-boot/plymouth.cpio\n')
-assert 'quiet rhgb root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image\n' in patched
+normal = patched.split('submenu "Troubleshooting -->"')[0]
+assert 'quiet root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image\n' in normal
+# Black-screen fix: "rhgb" must never be added to (or left in) the default
+# entry. With it, Plymouth holds the DRM device while SDDM starts and the
+# Plasma desktop never appears (Red Hat bug 2404966).
+assert 'rhgb' not in normal
 without_splash = original.replace('quiet rhgb ', '')
 patched_without_splash = mod.patch_grub(without_splash)
-normal = patched_without_splash.split('submenu "Troubleshooting -->"')[0]
-assert 'rd.live.image rhgb\n' in normal
+normal_without_splash = patched_without_splash.split('submenu "Troubleshooting -->"')[0]
+assert ' root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image\n' in normal_without_splash
+assert 'rhgb' not in normal_without_splash
 assert 'rd.live.image ${basicgfx}\n' in patched_without_splash
 for bad in [original.replace('Test this media', 'Unexpected test'),
             original.replace('rd.live.check', 'broken'),
