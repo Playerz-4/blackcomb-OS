@@ -6,7 +6,7 @@ Blackcomb is an experimental Ubuntu-based desktop concept with KDE Plasma and Ki
 
 The build script adds a Blackcomb setup kit and wallpapers to the official Ubuntu 26.10 desktop installer ISO, retaining Ubuntu's current boot splash, live desktop and interactive installer. **It does not yet produce a preconfigured KDE live ISO or automatically install Blackcomb.** Install Ubuntu first, then run the included setup kit to add KDE Plasma, SDDM, wallpapers and a Blackcomb Plymouth loading screen. The theme uses the transparent Blackcomb logo with Ubuntu's BGRT spinner, and setup rebuilds the installed system's initramfs. The visible splash can vary by hardware and firmware.
 
-Ubuntu's newer installer uses layered filesystem images instead of the single 22.04 Ubiquity filesystem. The old 22.04 remaster recipe is therefore not compatible with 26.10. **The requested Ubuntu 26.10 Ubiquity image is not implemented yet:** the current kit still uses Ubuntu's existing installer, not Ubiquity. Supporting Ubiquity requires rebuilding the live filesystem and installer metadata, followed by boot and installation tests. Ubiquity is available in Ubuntu 26.10's universe repository, but availability alone does not make the official layered ISO compatible. This kit is not an official Ubuntu or Kubuntu image.
+Blackcomb keeps Ubuntu 26.10's desktop installer and layered, compressed live filesystem images. This kit is not an official Ubuntu or Kubuntu image.
 
 ## Build installer media
 
@@ -64,16 +64,6 @@ sudo update-grub
 ```
 
 Bootloader configuration varies by hardware; test in a VM first. Neither the optional GRUB background nor the launcher setting is applied to the original Ubuntu installer live environment.
-
-## Ubiquity compatibility check
-
-To inspect a prospective **Ubuntu 26.10** Ubiquity image, install `xorriso` and run:
-
-```sh
-./scripts/check-ubiquity-iso.sh /path/to/image.iso
-```
-
-The check rejects layered images lacking `filesystem.squashfs` and checks the live manifest for Ubiquity and its GTK frontend. A pass is only a preliminary check; it does not establish that the image boots, launches Ubiquity, installs Plasma or produces a usable system. The official Ubuntu 26.10 ISO and the current Blackcomb ISO are expected to fail. This check does not build or replace an installer and does not achieve the 2 GiB size target.
 
 ## GitHub Actions
 
