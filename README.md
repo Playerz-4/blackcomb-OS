@@ -67,18 +67,9 @@ Bootloader configuration varies by hardware; test in a VM first. Neither the opt
 
 ## GitHub Actions
 
-Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow builds the complete ISO, compresses it with zstd, and uploads the `.iso.zst` plus compressed and uncompressed SHA-256 files as a three-day artifact. Compression does not remove or modify the installer or any ISO contents. The job logs the compressed size and warns if it exceeds the **2 GiB target**; it does not guarantee that size. Ubuntu's desktop ISO is already about 6.2 GB and its filesystem data is already compressed, so reaching 2 GiB without removing contents is unlikely. ISO builds can exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
+Run **Build Blackcomb ISO** manually from the Actions tab and supply the official ISO's verified SHA-256. The workflow uploads the bootable `.iso` and its checksum as a three-day artifact, with the Ubuntu installer intact. GitHub Actions wraps downloaded artifacts in a ZIP: extract that ZIP to obtain the normal `.iso`, then verify it with `sha256sum -c blackcomb-26.10-amd64.iso.sha256`. A locally built `.iso` needs no extraction.
 
-After downloading and extracting the GitHub artifact, verify and decompress it before writing it to USB or booting it:
-
-```sh
-sudo apt install zstd
-sha256sum -c blackcomb-26.10-amd64.iso.zst.sha256
-zstd -d blackcomb-26.10-amd64.iso.zst
-sha256sum -c blackcomb-26.10-amd64.iso.sha256
-```
-
-The `.iso.zst` archive itself is not bootable; use the extracted `.iso`. To compress a local build, install `zstd` and run `./scripts/compress-iso.sh blackcomb-26.10-amd64.iso`. Pass `--require-target` before the ISO path to make the script return an error when the compressed output exceeds 2 GiB; it retains the output for inspection. Compression requires disk space for both the original and compressed images.
+The job reports the ISO size and warns if it exceeds the **2 GiB target**. Ubuntu's desktop ISO is already about 6.2 GB and its filesystem layers are already compressed, so this recipe cannot meet that target without changing the installer image. ISO builds can exceed hosted runner disk, time or artifact limits; use a larger machine if necessary.
 
 ## Updates and testing
 

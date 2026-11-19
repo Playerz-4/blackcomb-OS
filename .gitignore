@@ -1,6 +1,3 @@
 .build/
 *.iso
 *.iso.sha256
-*.iso.zst
-*.iso.zst.sha256
-*.iso.zst.partial.*
