@@ -40,7 +40,7 @@ The output is `blackcomb-26.10-amd64.iso` and its `.sha256` file. Check the resu
 
    Alternatively, from a checkout of this repository, run `sudo ./scripts/setup-blackcomb.sh`. The script confirms before installing `kubuntu-desktop`, changing the default display manager to SDDM and installing the Blackcomb boot splash. It retains the existing Ubuntu desktop and installs the wallpapers. It is designed for an installed Ubuntu 26.10 system, not the live session. A reboot and selection of a Plasma session at login are required. Packages are downloaded from Ubuntu's repositories, so this step requires network access.
 
-The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png`, `kim-alpine.png`, `blackcomb-blue-hour.png`, and `kim-stargazer.png`. The Plasma autostart helper applies the first once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
+The wallpapers are installed to `/usr/share/backgrounds/blackcomb/`: `blackcomb-midnight.png`, `kim-alpine.png`, `blackcomb-blue-hour.png`, `kim-stargazer.png`, `blackcomb-aurora.png`, `kim-sunrise.png`, and `blackcomb-moonlit-forest.png`. The Plasma autostart helper applies `blackcomb-midnight.png` once per user; wallpaper choices can then be changed normally. The supplied source images are in `assets/reference/`.
 
 ## Branding, launcher and GRUB
 
