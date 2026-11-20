@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -31,8 +31,8 @@ if [[ ${1:-} != --yes ]]; then
   read -r answer
   [[ $answer == y || $answer == Y || $answer == yes || $answer == YES ]] || exit 0
 fi
-dnf install -y firefox vlc libreoffice-writer kcalc plymouth-theme-spinner
-install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/color-schemes /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /etc/xdg/autostart /etc/skel/.config
+dnf install -y firefox vlc libreoffice-writer kcalc plymouth-theme-spinner chafa imagemagick
+install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/color-schemes /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg/autostart /etc/skel/.config
 install -m 644 "$HERE"/backgrounds/*.png /usr/share/backgrounds/blackcomb/
 install -m 644 "$HERE"/assets/branding/*.png "$HERE"/assets/branding/*.svg /usr/share/blackcomb/branding/
 install -m 644 "$HERE"/themes/opencode/*.colors /usr/share/color-schemes/
@@ -43,6 +43,12 @@ install -m 755 "$HERE/scripts/install-plymouth-theme.sh" /usr/local/sbin/blackco
 install -m 755 "$HERE/scripts/create-plymouth-theme.sh" /usr/local/lib/blackcomb/create-plymouth-theme.sh
 install -m 644 "$HERE/scripts/blackcomb-wallpaper.desktop" /etc/xdg/autostart/
 install -m 644 "$HERE/scripts/blackcomb-launcher.desktop" /etc/xdg/autostart/
+install -m 755 "$HERE/scripts/neofetch" /usr/local/lib/blackcomb/neofetch/neofetch
+install -m 644 "$HERE/scripts/neofetch.conf" /usr/local/lib/blackcomb/neofetch/chafa.conf
+install -m 644 "$HERE/scripts/neofetch-ascii.conf" /usr/local/lib/blackcomb/neofetch/ascii.conf
+install -m 644 "$HERE/assets/branding/crescent-moon-neofetch.txt" /usr/local/lib/blackcomb/neofetch/crescent-moon-neofetch.txt
+install -m 644 "$HERE/scripts/neofetch-LICENSE.md" /usr/local/lib/blackcomb/neofetch/LICENSE.md
+install -m 755 "$HERE/scripts/neofetch-launcher.sh" /usr/local/bin/neofetch
 
 # Start with the matching OpenCode Catppuccin Plasma scheme. The files remain
 # available in System Settings if the user wants a different OpenCode palette.

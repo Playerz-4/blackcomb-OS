@@ -111,15 +111,25 @@ def write_live_session_fixes(boot_dir):
              'live-vm-display.sh', 'live-vm-display.desktop', 'kwin-vm-env.sh',
              'live-keyboard.rules', 'blackcomb-wallpaper.sh',
              'blackcomb-wallpaper.desktop', 'blackcomb-launcher.sh',
-             'blackcomb-launcher.desktop')
+             'blackcomb-launcher.desktop', 'neofetch.conf',
+             'neofetch-ascii.conf', 'neofetch-launcher.sh')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())
+    # Fedora 45 does not ship neofetch in its base repositories. Bundle upstream
+    # neofetch so the live command exists too; the wrapper picks the crescent
+    # PNG via chafa when present and the bundled ASCII rendering otherwise.
+    (live / 'neofetch').write_bytes(
+        (repo / 'third-party/neofetch/neofetch').read_bytes())
+    (live / 'neofetch-LICENSE.md').write_bytes(
+        (repo / 'third-party/neofetch/LICENSE.md').read_bytes())
     # All backgrounds go into the live root, not just the default one, so the
     # live wallpaper picker shows every Kim/Blackcomb image.
     for source in sorted((repo / 'backgrounds').glob('*.png')):
         (live / source.name).write_bytes(source.read_bytes())
     (live / 'crescent-moon-start-icon.png').write_bytes(
         (repo / 'assets/branding' / 'crescent-moon-start-icon.png').read_bytes())
+    (live / 'crescent-moon-neofetch.txt').write_bytes(
+        (repo / 'assets/branding' / 'crescent-moon-neofetch.txt').read_bytes())
     # Plasma color schemes converted from OpenCode's built-in themes. Plasma
     # Login Manager and the live user session discover them once the pre-pivot
     # hook copies them into /usr/share/color-schemes.
@@ -131,6 +141,8 @@ def write_live_session_fixes(boot_dir):
     (live / 'live-vm-display.sh').chmod(0o755)
     (live / 'blackcomb-wallpaper.sh').chmod(0o755)
     (live / 'blackcomb-launcher.sh').chmod(0o755)
+    (live / 'neofetch').chmod(0o755)
+    (live / 'neofetch-launcher.sh').chmod(0o755)
 
     hook_dir = boot_dir / 'var/lib/dracut/hooks/pre-pivot'
     hook_dir.mkdir(parents=True, exist_ok=True)

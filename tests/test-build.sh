@@ -62,6 +62,12 @@ case " $* " in
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
     test -f "$payload/scripts/blackcomb-launcher.sh"
     test -f "$payload/scripts/blackcomb-launcher.desktop"
+    test -f "$payload/scripts/neofetch.conf"
+    test -f "$payload/scripts/neofetch-ascii.conf"
+    test -f "$payload/scripts/neofetch-launcher.sh"
+    test -x "$payload/scripts/neofetch"
+    test -f "$payload/scripts/neofetch-LICENSE.md"
+    test -f "$payload/scripts/crescent-moon-neofetch.txt"
     test -f "$payload/backgrounds/kim-sunrise.png"
     test -f "$payload/themes/opencode/OpenCode-Catppuccin.colors"
     test -f "$payload/themes/opencode/OpenCode-Dracula-Light.colors"
@@ -91,6 +97,12 @@ test -f usr/share/blackcomb/live/plasmalogin-wallpaper.conf
 test -f usr/share/blackcomb/live/crescent-moon-start-icon.png
 test -f usr/share/blackcomb/live/blackcomb-launcher.sh
 test -f usr/share/blackcomb/live/blackcomb-launcher.desktop
+test -f usr/share/blackcomb/live/neofetch.conf
+test -f usr/share/blackcomb/live/neofetch-ascii.conf
+test -f usr/share/blackcomb/live/neofetch-launcher.sh
+test -x usr/share/blackcomb/live/neofetch
+test -f usr/share/blackcomb/live/neofetch-LICENSE.md
+test -f usr/share/blackcomb/live/crescent-moon-neofetch.txt
 test -f usr/share/blackcomb/live/kim-stargazer.png
 test -f usr/share/blackcomb/live/kim-alpine.png
 test -f usr/share/blackcomb/live/kim-sunrise.png
@@ -155,4 +167,14 @@ grep -Fxq "ImageDir=$tmp/theme" "$tmp/theme/blackcomb.plymouth"
 grep -Fxq 'ModuleName=two-step' "$tmp/theme/blackcomb.plymouth"
 python3 "$root/tests/test-live-boot.py"
 python3 "$root/tests/test-opencode-themes.py"
+bash "$root/tests/test-blackcomb-launcher.sh"
+grep -Fxq 'image_backend="chafa"' "$root/scripts/neofetch.conf"
+grep -Fxq 'image_source="/usr/share/blackcomb/branding/crescent-moon-start-icon.png"' "$root/scripts/neofetch.conf"
+grep -Fxq 'image_backend="ascii"' "$root/scripts/neofetch-ascii.conf"
+grep -Fxq 'image_source="/usr/local/lib/blackcomb/neofetch/crescent-moon-neofetch.txt"' "$root/scripts/neofetch-ascii.conf"
+grep -Fq 'chafa.conf' "$root/scripts/neofetch-launcher.sh"
+grep -Fq 'ascii.conf' "$root/scripts/neofetch-launcher.sh"
+grep -Fq 'command -v convert' "$root/scripts/neofetch-launcher.sh"
+grep -Fq 'command -v identify' "$root/scripts/neofetch-launcher.sh"
+grep -Fq 'chafa imagemagick' "$root/scripts/setup-blackcomb.sh"
 echo 'Mock assembly and Plymouth theme tests passed.'

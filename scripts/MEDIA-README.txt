@@ -45,17 +45,20 @@ boot entry also sets KWIN_DRM_NO_AMS=1 and KWIN_FORCE_SW_CURSOR=1 through
 systemd.setenv. These are KDE's documented VM settings: legacy DRM interface
 plus a software cursor. They are not safe graphics; modesetting stays on.
 
-LIVE SESSION START-UP, KEYBOARD, SCREEN SIZE AND THEMES:
+LIVE SESSION START-UP, KEYBOARD, SCREEN SIZE, TASKBAR AND THEMES:
 Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
 Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
 layout without the root-password prompt, kim-stargazer is the desktop and
 login-screen wallpaper, all Kim and Blackcomb backgrounds are available in the
-wallpaper picker, and the supplied crescent-moon-start-icon.png is set as the
-launcher icon. OpenCode's built-in palettes are installed as 61 Plasma color
-schemes, selectable in System Settings > Appearance > Color Scheme; the live
-session starts with OpenCode Catppuccin. No command is needed. A dracut
+wallpaper picker, the supplied crescent-moon-start-icon.png is set as the
+launcher icon, and the Plasma panel is docked on the left as a vertical taskbar.
+The bundled neofetch command shows that crescent image through chafa, or a
+bundled ASCII rendering of it when chafa or ImageMagick is absent. OpenCode's
+built-in palettes are installed as 61 Plasma color schemes, selectable in
+System Settings > Appearance > Color Scheme; the live session starts with
+OpenCode Catppuccin. No command is needed. A dracut
 pre-pivot hook copies these settings into the live session as it starts; it
 adds no boot-critical unit, so booting is unaffected.
 
@@ -84,11 +87,13 @@ mount this media, and run:
   sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
 
 Replace the example path with the actual mount path. Setup uses Fedora's DNF
-repositories for Firefox, VLC, LibreOffice Writer and KCalc; it installs the
-wallpapers (with the stargazing image as the default), the OpenCode Plasma color
-schemes (with OpenCode Catppuccin as the default) and the Blackcomb Plymouth
-theme, using the transparent logo. Reboot
-to see the installed-system theme. Firmware logos shown before the operating
+repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick;
+neofetch is bundled on this media. Setup installs the wallpapers (with
+stargazing as the default), the left-side vertical taskbar, the neofetch
+crescent image, the OpenCode Plasma color schemes (with OpenCode Catppuccin as
+the default) and the
+Blackcomb Plymouth theme, using the transparent logo. Reboot to see the
+installed-system theme. Firmware logos shown before the operating
 system starts are not changed. Some media formats may require additional
 codecs not supplied by Fedora.
 

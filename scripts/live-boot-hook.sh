@@ -18,11 +18,14 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/sddm.conf.d" \
          "$dst/etc/plasmalogin.conf.d" \
          "$dst/etc/skel/.config" \
+         "$dst/etc/skel/.config/neofetch" \
+         "$dst/home/liveuser/.config/neofetch" \
          "$dst/etc/xdg/autostart" \
          "$dst/etc/profile.d" \
          "$dst/etc/polkit-1/rules.d" \
          "$dst/home/liveuser/.config/plasma-workspace/env" \
          "$dst/usr/local/bin" \
+         "$dst/usr/local/lib/blackcomb/neofetch" \
          "$dst/usr/share/backgrounds/blackcomb" \
          "$dst/usr/share/blackcomb/branding" \
          "$dst/usr/share/color-schemes" 2>/dev/null || exit 0
@@ -95,6 +98,30 @@ for theme in "$src/themes"/*.colors; do
   [ -e "$theme" ] || continue
   cp -f "$theme" "$dst/usr/share/color-schemes/" 2>/dev/null || :
 done
+# neofetch shows the Blackcomb crescent image instead of the default Fedora
+# ASCII art. Fedora 45 does not ship neofetch, so the wrapper and bundled script
+# are installed here as well. chafa is not on the live media, so the wrapper
+# falls back to the bundled ASCII rendering of the same PNG.
+cp -f "$src/neofetch" "$dst/usr/local/lib/blackcomb/neofetch/neofetch" 2>/dev/null || :
+chmod 755 "$dst/usr/local/lib/blackcomb/neofetch/neofetch" 2>/dev/null || :
+for conf in chafa:neofetch.conf ascii:neofetch-ascii.conf; do
+  name=${conf%%:*}
+  file=${conf#*:}
+  cp -f "$src/$file" \
+    "$dst/usr/local/lib/blackcomb/neofetch/$name.conf" 2>/dev/null || :
+done
+cp -f "$src/crescent-moon-neofetch.txt" \
+  "$dst/usr/local/lib/blackcomb/neofetch/crescent-moon-neofetch.txt" 2>/dev/null || :
+cp -f "$src/neofetch-LICENSE.md" \
+  "$dst/usr/local/lib/blackcomb/neofetch/LICENSE.md" 2>/dev/null || :
+cp -f "$src/neofetch-launcher.sh" "$dst/usr/local/bin/neofetch" 2>/dev/null || :
+chmod 755 "$dst/usr/local/bin/neofetch" 2>/dev/null || :
+# Also give a packaged /usr/bin/neofetch the same settings if one is present.
+for neofetch_dir in "$dst/home/liveuser/.config/neofetch" \
+                    "$dst/etc/skel/.config/neofetch"; do
+  cp -f "$src/neofetch.conf" "$neofetch_dir/config.conf" 2>/dev/null || :
+done
+
 for kdeglobals in "$dst/home/liveuser/.config/kdeglobals" \
                   "$dst/etc/skel/.config/kdeglobals"; do
   cat > "$kdeglobals" <<'EOF' 2>/dev/null || :

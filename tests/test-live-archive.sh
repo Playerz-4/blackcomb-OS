@@ -22,6 +22,10 @@ grep -Fq 'crescent-moon-start-icon.png' "$hook"
 grep -Fq 'blackcomb-launcher.desktop' "$hook"
 grep -Fq 'usr/share/color-schemes' "$hook"
 grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
+grep -Fq '.config/neofetch' "$hook"
+grep -Fq '/usr/local/bin/neofetch' "$hook"
+grep -Fq '/usr/local/lib/blackcomb/neofetch/neofetch' "$hook"
+grep -Fq 'crescent-moon-neofetch.txt' "$hook"
 grep -Fq 'plymouth-quit-wait' "$hook"
 grep -Fq 'exit 0' "$hook"
 if grep -q 'initrd-switch-root.target.wants' "$hook"; then
@@ -66,7 +70,20 @@ cmp "$tmp/extracted/usr/share/blackcomb/live/crescent-moon-start-icon.png" \
 launcher="$tmp/extracted/usr/share/blackcomb/live/blackcomb-launcher.sh"
 grep -Fxq 'icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png' "$launcher"
 grep -Fq 'org.kde.plasma.kickoff' "$launcher"
+grep -Fq 'location=5' "$launcher"
+grep -Fq 'formfactor=3' "$launcher"
 test -x "$launcher"
+cmp "$tmp/extracted/usr/share/blackcomb/live/neofetch.conf" "$root/scripts/neofetch.conf"
+cmp "$tmp/extracted/usr/share/blackcomb/live/neofetch-ascii.conf" \
+  "$root/scripts/neofetch-ascii.conf"
+cmp "$tmp/extracted/usr/share/blackcomb/live/neofetch-launcher.sh" \
+  "$root/scripts/neofetch-launcher.sh"
+cmp "$tmp/extracted/usr/share/blackcomb/live/neofetch" \
+  "$root/third-party/neofetch/neofetch"
+cmp "$tmp/extracted/usr/share/blackcomb/live/crescent-moon-neofetch.txt" \
+  "$root/assets/branding/crescent-moon-neofetch.txt"
+test -x "$tmp/extracted/usr/share/blackcomb/live/neofetch"
+test -x "$tmp/extracted/usr/share/blackcomb/live/neofetch-launcher.sh"
 theme="$tmp/extracted/usr/share/blackcomb/live/themes/OpenCode-Catppuccin.colors"
 cmp "$theme" "$root/themes/opencode/OpenCode-Catppuccin.colors"
 grep -Fxq 'Name=OpenCode Catppuccin' "$theme"

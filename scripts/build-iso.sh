@@ -69,6 +69,11 @@ for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-backgrou
 done
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/scripts/"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-launcher.desktop" "$work/blackcomb/scripts/"
+install -m 644 "$ROOT_DIR/scripts/neofetch.conf" "$ROOT_DIR/scripts/neofetch-ascii.conf" "$work/blackcomb/scripts/"
+install -m 755 "$ROOT_DIR/scripts/neofetch-launcher.sh" "$work/blackcomb/scripts/"
+install -m 755 "$ROOT_DIR/third-party/neofetch/neofetch" "$work/blackcomb/scripts/neofetch"
+install -m 644 "$ROOT_DIR/third-party/neofetch/LICENSE.md" "$work/blackcomb/scripts/neofetch-LICENSE.md"
+install -m 644 "$ROOT_DIR/third-party/neofetch/README.md" "$ROOT_DIR/assets/branding/crescent-moon-neofetch.txt" "$work/blackcomb/scripts/"
 # Opt-in live-session fixes: shipped on the media but never run at boot.
 install -m 755 "$ROOT_DIR/scripts/apply-live-fixes.sh" "$work/blackcomb/apply-live-fixes.sh"
 install -m 644 "$ROOT_DIR/scripts/live-keyboard.rules" "$work/blackcomb/live-keyboard.rules"

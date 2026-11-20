@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Blackcomb launcher icon
-Comment=Set the Plasma application launcher icon for the live session
+Name=Blackcomb Plasma layout
+Comment=Set the crescent launcher icon and dock the panel on the left
 Exec=/usr/local/bin/blackcomb-launcher
 OnlyShowIn=KDE;
 X-KDE-autostart-phase=2

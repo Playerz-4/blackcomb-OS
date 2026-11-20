@@ -114,15 +114,18 @@ The same variables are also installed into the live user's Plasma environment. T
 
 The settings are copied into the writable live root by a dracut **pre-pivot hook** inside the existing `dracut-pre-pivot.service` — after the live overlay is mounted and before switch-root. It adds **no new systemd unit** to the boot transaction, runs no boot-critical command, and always exits 0, so it cannot put the session into emergency mode.
 
-#### Live-session keyboard, display, wallpaper and themes
+#### Live-session keyboard, display, wallpaper, taskbar and themes
 
 The same hook applies these automatically, with no command from you:
 
 - the live user can change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt. The polkit rule matches `liveuser` directly and does not require an "active" session flag (live media has no root password);
 - a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. It also supports `xrandr` if an X11 session is present. Physical hardware is untouched;
 - `kim-stargazer.png` is both the initial live-session wallpaper and the Plasma Login Manager greeter wallpaper. All other Kim and Blackcomb backgrounds are also copied into the live session so they appear in Plasma's wallpaper picker;
-- the supplied `crescent-moon-start-icon.png` is applied automatically as the Plasma application-launcher icon. No SVG editing or manual icon picking is needed;
+- the supplied `crescent-moon-start-icon.png` is applied automatically as the Plasma application-launcher icon, and the Plasma panel is docked on the **left edge** as a vertical taskbar. No SVG editing or manual icon picking is needed;
+- `neofetch` shows that same crescent moon PNG through `chafa` instead of the default Fedora ASCII art. Fedora 45 does not ship neofetch in its base repositories, so Blackcomb bundles the upstream script (MIT licensed) and installs a `/usr/local/bin/neofetch` wrapper. It uses the real PNG when `chafa` and ImageMagick are installed and falls back to a bundled ASCII rendering of the same image on the live media. `setup-blackcomb.sh` installs `chafa`, ImageMagick and the wrapper on installed Fedora;
 - OpenCode's built-in palettes are converted into 61 Plasma color schemes, including Catppuccin, Catppuccin Frappe, Catppuccin Macchiato, Dracula, Nord and TokyoNight. They are installed into `/usr/share/color-schemes/` and selectable under **System Settings → Appearance → Color Scheme**. The live session starts with **OpenCode Catppuccin**, and `setup-blackcomb.sh` installs the same set on an installed system. These are color schemes only; no icon or SVG artwork is changed.
+
+The bundled `neofetch` comes from [dylanaraps/neofetch](https://github.com/dylanaraps/neofetch), pinned to commit `ccd5d9f52609bbdcd5d8fa78c4fdb0f12954125f` and licensed under the MIT license (see `third-party/neofetch/`).
 
 The old opt-in script (`blackcomb/apply-live-fixes.sh`) is still shipped as a manual fallback for earlier media; you do not need it with this build.
 
