@@ -77,9 +77,11 @@ done < "$panel_groups"
 
 # Ask a running Plasma shell to apply both changes immediately. The config
 # append only takes full effect on the next Plasma start, so this keeps the
-# live session correct without restarting the shell. Both qdbus and dbus-send
-# are optional; a missing tool or shell can never break this helper.
-launcher_js='var allPanels = panels(); for (var i = 0; i < allPanels.length; i++) { allPanels[i].location = "left"; var widgets = allPanels[i].widgets(); for (var j = 0; j < widgets.length; j++) { var w = widgets[j]; if (w.type === "org.kde.plasma.kickoff") { w.currentConfigGroup = ["General"]; w.writeConfig("icon", "'"$icon"'"); w.reloadConfig(); } } }'
+# live session correct without restarting the shell. The script prints counts
+# so this helper can keep retrying until the shell has actually loaded both
+# the panel and the Kickoff applet. qdbus and dbus-send are optional; a missing
+# tool or shell can never break the helper.
+launcher_js='var allPanels = panels(); var moved = 0; var icons = 0; for (var i = 0; i < allPanels.length; i++) { allPanels[i].location = "left"; moved++; var widgets = allPanels[i].widgets(); for (var j = 0; j < widgets.length; j++) { var w = widgets[j]; if (w.type === "org.kde.plasma.kickoff") { w.currentConfigGroup = ["General"]; w.writeConfig("icon", "'"$icon"'"); w.reloadConfig(); icons++; } } } print("BLACKCOMB_OK:" + moved + ":" + icons);'
 
 apply_live_layout() {
   if command -v qdbus6 >/dev/null 2>&1; then
@@ -89,7 +91,7 @@ apply_live_layout() {
     qdbus org.kde.plasmashell /PlasmaShell \
       org.kde.PlasmaShell.evaluateScript "$launcher_js"
   elif command -v dbus-send >/dev/null 2>&1; then
-    dbus-send --session --dest=org.kde.plasmashell --type=method_call \
+    dbus-send --session --print-reply --dest=org.kde.plasmashell \
       /PlasmaShell org.kde.PlasmaShell.evaluateScript string:"$launcher_js"
   else
     return 1
@@ -98,9 +100,17 @@ apply_live_layout() {
 
 if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
   i=0
-  while [ "$i" -lt 20 ]; do
-    if apply_live_layout >/dev/null 2>&1; then
-      break
+  while [ "$i" -lt 30 ]; do
+    result=$(apply_live_layout 2>/dev/null || :)
+    counts=$(printf '%s\n' "$result" |
+      sed -n 's/.*BLACKCOMB_OK:\([0-9][0-9]*\):\([0-9][0-9]*\).*/\1:\2/p' |
+      head -n 1)
+    if [ -n "$counts" ]; then
+      panel_count=${counts%%:*}
+      kickoff_count=${counts##*:}
+      if [ "$panel_count" -gt 0 ] && [ "$kickoff_count" -gt 0 ]; then
+        break
+      fi
     fi
     i=$((i + 1))
     sleep 1

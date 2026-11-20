@@ -37,6 +37,8 @@ grep -Fq 'org.kde.PlasmaShell.evaluateScript' "$root/scripts/blackcomb-launcher.
 grep -Fq 'allPanels[i].location = "left"' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'w.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'currentConfigGroup = ["General"]' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq -- '--print-reply' "$root/scripts/blackcomb-launcher.sh"
 grep -Fxq '[Containments][1][Applets][2][General]' "$cfg"
 grep -Fxq 'icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png' "$cfg"
 test "$(grep -Ec '^location=5$' "$cfg")" -eq 1
