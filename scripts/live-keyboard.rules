@@ -1,14 +1,16 @@
 // Live media has no root password, so the normal polkit prompt for changing
-// the system keyboard layout can never be answered. Allow the live user's
-// sessions to make that one change without a password. Do not require the
-// active/local session flags: the D-Bus caller may not have a logind session
-// marked active/local even though it is running in the live desktop.
-// The 00- prefix makes this authoritative: polkit stops at the first rule that
-// returns a result, before Fedora's later rules can ask for authentication.
-// This file is copied into the disposable live root only, not installed.
+// the system keyboard/locale layout can never be answered. Allow those two
+// systemd-localed actions unconditionally: the D-Bus caller is not always the
+// visible desktop user (KDE setup helpers can run under a different account),
+// so matching a username alone can still leave the prompt in place.
+//
+// The 00- prefix makes this authoritative: polkit reads rules in lexical
+// order and stops at the first rule that returns a result, before Fedora's
+// later rules can ask for authentication. This file is copied into the
+// disposable live root only, not installed.
 polkit.addRule(function(action, subject) {
-    if (action.id == "org.freedesktop.locale1.set-keyboard" &&
-        subject.user == "liveuser") {
+    if (action.id == "org.freedesktop.locale1.set-keyboard" ||
+        action.id == "org.freedesktop.locale1.set-locale") {
         return polkit.Result.YES;
     }
 });

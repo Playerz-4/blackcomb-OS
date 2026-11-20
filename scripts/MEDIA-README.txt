@@ -50,7 +50,7 @@ Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
 Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
-layout without the root-password prompt, kim-stargazer is the desktop and
+layout or locale without the root-password prompt, kim-stargazer is the desktop and
 login-screen wallpaper, all Kim and Blackcomb backgrounds are available in the
 wallpaper picker, the supplied crescent-moon-start-icon.png is set as the
 launcher icon, and the Plasma panel is docked on the left as a vertical taskbar.

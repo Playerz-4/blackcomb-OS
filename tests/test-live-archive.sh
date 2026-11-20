@@ -50,9 +50,11 @@ grep -Fxq 'WallpaperPluginId=org.kde.image' "$wallpaper"
 grep -Fxq 'Image=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' "$wallpaper"
 grep -Fxq 'PreviewImage=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' "$wallpaper"
 keyboard="$tmp/extracted/usr/share/blackcomb/live/live-keyboard.rules"
-grep -Fq 'subject.user == "liveuser"' "$keyboard"
-if grep -q 'subject.active' "$keyboard"; then
-  echo 'Keyboard policy must not require subject.active' >&2
+grep -Fq 'org.freedesktop.locale1.set-keyboard' "$keyboard"
+grep -Fq 'org.freedesktop.locale1.set-locale' "$keyboard"
+grep -Fq 'return polkit.Result.YES' "$keyboard"
+if grep -Eq 'subject\.(active|user)' "$keyboard"; then
+  echo 'Live keyboard policy must not depend on session or user flags' >&2
   exit 1
 fi
 kwin_env="$tmp/extracted/usr/share/blackcomb/live/kwin-vm-env.sh"
