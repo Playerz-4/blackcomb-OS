@@ -101,6 +101,10 @@ VirtualBox normally uses VMSVGA for Linux guests. Switching to VBoxSVGA is **not
 
 A kernel panic has multiple possible causes. Capture a screenshot of the **complete panic message and lines above it**, along with your VirtualBox version and VM settings; do not assume it is the graphics controller. To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` and `rhgb` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO. If the screen remains black, include that result too.
 
+The **Troubleshooting → basic graphics** entry uses Fedora's original initrd, without the Blackcomb splash overlay. It also uses different graphics settings, so a different result alone does not identify the cause. To compare the normal entry with and without the overlay, select it, press `e`, and delete only `($root)/blackcomb-boot/plymouth.cpio` from the end of the `initrd` line; boot with Ctrl+X or F10. This is temporary and may show Fedora's splash instead.
+
+If the VirtualBox window is too large to see, use **View → Scaled Mode** (Host+C) to fit it into the window. This scales the image, not the guest resolution. If two pointers appear, try toggling **Input → Mouse Integration** off; click inside the VM to capture the mouse and press the Host key to release it. The Host key is usually Right Ctrl on Windows/Linux and can be customized. Both are reversible host-side workarounds, not proven fixes for Plasma startup.
+
 The installed system receives the Blackcomb splash and other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
 
 ## 💿 Anaconda Installer
