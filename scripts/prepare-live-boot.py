@@ -120,6 +120,14 @@ def write_live_session_fixes(boot_dir):
         (live / source.name).write_bytes(source.read_bytes())
     (live / 'crescent-moon-start-icon.png').write_bytes(
         (repo / 'assets/branding' / 'crescent-moon-start-icon.png').read_bytes())
+    # Plasma color schemes converted from OpenCode's built-in themes. Plasma
+    # Login Manager and the live user session discover them once the pre-pivot
+    # hook copies them into /usr/share/color-schemes.
+    theme_source = repo / 'themes/opencode'
+    theme_dir = live / 'themes'
+    theme_dir.mkdir(parents=True, exist_ok=True)
+    for source in sorted(theme_source.glob('*.colors')):
+        (theme_dir / source.name).write_bytes(source.read_bytes())
     (live / 'live-vm-display.sh').chmod(0o755)
     (live / 'blackcomb-wallpaper.sh').chmod(0o755)
     (live / 'blackcomb-launcher.sh').chmod(0o755)

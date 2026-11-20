@@ -63,6 +63,9 @@ case " $* " in
     test -f "$payload/scripts/blackcomb-launcher.sh"
     test -f "$payload/scripts/blackcomb-launcher.desktop"
     test -f "$payload/backgrounds/kim-sunrise.png"
+    test -f "$payload/themes/opencode/OpenCode-Catppuccin.colors"
+    test -f "$payload/themes/opencode/OpenCode-Dracula-Light.colors"
+    test -f "$payload/themes/opencode/README.md"
     printf 'fake output ISO\n' > "$output" ;;
   *) exit 1 ;;
 esac
@@ -95,6 +98,8 @@ test -f usr/share/blackcomb/live/blackcomb-aurora.png
 test -f usr/share/blackcomb/live/blackcomb-blue-hour.png
 test -f usr/share/blackcomb/live/blackcomb-midnight.png
 test -f usr/share/blackcomb/live/blackcomb-moonlit-forest.png
+test -f usr/share/blackcomb/live/themes/OpenCode-Catppuccin.colors
+test -f usr/share/blackcomb/live/themes/OpenCode-Dracula-Light.colors
 printf 'mock archive'
 MOCK
 cat > "$tmp/bin/implantisomd5" <<'MOCK'
@@ -149,4 +154,5 @@ cmp "$tmp/theme/watermark.png" "$root/assets/branding/blackcomb-boot-watermark.p
 grep -Fxq "ImageDir=$tmp/theme" "$tmp/theme/blackcomb.plymouth"
 grep -Fxq 'ModuleName=two-step' "$tmp/theme/blackcomb.plymouth"
 python3 "$root/tests/test-live-boot.py"
+python3 "$root/tests/test-opencode-themes.py"
 echo 'Mock assembly and Plymouth theme tests passed.'

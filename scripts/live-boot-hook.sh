@@ -17,13 +17,15 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/systemd/system/sddm.service.d" \
          "$dst/etc/sddm.conf.d" \
          "$dst/etc/plasmalogin.conf.d" \
+         "$dst/etc/skel/.config" \
          "$dst/etc/xdg/autostart" \
          "$dst/etc/profile.d" \
          "$dst/etc/polkit-1/rules.d" \
          "$dst/home/liveuser/.config/plasma-workspace/env" \
          "$dst/usr/local/bin" \
          "$dst/usr/share/backgrounds/blackcomb" \
-         "$dst/usr/share/blackcomb/branding" 2>/dev/null || exit 0
+         "$dst/usr/share/blackcomb/branding" \
+         "$dst/usr/share/color-schemes" 2>/dev/null || exit 0
 
 # Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
 # start before Plymouth releases the DRM device (RHBZ 2404966). Wait only for
@@ -86,5 +88,19 @@ cp -f "$src/blackcomb-launcher.sh" \
 chmod 755 "$dst/usr/local/bin/blackcomb-launcher" 2>/dev/null || :
 cp -f "$src/blackcomb-launcher.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-launcher.desktop" 2>/dev/null || :
+
+# Plasma color schemes converted from OpenCode's built-in themes. All variants
+# are available in System Settings; start the live session with Catppuccin.
+for theme in "$src/themes"/*.colors; do
+  [ -e "$theme" ] || continue
+  cp -f "$theme" "$dst/usr/share/color-schemes/" 2>/dev/null || :
+done
+for kdeglobals in "$dst/home/liveuser/.config/kdeglobals" \
+                  "$dst/etc/skel/.config/kdeglobals"; do
+  cat > "$kdeglobals" <<'EOF' 2>/dev/null || :
+[General]
+ColorScheme=OpenCode-Catppuccin
+EOF
+done
 
 exit 0

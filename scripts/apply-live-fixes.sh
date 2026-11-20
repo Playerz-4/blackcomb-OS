@@ -16,4 +16,8 @@ cp "$HERE/live-vm-display.sh" /usr/local/bin/blackcomb-vm-display
 chmod 755 /usr/local/bin/blackcomb-vm-display
 cp "$HERE/live-vm-display.desktop" /etc/xdg/autostart/blackcomb-vm-display.desktop
 cp "$HERE/live-keyboard.rules" /etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules
+if [ -d "$HERE/themes/opencode" ]; then
+  mkdir -p /usr/share/color-schemes
+  cp "$HERE"/themes/opencode/*.colors /usr/share/color-schemes/
+fi
 echo 'Live-session fixes applied. Log out and back in (or reboot) to use them.'

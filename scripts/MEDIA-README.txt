@@ -45,7 +45,7 @@ boot entry also sets KWIN_DRM_NO_AMS=1 and KWIN_FORCE_SW_CURSOR=1 through
 systemd.setenv. These are KDE's documented VM settings: legacy DRM interface
 plus a software cursor. They are not safe graphics; modesetting stays on.
 
-LIVE SESSION START-UP, KEYBOARD AND SCREEN SIZE:
+LIVE SESSION START-UP, KEYBOARD, SCREEN SIZE AND THEMES:
 Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
 Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
@@ -53,9 +53,11 @@ liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 layout without the root-password prompt, kim-stargazer is the desktop and
 login-screen wallpaper, all Kim and Blackcomb backgrounds are available in the
 wallpaper picker, and the supplied crescent-moon-start-icon.png is set as the
-launcher icon. No command is needed. A dracut pre-pivot hook copies these settings
-into the live session as it starts; it adds no boot-critical unit, so booting
-is unaffected.
+launcher icon. OpenCode's built-in palettes are installed as 61 Plasma color
+schemes, selectable in System Settings > Appearance > Color Scheme; the live
+session starts with OpenCode Catppuccin. No command is needed. A dracut
+pre-pivot hook copies these settings into the live session as it starts; it
+adds no boot-critical unit, so booting is unaffected.
 
 The apply-live-fixes.sh script on this media is only a manual fallback for
 older Blackcomb media. You do not need it with this build.
@@ -83,7 +85,8 @@ mount this media, and run:
 
 Replace the example path with the actual mount path. Setup uses Fedora's DNF
 repositories for Firefox, VLC, LibreOffice Writer and KCalc; it installs the
-wallpapers (with the stargazing image as the default) and the Blackcomb Plymouth
+wallpapers (with the stargazing image as the default), the OpenCode Plasma color
+schemes (with OpenCode Catppuccin as the default) and the Blackcomb Plymouth
 theme, using the transparent logo. Reboot
 to see the installed-system theme. Firmware logos shown before the operating
 system starts are not changed. Some media formats may require additional
