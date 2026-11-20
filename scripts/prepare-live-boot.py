@@ -38,14 +38,6 @@ def patch_grub(text):
     text = ''.join(result)
     if 'rd.live.check' in text:
         fail('media check occurs outside the expected entry')
-    # Require all initrd entries to have the expected Fedora live layout.
-    # Keep troubleshooting entries on the original initrd, so they remain an
-    # independent recovery path if the branded splash overlay causes a problem.
-    initrd_line = r'^([ \t]*initrd(?:efi)?[ \t]+\([^\n]*\)/boot/x86_64/loader/initrd)[ \t]*$'
-    initrds = len(re.findall(initrd_line, text, re.M))
-    if initrds < 1 or len(re.findall(r'^[ \t]*initrd(?:efi)?[ \t]', text, re.M)) != initrds:
-        fail('unexpected Fedora live initrd entries')
-    overlay = ' ($root)/blackcomb-boot/plymouth.cpio'
     # Fedora's live image may not request a graphical Plymouth splash. Enable
     # it for the normal entry, leaving troubleshooting entries as supplied.
     normal_pattern = (r'(^menuentry\s+["\']Start Fedora[^"\']*["\'][^\n]*\{\n)'
@@ -57,11 +49,6 @@ def patch_grub(text):
             else line.group(1) + ' rhgb', match.group(2), flags=re.M)
         if count != 1:
             fail('unexpected normal kernel entry')
-        # Append the theme only to the normal boot. GRUB loads the uncompressed
-        # archive after Fedora's original initrd; troubleshooting stays untouched.
-        body, count = re.subn(initrd_line, lambda m: m.group(1) + overlay, body, flags=re.M)
-        if count != 1:
-            fail('unexpected normal initrd entry')
         header = re.sub(r'^(menuentry\s+)["\']Start Fedora[^"\']*["\']',
                         r'\1"Boot Blackcomb"', match.group(1), count=1)
         return header + body + match.group(3)
@@ -71,6 +58,16 @@ def patch_grub(text):
     text, defaults = re.subn(r'^([ \t]*set[ \t]+default[ \t]*=[ \t]*)["\']?\d+["\']?[ \t]*$', r'\g<1>"0"', text, flags=re.M)
     if defaults != 1:
         fail('expected one numeric default entry')
+    overlay = ' ($root)/blackcomb-boot/plymouth.cpio'
+    # GRUB loads the uncompressed newc archive after the original initrd,
+    # so its theme and logo override the files in that initrd.
+    pattern = r'^([ \t]*initrd(?:efi)?[ \t]+\([^\n]*\)/boot/x86_64/loader/initrd)[ \t]*$'
+    text, initrds = re.subn(pattern, lambda m: m.group(1) + overlay, text, flags=re.M)
+    if initrds < 1:
+        fail('expected Fedora live initrd entries')
+    if len(re.findall(r'^[ \t]*initrd(?:efi)?[ \t]', text, re.M)) != initrds:
+        fail('unexpected initrd entry')
+
     # Retain Fedora's existing troubleshooting submenu, without adding a
     # second top-level basic-graphics entry.
     return text

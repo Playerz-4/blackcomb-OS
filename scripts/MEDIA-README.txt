@@ -24,8 +24,8 @@ currently provided.
 This media contains the Fedora KDE Plasma Desktop live environment and Fedora's
 Anaconda installer, with a Blackcomb live boot splash. The normal boot entry is
 named "Boot Blackcomb"; Fedora's basic graphics mode remains in the
-Troubleshooting submenu uses Fedora's original initrd without the Blackcomb
-splash overlay. It may help with a black screen, but is not a confirmed fix.
+Troubleshooting submenu. It may help with a black screen, but is not a
+confirmed fix.
 
 VirtualBox normally uses VMSVGA for Linux guests. Changing to VBoxSVGA is not
 a confirmed fix and caused a kernel panic in one reported Blackcomb VM. If it
@@ -35,26 +35,7 @@ above it, as well as the VirtualBox version and VM settings, for diagnosis.
 
 To see boot messages, select "Boot Blackcomb", press e, remove quiet and rhgb
 from the linux line, append plymouth.enable=0 to that line, then press Ctrl+X
-or F10 to boot. These edits apply only to that boot. To compare the normal
-boot without the Blackcomb splash overlay, press e on the normal boot entry,
-delete only ($root)/blackcomb-boot/plymouth.cpio from the initrd line and
-boot with Ctrl+X or F10; this is temporary and may show Fedora's splash.
-
-If the wallpaper appears but the panel never loads, try pressing Alt+F2 and
-running:
-
-  systemctl --user restart plasma-plasmashell.service
-
-This is a temporary recovery attempt, not a confirmed fix. If it fails, the
-following command in a terminal may show useful errors:
-
-  journalctl --user -b -u plasma-plasmashell.service --no-pager -n 50
-
-If the VM window is oversized, try View > Scaled Mode (Host+C); this scales
-the picture, not the guest resolution. For two pointers, try turning off
-Input > Mouse Integration, click inside the VM to capture the mouse and press
-the Host key to release it. On Windows and Linux the default Host key is
-Right Ctrl. These host-side workarounds may not solve Plasma boot problems.
+or F10 to boot. These edits apply only to that boot.
 
 The installer does not automatically copy or run the Blackcomb kit. Install
 Fedora normally and reboot into the installed system. Connect to the internet,
