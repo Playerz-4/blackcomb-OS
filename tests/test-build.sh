@@ -74,6 +74,9 @@ set -eu
 test -f usr/share/plymouth/themes/spinner/watermark.png
 test -f usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth
 grep -qx 'Theme=blackcomb-live' etc/plymouth/plymouthd.conf
+test -f var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
+test -f usr/share/blackcomb/live/sddm-wait.conf
+test -f usr/share/blackcomb/live/kim-stargazer.png
 printf 'mock archive'
 MOCK
 cat > "$tmp/bin/implantisomd5" <<'MOCK'

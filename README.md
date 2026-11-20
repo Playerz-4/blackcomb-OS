@@ -93,7 +93,7 @@ Blackcomb intends to establish its own visual identity rather than simply copyin
 
 ## 🚀 Fedora Boot Experience
 
-Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo. The main boot entry is **Boot Blackcomb**; Fedora's original basic graphics mode remains in the **Troubleshooting** submenu. It may help with some virtual-machine black screens but is not a guaranteed fix. Fedora's live desktop and Anaconda installer otherwise remain unchanged.
+Blackcomb customizes Fedora's live boot menu and Plymouth splash with its logo, and applies a few live-session settings when the live desktop starts. The main boot entry is **Boot Blackcomb**; Fedora's original basic graphics mode remains in the **Troubleshooting** submenu. It may help with some virtual-machine black screens but is not a guaranteed fix. Fedora's live filesystem, desktop applications and Anaconda installer are otherwise unchanged.
 
 #### Black-screen fix: splash kept, DRM handoff corrected
 
@@ -101,22 +101,23 @@ Fedora KDE 43+ can boot to a black screen because Plymouth holds a `/dev/dri/car
 
 If a machine still boots to black, a one-time test with Plymouth fully disabled can isolate the handoff: select **Boot Blackcomb**, press `e`, append `plymouth.enable=0` to the line beginning with `linux`, and press Ctrl+X or F10.
 
-#### Live-session keyboard and VM display
+#### Plasma start-up fix: SDDM waits for Plymouth
 
-The live media includes two optional fixes for the live session. They are **not** applied at boot — run them once from a terminal after the desktop starts:
+The black-screen/terminal-only symptom is a race: with `rhgb` kept, SDDM can start before Plymouth releases the GPU, so KWin cannot open `/dev/dri/card*` and Plasma never paints. A small `sddm.service` drop-in makes SDDM wait for `plymouth-quit.service` and pause briefly before starting. This keeps the splash **and** loads Plasma.
 
-```bash
-sudo bash /run/media/<user>/<label>/blackcomb/apply-live-fixes.sh
-```
+The drop-in is copied into the writable live root by a dracut **pre-pivot hook** inside the existing `dracut-pre-pivot.service` — after the live overlay is mounted and before switch-root. It adds **no new systemd unit** to the boot transaction, runs no boot-critical command, and always exits 0, so it cannot put the session into emergency mode.
 
-Replace the path with the actual mount point of the Blackcomb media. The script:
+#### Live-session keyboard, display and wallpaper
 
-- lets the active live user change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt (live media has no root password);
-- installs a login autostart script that asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. Physical hardware is untouched.
+The same hook applies these automatically, with no command from you:
 
-Log out and back in (or reboot) after running it. Keeping this opt-in avoids changing the boot path.
+- the active live user can change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt (live media has no root password);
+- a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. Physical hardware is untouched;
+- `kim-stargazer.png` is the initial live-session wallpaper.
 
-VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**.
+The old opt-in script (`blackcomb/apply-live-fixes.sh`) is still shipped as a manual fallback for earlier media; you do not need it with this build.
+
+VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**. A duplicate mouse pointer is normally VirtualBox pointer integration; Guest Additions or host mouse capture resolves it.
 
 ### VirtualBox black-screen and kernel-panic diagnostics
 

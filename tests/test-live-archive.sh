@@ -11,4 +11,17 @@ mkdir "$tmp/extracted"
 cmp "$tmp/extracted/usr/share/plymouth/themes/spinner/watermark.png" "$root/assets/branding/blackcomb-boot-watermark.png"
 grep -Fxq 'Theme=blackcomb-live' "$tmp/extracted/etc/plymouth/plymouthd.conf"
 grep -Fxq 'ModuleName=two-step' "$tmp/extracted/usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth"
+hook="$tmp/extracted/var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh"
+test -x "$hook"
+grep -Fq '10-blackcomb-wait.conf' "$hook"
+grep -Fq 'exit 0' "$hook"
+if grep -q 'initrd-switch-root.target.wants' "$hook"; then
+  echo 'Hook must not add a switch-root unit' >&2
+  exit 1
+fi
+grep -Fxq 'ExecStartPre=/bin/sleep 5' \
+  "$tmp/extracted/usr/share/blackcomb/live/sddm-wait.conf"
+test -x "$tmp/extracted/usr/share/blackcomb/live/live-vm-display.sh"
+cmp "$tmp/extracted/usr/share/blackcomb/live/kim-stargazer.png" \
+  "$root/backgrounds/kim-stargazer.png"
 echo 'Uncompressed live boot archive test passed.'

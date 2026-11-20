@@ -46,7 +46,8 @@ printf '%s  %s\n' "$ISO_SHA256" "$input" | sha256sum --check --status || { echo 
 # Do not change the ISO volume ID: dracut's root=live:CDLABEL refers to it.
 xorriso -indev "$input" -pvd_info > "$work/pvd-info" 2>&1
 grep -Fq 'Fedora-KDE-Live-45' "$work/pvd-info" || { echo 'Expected Fedora 45 KDE live media volume label.' >&2; exit 1; }
-# Verify the live filesystem is present; never extract or replace it.
+# Verify the live filesystem is present; never extract or replace it. Fedora
+# 42+ uses EROFS here despite the legacy filename, so leave it untouched.
 xorriso -indev "$input" -find /LiveOS/squashfs.img -type f -exec lsdl -- >/dev/null
 # Verify the original live initrd contains Plymouth and the two-step spinner
 # before pointing GRUB at a small, uncompressed logo/theme overlay.

@@ -87,6 +87,34 @@ def patch_grub(text):
     return text
 
 
+def write_live_session_fixes(boot_dir):
+    """Stage a dracut pre-pivot hook that configures the live session.
+
+    The hook runs inside dracut's existing pre-pivot service, after the live
+    overlay is mounted. No new systemd unit is added to the boot transaction
+    and the hook always exits 0, so it cannot cause emergency mode.
+    """
+    scripts = Path(__file__).resolve().parent
+    repo = scripts.parent
+    live = boot_dir / 'usr/share/blackcomb/live'
+    live.mkdir(parents=True, exist_ok=True)
+    names = ('sddm-wait.conf', 'live-vm-display.sh', 'live-vm-display.desktop',
+             'live-keyboard.rules', 'blackcomb-wallpaper.sh',
+             'blackcomb-wallpaper.desktop')
+    for name in names:
+        (live / name).write_bytes((scripts / name).read_bytes())
+    (live / 'kim-stargazer.png').write_bytes(
+        (repo / 'backgrounds' / 'kim-stargazer.png').read_bytes())
+    (live / 'live-vm-display.sh').chmod(0o755)
+    (live / 'blackcomb-wallpaper.sh').chmod(0o755)
+
+    hook_dir = boot_dir / 'var/lib/dracut/hooks/pre-pivot'
+    hook_dir.mkdir(parents=True, exist_ok=True)
+    hook = hook_dir / '99-blackcomb-live.sh'
+    hook.write_bytes((scripts / 'live-boot-hook.sh').read_bytes())
+    hook.chmod(0o755)
+
+
 def main():
     if len(sys.argv) != 4:
         raise SystemExit('Usage: prepare-live-boot.py ORIGINAL_GRUB OUTPUT_GRUB BOOT_DIR')
@@ -115,6 +143,7 @@ BackgroundStartColor=0x000000
 BackgroundEndColor=0x000000
 MessageBelowAnimation=true
 ''')
+    write_live_session_fixes(boot_dir)
     output.write_text(patched)
 
 
