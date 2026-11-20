@@ -64,10 +64,11 @@ mkdir -p "$work/blackcomb-boot"
   "$ROOT_DIR/assets/branding/blackcomb-boot-watermark.png" "$work/blackcomb-boot/plymouth.cpio"
 mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
-for script in blackcomb-wallpaper.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
+for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
   install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
 done
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/scripts/"
+install -m 644 "$ROOT_DIR/scripts/blackcomb-launcher.desktop" "$work/blackcomb/scripts/"
 # Opt-in live-session fixes: shipped on the media but never run at boot.
 install -m 755 "$ROOT_DIR/scripts/apply-live-fixes.sh" "$work/blackcomb/apply-live-fixes.sh"
 install -m 644 "$ROOT_DIR/scripts/live-keyboard.rules" "$work/blackcomb/live-keyboard.rules"

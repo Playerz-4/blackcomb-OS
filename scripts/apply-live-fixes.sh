@@ -15,5 +15,5 @@ mkdir -p /usr/local/bin /etc/xdg/autostart /etc/polkit-1/rules.d
 cp "$HERE/live-vm-display.sh" /usr/local/bin/blackcomb-vm-display
 chmod 755 /usr/local/bin/blackcomb-vm-display
 cp "$HERE/live-vm-display.desktop" /etc/xdg/autostart/blackcomb-vm-display.desktop
-cp "$HERE/live-keyboard.rules" /etc/polkit-1/rules.d/49-blackcomb-live-keyboard.rules
+cp "$HERE/live-keyboard.rules" /etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules
 echo 'Live-session fixes applied. Log out and back in (or reboot) to use them.'

@@ -16,6 +16,10 @@ test -x "$hook"
 grep -Fq 'sddm.service.d/10-blackcomb-wait.conf' "$hook"
 grep -Fq 'plasmalogin.service.d/10-blackcomb-wait.conf' "$hook"
 grep -Fq 'plasmalogin.conf.d/99-blackcomb-live.conf' "$hook"
+grep -Fq 'plasmalogin.conf.d/50-blackcomb-wallpaper.conf' "$hook"
+grep -Fq '00-blackcomb-live-keyboard.rules' "$hook"
+grep -Fq 'blackcomb-launcher.png' "$hook"
+grep -Fq 'blackcomb-launcher.desktop' "$hook"
 grep -Fq 'plymouth-quit-wait' "$hook"
 grep -Fq 'exit 0' "$hook"
 if grep -q 'initrd-switch-root.target.wants' "$hook"; then
@@ -35,6 +39,16 @@ autologin="$tmp/extracted/usr/share/blackcomb/live/plasmalogin-autologin.conf"
 grep -Fxq '[Autologin][seat0]' "$autologin"
 grep -Fxq 'User=liveuser' "$autologin"
 grep -Fxq 'Session=plasma.desktop' "$autologin"
+wallpaper="$tmp/extracted/usr/share/blackcomb/live/plasmalogin-wallpaper.conf"
+grep -Fxq 'WallpaperPluginId=org.kde.image' "$wallpaper"
+grep -Fxq 'Image=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' "$wallpaper"
+grep -Fxq 'PreviewImage=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' "$wallpaper"
+keyboard="$tmp/extracted/usr/share/blackcomb/live/live-keyboard.rules"
+grep -Fq 'subject.user == "liveuser"' "$keyboard"
+if grep -q 'subject.active' "$keyboard"; then
+  echo 'Keyboard policy must not require subject.active' >&2
+  exit 1
+fi
 kwin_env="$tmp/extracted/usr/share/blackcomb/live/kwin-vm-env.sh"
 grep -Fxq 'export KWIN_DRM_NO_AMS=1' "$kwin_env"
 grep -Fxq 'export KWIN_FORCE_SW_CURSOR=1' "$kwin_env"
@@ -44,4 +58,10 @@ grep -Fq 'xrandr --output' \
 test -x "$tmp/extracted/usr/share/blackcomb/live/live-vm-display.sh"
 cmp "$tmp/extracted/usr/share/blackcomb/live/kim-stargazer.png" \
   "$root/backgrounds/kim-stargazer.png"
+cmp "$tmp/extracted/usr/share/blackcomb/live/blackcomb-launcher.png" \
+  "$root/assets/branding/blackcomb-launcher.png"
+launcher="$tmp/extracted/usr/share/blackcomb/live/blackcomb-launcher.sh"
+grep -Fxq 'icon=/usr/share/blackcomb/branding/blackcomb-launcher.png' "$launcher"
+grep -Fq 'org.kde.plasma.kickoff' "$launcher"
+test -x "$launcher"
 echo 'Uncompressed live boot archive test passed.'

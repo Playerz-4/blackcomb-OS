@@ -50,8 +50,9 @@ Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
 Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
-layout without the root-password prompt, and kim-stargazer is the initial
-wallpaper. No command is needed. A dracut pre-pivot hook copies these settings
+layout without the root-password prompt, kim-stargazer is the desktop and
+login-screen wallpaper, and the supplied PNG is set as the application-launcher
+icon. No command is needed. A dracut pre-pivot hook copies these settings
 into the live session as it starts; it adds no boot-critical unit, so booting
 is unaffected.
 
@@ -95,9 +96,11 @@ For the optional GRUB menu background after setup, run:
 
   sudo blackcomb-grub-background
 
-To use the launcher icon, right-click Plasma's application launcher, open its
-settings, click the icon and choose the custom image at:
+The custom launcher icon is applied automatically at login from:
 
-  /usr/share/blackcomb/branding/blackcomb-launcher.svg
+  /usr/share/blackcomb/branding/blackcomb-launcher.png
+
+If you want to choose it again manually, right-click Plasma's application
+launcher, open its settings, click the icon and select that PNG file.
 
 See the project README for details, removal instructions and testing notes.

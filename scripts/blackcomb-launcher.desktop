@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Blackcomb launcher icon
+Comment=Set the Plasma application launcher icon for the live session
+Exec=/usr/local/bin/blackcomb-launcher
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true

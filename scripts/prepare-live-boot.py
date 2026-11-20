@@ -107,15 +107,20 @@ def write_live_session_fixes(boot_dir):
     live = boot_dir / 'usr/share/blackcomb/live'
     live.mkdir(parents=True, exist_ok=True)
     names = ('sddm-wait.conf', 'plasmalogin-wait.conf',
-             'plasmalogin-autologin.conf', 'live-vm-display.sh',
-             'live-vm-display.desktop', 'kwin-vm-env.sh', 'live-keyboard.rules',
-             'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop')
+             'plasmalogin-autologin.conf', 'plasmalogin-wallpaper.conf',
+             'live-vm-display.sh', 'live-vm-display.desktop', 'kwin-vm-env.sh',
+             'live-keyboard.rules', 'blackcomb-wallpaper.sh',
+             'blackcomb-wallpaper.desktop', 'blackcomb-launcher.sh',
+             'blackcomb-launcher.desktop')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())
     (live / 'kim-stargazer.png').write_bytes(
         (repo / 'backgrounds' / 'kim-stargazer.png').read_bytes())
+    (live / 'blackcomb-launcher.png').write_bytes(
+        (repo / 'assets/branding' / 'blackcomb-launcher.png').read_bytes())
     (live / 'live-vm-display.sh').chmod(0o755)
     (live / 'blackcomb-wallpaper.sh').chmod(0o755)
+    (live / 'blackcomb-launcher.sh').chmod(0o755)
 
     hook_dir = boot_dir / 'var/lib/dracut/hooks/pre-pivot'
     hook_dir.mkdir(parents=True, exist_ok=True)

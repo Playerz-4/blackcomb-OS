@@ -22,7 +22,8 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/polkit-1/rules.d" \
          "$dst/home/liveuser/.config/plasma-workspace/env" \
          "$dst/usr/local/bin" \
-         "$dst/usr/share/backgrounds/blackcomb" 2>/dev/null || exit 0
+         "$dst/usr/share/backgrounds/blackcomb" \
+         "$dst/usr/share/blackcomb/branding" 2>/dev/null || exit 0
 
 # Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
 # start before Plymouth releases the DRM device (RHBZ 2404966). Wait only for
@@ -39,6 +40,8 @@ cp -f "$src/sddm-wait.conf" \
 # global User/Session values that livesys writes into /etc/plasmalogin.conf.
 cp -f "$src/plasmalogin-autologin.conf" \
   "$dst/etc/plasmalogin.conf.d/99-blackcomb-live.conf" 2>/dev/null || :
+cp -f "$src/plasmalogin-wallpaper.conf" \
+  "$dst/etc/plasmalogin.conf.d/50-blackcomb-wallpaper.conf" 2>/dev/null || :
 
 # KWin in a VM: legacy DRM mode plus software cursor, per KDE's VirtualBox
 # documentation. Also set from the kernel command line so the greeter inherits
@@ -55,15 +58,26 @@ cp -f "$src/live-vm-display.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-vm-display.desktop" 2>/dev/null || :
 
 # Keyboard layout change without a root password (live media has none).
+# Polkit uses the first matching rule, so 00- takes precedence over Fedora's
+# packaged rules that would otherwise ask for authentication.
 cp -f "$src/live-keyboard.rules" \
-  "$dst/etc/polkit-1/rules.d/49-blackcomb-live-keyboard.rules" 2>/dev/null || :
+  "$dst/etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules" 2>/dev/null || :
 
-# Initial wallpaper for new live users.
+# Initial wallpaper for new live users and the PLM greeter.
 cp -f "$src/kim-stargazer.png" \
   "$dst/usr/share/backgrounds/blackcomb/kim-stargazer.png" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-wallpaper.desktop" 2>/dev/null || :
+
+# Plasma application-launcher icon supplied with Blackcomb.
+cp -f "$src/blackcomb-launcher.png" \
+  "$dst/usr/share/blackcomb/branding/blackcomb-launcher.png" 2>/dev/null || :
+cp -f "$src/blackcomb-launcher.sh" \
+  "$dst/usr/local/bin/blackcomb-launcher" 2>/dev/null || :
+chmod 755 "$dst/usr/local/bin/blackcomb-launcher" 2>/dev/null || :
+cp -f "$src/blackcomb-launcher.desktop" \
+  "$dst/etc/xdg/autostart/blackcomb-launcher.desktop" 2>/dev/null || :
 
 exit 0

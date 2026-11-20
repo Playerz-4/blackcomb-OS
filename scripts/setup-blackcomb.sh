@@ -9,7 +9,7 @@ Usage: sudo ./setup-blackcomb.sh [--yes]
 
 Install Firefox, everyday apps and Blackcomb artwork on installed Fedora 45 KDE.
 This also installs a Blackcomb Plymouth boot splash. Internet and a reboot are
-required. The GRUB background and launcher icon are separate manual choices.
+required. The GRUB background remains a separate manual choice.
 HELP
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/blackcomb-launcher.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -36,10 +36,12 @@ install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/l
 install -m 644 "$HERE"/backgrounds/*.png /usr/share/backgrounds/blackcomb/
 install -m 644 "$HERE"/assets/branding/*.png "$HERE"/assets/branding/*.svg /usr/share/blackcomb/branding/
 install -m 755 "$HERE/scripts/blackcomb-wallpaper.sh" /usr/local/bin/blackcomb-wallpaper
+install -m 755 "$HERE/scripts/blackcomb-launcher.sh" /usr/local/bin/blackcomb-launcher
 install -m 755 "$HERE/scripts/install-grub-background.sh" /usr/local/sbin/blackcomb-grub-background
 install -m 755 "$HERE/scripts/install-plymouth-theme.sh" /usr/local/sbin/blackcomb-plymouth
 install -m 755 "$HERE/scripts/create-plymouth-theme.sh" /usr/local/lib/blackcomb/create-plymouth-theme.sh
 install -m 644 "$HERE/scripts/blackcomb-wallpaper.desktop" /etc/xdg/autostart/
+install -m 644 "$HERE/scripts/blackcomb-launcher.desktop" /etc/xdg/autostart/
 /usr/local/sbin/blackcomb-plymouth
 
 # Fedora 42+ starts Plymouth on the early EFI framebuffer (simpledrm), which

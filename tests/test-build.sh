@@ -58,7 +58,10 @@ case " $* " in
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
+    test -f "$payload/assets/branding/blackcomb-launcher.png"
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
+    test -f "$payload/scripts/blackcomb-launcher.sh"
+    test -f "$payload/scripts/blackcomb-launcher.desktop"
     test -f "$payload/backgrounds/kim-sunrise.png"
     printf 'fake output ISO\n' > "$output" ;;
   *) exit 1 ;;
@@ -81,6 +84,10 @@ test -f var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
 test -f usr/share/blackcomb/live/sddm-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-autologin.conf
+test -f usr/share/blackcomb/live/plasmalogin-wallpaper.conf
+test -f usr/share/blackcomb/live/blackcomb-launcher.png
+test -f usr/share/blackcomb/live/blackcomb-launcher.sh
+test -f usr/share/blackcomb/live/blackcomb-launcher.desktop
 test -f usr/share/blackcomb/live/kim-stargazer.png
 printf 'mock archive'
 MOCK
