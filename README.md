@@ -101,9 +101,16 @@ Fedora KDE 43+ can boot to a black screen because Plymouth holds a `/dev/dri/car
 
 If a machine still boots to black, a one-time test with Plymouth fully disabled can isolate the handoff: select **Boot Blackcomb**, press `e`, append `plymouth.enable=0` to the line beginning with `linux`, and press Ctrl+X or F10.
 
-#### Plasma start-up fix: Plasma Login Manager waits for Plymouth
+#### Plasma start-up fix: Plymouth handoff plus KWin VM settings
 
-The black-screen/wallpaper-only symptom is a race: with `rhgb` kept, the display manager can start before Plymouth releases the GPU, so KWin cannot open `/dev/dri/card*` and Plasma never paints. Inspection of Fedora 45's live image shows it uses **Plasma Login Manager** (`plasmalogin.service`), not SDDM, so Blackcomb now ships drop-ins for **both** services. Each waits for `plymouth-quit.service` (not `plymouth-quit-wait.service`, which would create an ordering cycle) and pauses briefly before starting. This keeps the splash **and** lets Plasma load. No safe-graphics mode is used.
+The original black-screen symptom is a Plymouth/DRM handoff race. Fedora 45's `plasmalogin.service` already waits for `plymouth-quit.service` and runs `udevadm settle`; Blackcomb additionally ships drop-ins for **both** Plasma Login Manager and SDDM that wait and pause briefly, without using `plymouth-quit-wait.service` (which can create an ordering cycle). The splash and Plasma can therefore both run.
+
+A wallpaper-and-cursor with no panels is a different failure: Fedora 45 KDE is Wayland-only, and KWin's atomic DRM mode-setting and hardware cursor plane are unreliable with VirtualBox's VMSVGA driver. The default boot entry now sets KDE's documented VM variables through `systemd.setenv=`:
+
+- `KWIN_DRM_NO_AMS=1` — use KWin's legacy DRM interface instead of atomic mode-setting;
+- `KWIN_FORCE_SW_CURSOR=1` — avoid the broken VM hardware cursor plane.
+
+The same variables are also installed into the live user's Plasma environment. This is **not** safe graphics: modesetting remains enabled and accelerated. No `nomodeset`, `${basicgfx}` or extra safe-graphics entry is used.
 
 The settings are copied into the writable live root by a dracut **pre-pivot hook** inside the existing `dracut-pre-pivot.service` — after the live overlay is mounted and before switch-root. It adds **no new systemd unit** to the boot transaction, runs no boot-critical command, and always exits 0, so it cannot put the session into emergency mode.
 
@@ -117,7 +124,7 @@ The same hook applies these automatically, with no command from you:
 
 The old opt-in script (`blackcomb/apply-live-fixes.sh`) is still shipped as a manual fallback for earlier media; you do not need it with this build.
 
-VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**. Fedora 45's live session provides only Plasma Wayland, not Plasma X11; a duplicate pointer under VirtualBox is a host/guest pointer-integration artefact and can be avoided with **View → Mouse Integration** off on the host.
+For best results in VirtualBox, use **VMSVGA with 3D acceleration enabled**, one monitor and about 128 MB of video memory. KDE upstream states that 3D acceleration should be considered mandatory for Plasma 6 in VirtualBox; if you do not want 3D acceleration, VBoxSVGA with 3D disabled is the alternative. VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**. If two pointers remain, turn off **View → Mouse Integration** on the host.
 
 ### VirtualBox black-screen and kernel-panic diagnostics
 

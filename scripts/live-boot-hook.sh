@@ -18,7 +18,9 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/sddm.conf.d" \
          "$dst/etc/plasmalogin.conf.d" \
          "$dst/etc/xdg/autostart" \
+         "$dst/etc/profile.d" \
          "$dst/etc/polkit-1/rules.d" \
+         "$dst/home/liveuser/.config/plasma-workspace/env" \
          "$dst/usr/local/bin" \
          "$dst/usr/share/backgrounds/blackcomb" 2>/dev/null || exit 0
 
@@ -31,6 +33,13 @@ cp -f "$src/plasmalogin-wait.conf" \
   "$dst/etc/systemd/system/plasmalogin.service.d/10-blackcomb-wait.conf" 2>/dev/null || :
 cp -f "$src/sddm-wait.conf" \
   "$dst/etc/systemd/system/sddm.service.d/10-blackcomb-wait.conf" 2>/dev/null || :
+
+# KWin in a VM: legacy DRM mode plus software cursor, per KDE's VirtualBox
+# documentation. Also set from the kernel command line so the greeter inherits
+# it; these copies cover the live user's Plasma session even if it is restarted.
+cp -f "$src/kwin-vm-env.sh" "$dst/etc/profile.d/99-blackcomb-kwin-vm.sh" 2>/dev/null || :
+cp -f "$src/kwin-vm-env.sh" \
+  "$dst/home/liveuser/.config/plasma-workspace/env/99-blackcomb-kwin-vm.sh" 2>/dev/null || :
 
 # VM display autostart. This keeps working when Plasma loads; the helper uses
 # KScreen on Wayland and xrandr if an X11 session is ever present.

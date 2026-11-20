@@ -30,6 +30,10 @@ fi
 grep -Fxq 'ExecStartPre=/bin/sleep 5' "$wait"
 grep -Fxq 'ExecStartPre=/bin/sleep 5' \
   "$tmp/extracted/usr/share/blackcomb/live/plasmalogin-wait.conf"
+kwin_env="$tmp/extracted/usr/share/blackcomb/live/kwin-vm-env.sh"
+grep -Fxq 'export KWIN_DRM_NO_AMS=1' "$kwin_env"
+grep -Fxq 'export KWIN_FORCE_SW_CURSOR=1' "$kwin_env"
+grep -Fq 'plasma-workspace/env/99-blackcomb-kwin-vm.sh' "$hook"
 grep -Fq 'xrandr --output' \
   "$tmp/extracted/usr/share/blackcomb/live/live-vm-display.sh"
 test -x "$tmp/extracted/usr/share/blackcomb/live/live-vm-display.sh"

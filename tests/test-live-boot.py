@@ -25,17 +25,23 @@ normal = patched.split('submenu "Troubleshooting -->"')[0]
 # Keep the splash (rhgb), but stop Plymouth claiming the early EFI framebuffer
 # DRM card so SDDM/KWin can start, and pin a VM-friendly framebuffer size.
 assert ('quiet rhgb root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image '
-        'plymouth.use-simpledrm=0 video=1024x768\n') in normal
+        'plymouth.use-simpledrm=0 video=1024x768 '
+        'systemd.setenv=KWIN_DRM_NO_AMS=1 '
+        'systemd.setenv=KWIN_FORCE_SW_CURSOR=1\n') in normal
 assert normal.count('rhgb') == 1
 assert normal.count('plymouth.use-simpledrm=0') == 1
 assert normal.count('video=1024x768') == 1
+assert normal.count('systemd.setenv=KWIN_DRM_NO_AMS=1') == 1
+assert normal.count('systemd.setenv=KWIN_FORCE_SW_CURSOR=1') == 1
 default_entry = normal.split('menuentry "Boot Blackcomb"')[1]
 assert 'nomodeset' not in default_entry and '${basicgfx}' not in default_entry
 without_splash = original.replace('quiet rhgb ', '')
 patched_without_splash = mod.patch_grub(without_splash)
 normal_without_splash = patched_without_splash.split('submenu "Troubleshooting -->"')[0]
 assert (' root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image '
-        'rhgb plymouth.use-simpledrm=0 video=1024x768\n') in normal_without_splash
+        'rhgb plymouth.use-simpledrm=0 video=1024x768 '
+        'systemd.setenv=KWIN_DRM_NO_AMS=1 '
+        'systemd.setenv=KWIN_FORCE_SW_CURSOR=1\n') in normal_without_splash
 assert normal_without_splash.count('rhgb') == 1
 for bad in [original.replace('Test this media', 'Unexpected test'),
             original.replace('rd.live.check', 'broken'),

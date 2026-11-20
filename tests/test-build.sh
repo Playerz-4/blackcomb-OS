@@ -44,12 +44,15 @@ case " $* " in
     grep -Fq '($root)/blackcomb-boot/plymouth.cpio' "$grub"
     grep -Fq 'menuentry "Boot Blackcomb"' "$grub"
     # The splash fix must be present in the assembled ISO: keep rhgb, disable
-    # the early Plymouth framebuffer, and set a VM-friendly resolution without
-    # falling back to safe graphics (RHBZ 2404966).
+    # the early Plymouth framebuffer, set a VM-friendly resolution and use KWin's
+    # documented legacy-DRM/software-cursor VM path without falling back to
+    # safe graphics (RHBZ 2404966, KDE 427060/478301).
     default_entry=$(sed -n '/menuentry "Boot Blackcomb"/,/^}/p' "$grub")
     grep -qw rhgb <<<"$default_entry" || exit 1
     grep -Fq 'plymouth.use-simpledrm=0' <<<"$default_entry" || exit 1
     grep -Fq 'video=1024x768' <<<"$default_entry" || exit 1
+    grep -Fq 'systemd.setenv=KWIN_DRM_NO_AMS=1' <<<"$default_entry" || exit 1
+    grep -Fq 'systemd.setenv=KWIN_FORCE_SW_CURSOR=1' <<<"$default_entry" || exit 1
     if grep -qw nomodeset <<<"$default_entry"; then exit 1; fi
     if grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"; then exit 1; fi
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi

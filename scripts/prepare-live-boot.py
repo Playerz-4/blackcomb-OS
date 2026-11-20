@@ -46,6 +46,12 @@ def patch_grub(text):
     # splash without the early framebuffer owning a DRM card - and pin a
     # modest 1024x768 framebuffer so the desktop fits a VirtualBox window.
     # Hardware acceleration is NOT disabled: no nomodeset/basicgfx is added.
+    # VirtualBox's VMSVGA driver and Plasma Wayland do not always agree on
+    # atomic DRM modesetting or the hardware cursor plane. KDE documents
+    # KWIN_DRM_NO_AMS=1 for VMs and KWIN_FORCE_SW_CURSOR=1 for cursor-plane
+    # problems. systemd.setenv injects both into the greeter and the user
+    # session, keeping the splash and full hardware-accelerated modesetting
+    # otherwise enabled: no nomodeset, basicgfx or safe-graphics mode.
     # Troubleshooting entries are left as Fedora supplies them.
     normal_pattern = (r'(^menuentry\s+["\']Start Fedora[^"\']*["\'][^\n]*\{\n)'
                       r'((?:[^\n]*\n)*?)(^}[ \t]*$)')
@@ -54,7 +60,9 @@ def patch_grub(text):
             text = line.group(1)
             indent = re.match(r'^[ \t]*', text).group(0)
             args = re.sub(r'[ \t]{2,}', ' ', text[len(indent):]).strip()
-            for arg in ('rhgb', 'plymouth.use-simpledrm=0', 'video=1024x768'):
+            for arg in ('rhgb', 'plymouth.use-simpledrm=0', 'video=1024x768',
+                        'systemd.setenv=KWIN_DRM_NO_AMS=1',
+                        'systemd.setenv=KWIN_FORCE_SW_CURSOR=1'):
                 if not re.search(r'(?<!\S)' + re.escape(arg) + r'(?!\S)', args):
                     args += ' ' + arg
             return indent + args
@@ -99,7 +107,7 @@ def write_live_session_fixes(boot_dir):
     live = boot_dir / 'usr/share/blackcomb/live'
     live.mkdir(parents=True, exist_ok=True)
     names = ('sddm-wait.conf', 'plasmalogin-wait.conf', 'live-vm-display.sh',
-             'live-vm-display.desktop', 'live-keyboard.rules',
+             'live-vm-display.desktop', 'kwin-vm-env.sh', 'live-keyboard.rules',
              'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())

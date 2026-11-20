@@ -29,8 +29,8 @@ confirmed fix.
 
 BLACK SCREEN AFTER THE BOOT SPLASH:
 Fedora KDE 43+ can leave a black screen instead of the Plasma desktop when
-Plymouth keeps a graphics card busy while the SDDM login manager starts (Red
-Hat bug 2404966). Blackcomb keeps the boot splash ("rhgb") and adds
+Plymouth keeps a graphics card busy while the login manager starts (Red Hat
+bug 2404966). Blackcomb keeps the boot splash ("rhgb") and adds
 "plymouth.use-simpledrm=0" so Plymouth uses the real graphics driver rather
 than the early EFI framebuffer. The default entry also sets a 1024x768
 framebuffer so the desktop fits a typical VirtualBox window. Hardware
@@ -38,31 +38,35 @@ acceleration is not disabled. If a machine still boots to black, edit the
 boot line once and append plymouth.enable=0 to test whether Plymouth is
 still involved.
 
+PLASMA WALLPAPER BUT NO PANELS IN VIRTUALBOX:
+Fedora 45 KDE is Wayland-only. KWin's atomic DRM mode setting and hardware
+cursor plane are unreliable with VirtualBox's VMSVGA driver, so the default
+boot entry also sets KWIN_DRM_NO_AMS=1 and KWIN_FORCE_SW_CURSOR=1 through
+systemd.setenv. These are KDE's documented VM settings: legacy DRM interface
+plus a software cursor. They are not safe graphics; modesetting stays on.
+
 LIVE SESSION START-UP, KEYBOARD AND SCREEN SIZE:
-Plasma is started only after Plymouth has released the graphics device, so
-the splash and the desktop both work. Drop-ins are supplied for both SDDM and
-Fedora 44+'s Plasma Login Manager; Fedora 45 uses the latter. The active live
-user can change the system keyboard layout without the root-password prompt,
-a virtual machine picks a modest screen mode (preferring 1024x768) at login,
-and kim-stargazer is the initial wallpaper. No command is needed. A dracut
-pre-pivot hook copies these settings into the live session as it starts; it
-adds no boot-critical unit, so booting is unaffected.
+Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
+Fedora 45 uses the latter. A virtual machine picks a modest screen mode
+(preferring 1024x768) at login, the live user can change the system keyboard
+layout without the root-password prompt, and kim-stargazer is the initial
+wallpaper. No command is needed. A dracut pre-pivot hook copies these settings
+into the live session as it starts; it adds no boot-critical unit, so booting
+is unaffected.
 
 The apply-live-fixes.sh script on this media is only a manual fallback for
 older Blackcomb media. You do not need it with this build.
 
-VirtualBox cannot truly follow the host window without Guest Additions. For
-exact window-following with this live media, use View > Scaled Mode on the
-host. In the installed system, install Guest Additions and enable View >
-Auto-resize Guest Display. Fedora 45's live session provides only Plasma
-Wayland; if you see two pointers, turn off View > Mouse Integration on the
-host.
-
-VirtualBox normally uses VMSVGA for Linux guests. Changing to VBoxSVGA is not
-a confirmed fix and caused a kernel panic in one reported Blackcomb VM. If it
-causes trouble, power off the VM and restore its previous display settings.
-A kernel panic can have many causes; capture the full panic message and lines
-above it, as well as the VirtualBox version and VM settings, for diagnosis.
+For best results, use VirtualBox VMSVGA with 3D acceleration enabled, one
+monitor and about 128 MB video memory. KDE upstream says 3D acceleration
+should be considered mandatory for Plasma 6 in VirtualBox. If you do not want
+3D acceleration, the alternative is VBoxSVGA with 3D disabled; if you had a
+kernel panic with VBoxSVGA before, power off the VM and restore its earlier
+display settings. VirtualBox cannot truly follow the host window without
+Guest Additions. For exact window-following with this live media, use View >
+Scaled Mode on the host. In the installed system, install Guest Additions
+and enable View > Auto-resize Guest Display. If two pointers remain, turn off
+View > Mouse Integration on the host.
 
 To see boot messages, select "Boot Blackcomb", press e, remove quiet from the
 linux line, append plymouth.enable=0 to that line, then press Ctrl+X or F10
