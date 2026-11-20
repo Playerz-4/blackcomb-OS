@@ -1,8 +1,8 @@
 // Live media has no root password, so the normal polkit prompt for changing
 // the system keyboard layout can never be answered. Allow the live user's
-// sessions to make that one change without a password. Do not require
-// subject.active or subject.local: the D-Bus caller may not have a logind
-// session marked active/local even though it is running in the live desktop.
+// sessions to make that one change without a password. Do not require the
+// active/local session flags: the D-Bus caller may not have a logind session
+// marked active/local even though it is running in the live desktop.
 // The 00- prefix makes this authoritative: polkit stops at the first rule that
 // returns a result, before Fedora's later rules can ask for authentication.
 // This file is copied into the disposable live root only, not installed.
