@@ -67,6 +67,11 @@ for script in blackcomb-wallpaper.sh install-grub-background.sh create-plymouth-
   install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
 done
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/scripts/"
+# Opt-in live-session fixes: shipped on the media but never run at boot.
+install -m 755 "$ROOT_DIR/scripts/apply-live-fixes.sh" "$work/blackcomb/apply-live-fixes.sh"
+install -m 644 "$ROOT_DIR/scripts/live-keyboard.rules" "$work/blackcomb/live-keyboard.rules"
+install -m 755 "$ROOT_DIR/scripts/live-vm-display.sh" "$work/blackcomb/live-vm-display.sh"
+install -m 644 "$ROOT_DIR/scripts/live-vm-display.desktop" "$work/blackcomb/live-vm-display.desktop"
 install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/blackcomb/backgrounds/"
 install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/blackcomb/assets/branding/"
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"

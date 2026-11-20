@@ -40,10 +40,15 @@ still involved.
 
 LIVE SESSION KEYBOARD AND SCREEN SIZE:
 Changing the system keyboard layout in KDE System Settings normally asks for
-a root password, which live media does not have. This media allows the active
-live user to make that one change without a password. In a virtual machine,
-the live session also selects a modest screen mode (preferring 1024x768) at
-login so the desktop fits a typical VirtualBox window.
+a root password, which live media does not have. To allow that one change
+without a password, and to make a virtual machine pick a modest screen mode
+(preferring 1024x768) at login, run this once from a terminal after the live
+desktop starts:
+
+  sudo bash /path/to/mounted-media/blackcomb/apply-live-fixes.sh
+
+Replace the example path with the actual mount point. Log out and back in, or
+reboot, afterwards. Nothing is applied until you run the script.
 
 VirtualBox cannot truly follow the host window without Guest Additions. For
 exact window-following with this live media, use View > Scaled Mode on the

@@ -103,10 +103,18 @@ If a machine still boots to black, a one-time test with Plymouth fully disabled 
 
 #### Live-session keyboard and VM display
 
-The live ISO places two best-effort fixes into the disposable live root at boot:
+The live media includes two optional fixes for the live session. They are **not** applied at boot — run them once from a terminal after the desktop starts:
 
-- KDE's **"Authentication is required to change the system keyboard layout"** prompt is answered automatically for the active live user. Live media has no root password, so that polkit prompt could never otherwise be completed — you can now change the keyboard layout in System Settings normally.
-- In a virtual machine, a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) so the Plasma desktop fits a typical VirtualBox window. This does not affect physical hardware.
+```bash
+sudo bash /run/media/<user>/<label>/blackcomb/apply-live-fixes.sh
+```
+
+Replace the path with the actual mount point of the Blackcomb media. The script:
+
+- lets the active live user change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt (live media has no root password);
+- installs a login autostart script that asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. Physical hardware is untouched.
+
+Log out and back in (or reboot) after running it. Keeping this opt-in avoids changing the boot path.
 
 VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**.
 
