@@ -69,6 +69,7 @@ cmp "$tmp/extracted/usr/share/blackcomb/live/crescent-moon-start-icon.png" \
   "$root/assets/branding/crescent-moon-start-icon.png"
 launcher="$tmp/extracted/usr/share/blackcomb/live/blackcomb-launcher.sh"
 grep -Fxq 'icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png' "$launcher"
+grep -Fq '[General]' "$launcher"
 grep -Fq 'org.kde.plasma.kickoff' "$launcher"
 grep -Fq 'location=5' "$launcher"
 grep -Fq 'formfactor=3' "$launcher"

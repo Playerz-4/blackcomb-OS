@@ -2,10 +2,12 @@
 # Configure the Plasma panel for the Blackcomb live/installed session:
 #   - use the supplied crescent PNG for the Kickoff launcher button;
 #   - dock the panel on the left edge as a vertical taskbar.
+#
 # Plasma::Types::Location is 5 for LeftEdge and FormFactor is 3 for Vertical.
-# Both live in plasma-org.kde.plasma.desktop-appletsrc and accept absolute PNG
-# paths, so no icon theme or SVG editing is needed. This runs as the user after
-# Plasma has created its panel configuration.
+# Kickoff reads its icon from the applet's [General] group. The settings are
+# appended to plasma-org.kde.plasma.desktop-appletsrc so they survive logout,
+# and a guarded Plasma scripting call applies them to the running shell too.
+# No icon theme or SVG editing is needed.
 set -eu
 
 icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png
@@ -18,25 +20,9 @@ while [ ! -f "$cfg" ] && [ "$i" -lt 60 ]; do
 done
 [ -f "$cfg" ] || exit 0
 
-# If Plasma is already running, ask it to move existing panels immediately as
-# well; the config append below makes the change persist on the next login.
-# qdbus is optional, so a missing shell or Qt tooling can never break this
-# helper.
-qdbus_bin=
-if command -v qdbus6 >/dev/null 2>&1; then
-  qdbus_bin=qdbus6
-elif command -v qdbus >/dev/null 2>&1; then
-  qdbus_bin=qdbus
-fi
-if [ -n "$qdbus_bin" ]; then
-  "$qdbus_bin" org.kde.plasmashell /PlasmaShell \
-    org.kde.PlasmaShell.evaluateScript \
-    'var allPanels = panels(); for (var i = 0; i < allPanels.length; i++) { allPanels[i].location = "left"; }' \
-    >/dev/null 2>&1 || :
-fi
-
 icon_groups=$(mktemp)
 panel_groups=$(mktemp)
+trap 'rm -f "$icon_groups" "$panel_groups"' EXIT HUP INT TERM
 
 # Already applied on this session? Do not append the same settings again.
 if grep -Fqx "icon=$icon" "$cfg"; then
@@ -48,6 +34,7 @@ else
       gsub(/^\[|\]$/, "", group)
       next
     }
+    /^\[/ { group=""; next }
     $1 == "plugin" && $2 == "org.kde.plasma.kickoff" && group != "" { print group }
   ' "$cfg" | sort -u > "$icon_groups"
 fi
@@ -59,7 +46,7 @@ awk -F= '
   /^\[Containments\]\[[^]]+\]$/ {
     group=$0
     gsub(/^\[|\]$/, "", group)
-    plugin[group]=""; location[group]=""; formfactor[group]=""
+    plugin[group]="" ; location[group]="" ; formfactor[group]=""
     next
   }
   /^\[/ { group=""; next }
@@ -78,14 +65,9 @@ awk -F= '
   }
 ' "$cfg" | sort -u > "$panel_groups"
 
-if [ ! -s "$icon_groups" ] && [ ! -s "$panel_groups" ]; then
-  rm -f "$icon_groups" "$panel_groups"
-  exit 0
-fi
-
 while IFS= read -r group; do
   [ -n "$group" ] || continue
-  printf '\n[%s][Configuration]\nicon=%s\n' "$group" "$icon" >> "$cfg"
+  printf '\n[%s][General]\nicon=%s\n' "$group" "$icon" >> "$cfg"
 done < "$icon_groups"
 
 while IFS= read -r group; do
@@ -93,5 +75,36 @@ while IFS= read -r group; do
   printf '\n[%s]\nlocation=5\nformfactor=3\n' "$group" >> "$cfg"
 done < "$panel_groups"
 
-rm -f "$icon_groups" "$panel_groups"
+# Ask a running Plasma shell to apply both changes immediately. The config
+# append only takes full effect on the next Plasma start, so this keeps the
+# live session correct without restarting the shell. Both qdbus and dbus-send
+# are optional; a missing tool or shell can never break this helper.
+launcher_js='var allPanels = panels(); for (var i = 0; i < allPanels.length; i++) { allPanels[i].location = "left"; var widgets = allPanels[i].widgets(); for (var j = 0; j < widgets.length; j++) { var w = widgets[j]; if (w.type === "org.kde.plasma.kickoff") { w.currentConfigGroup = ["General"]; w.writeConfig("icon", "'"$icon"'"); w.reloadConfig(); } } }'
+
+apply_live_layout() {
+  if command -v qdbus6 >/dev/null 2>&1; then
+    qdbus6 org.kde.plasmashell /PlasmaShell \
+      org.kde.PlasmaShell.evaluateScript "$launcher_js"
+  elif command -v qdbus >/dev/null 2>&1; then
+    qdbus org.kde.plasmashell /PlasmaShell \
+      org.kde.PlasmaShell.evaluateScript "$launcher_js"
+  elif command -v dbus-send >/dev/null 2>&1; then
+    dbus-send --session --dest=org.kde.plasmashell --type=method_call \
+      /PlasmaShell org.kde.PlasmaShell.evaluateScript string:"$launcher_js"
+  else
+    return 1
+  fi
+}
+
+if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+  i=0
+  while [ "$i" -lt 20 ]; do
+    if apply_live_layout >/dev/null 2>&1; then
+      break
+    fi
+    i=$((i + 1))
+    sleep 1
+  done
+fi
+
 exit 0
