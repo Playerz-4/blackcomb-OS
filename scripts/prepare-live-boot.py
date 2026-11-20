@@ -98,9 +98,9 @@ def write_live_session_fixes(boot_dir):
     repo = scripts.parent
     live = boot_dir / 'usr/share/blackcomb/live'
     live.mkdir(parents=True, exist_ok=True)
-    names = ('sddm-wait.conf', 'live-vm-display.sh', 'live-vm-display.desktop',
-             'live-keyboard.rules', 'blackcomb-wallpaper.sh',
-             'blackcomb-wallpaper.desktop')
+    names = ('sddm-wait.conf', 'plasmalogin-wait.conf', 'live-vm-display.sh',
+             'live-vm-display.desktop', 'live-keyboard.rules',
+             'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())
     (live / 'kim-stargazer.png').write_bytes(

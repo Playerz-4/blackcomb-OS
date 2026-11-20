@@ -1,13 +1,42 @@
 #!/bin/sh
-# Best effort: pick a modest KMS mode so Plasma fits a typical VirtualBox
-# window without Guest Additions. Installed into the live root at boot.
+# Best effort: pick a modest display mode so Plasma fits a typical VirtualBox
+# window without Guest Additions. Works for both the X11 and Wayland sessions.
 set -eu
 state="${XDG_STATE_HOME:-$HOME/.local/state}/blackcomb"
 [ ! -e "$state/vm-display-initialized" ] || exit 0
 systemd-detect-virt --vm >/dev/null 2>&1 || exit 0
+
+done_ok() {
+  mkdir -p "$state"
+  : > "$state/vm-display-initialized"
+}
+
+# X11: xrandr is the direct, reliable path. Prefer 1024x768, then 1280x720,
+# then 800x600; only use modes the connected output actually advertises.
+if [ -n "${DISPLAY:-}" ] && command -v xrandr >/dev/null 2>&1; then
+  info=$(xrandr --query 2>/dev/null || true)
+  output=$(printf '%s\n' "$info" | awk '$2 == "connected" { print $1; exit }')
+  if [ -n "$output" ]; then
+    modes=$(printf '%s\n' "$info" | awk -v o="$output" '
+      $1 == o { found = 1; next }
+      found && $2 == "connected" { exit }
+      found && /^[ \t]*[0-9]+x[0-9]+/ { print }
+    ')
+    for mode in 1024x768 1280x720 800x600; do
+      if printf '%s\n' "$modes" | grep -Eq "^[ \t]*${mode}([ \t]|$)"; then
+        if xrandr --output "$output" --mode "$mode" >/dev/null 2>&1; then
+          done_ok
+          exit 0
+        fi
+      fi
+    done
+  fi
+fi
+
+# Wayland fallback: ask KWin/KScreen for a modest mode. The mode numbers are
+# exactly those printed by kscreen-doctor --outputs.
 command -v kscreen-doctor >/dev/null 2>&1 || exit 0
 command -v python3 >/dev/null 2>&1 || exit 0
-
 info=''
 i=0
 while [ "$i" -lt 15 ]; do
@@ -17,9 +46,6 @@ while [ "$i" -lt 15 ]; do
   sleep 2
 done
 case $info in *Modes:*) ;; *) exit 0 ;; esac
-
-# Prefer 1024x768, then 1280x720, then the smallest advertised mode. Use the
-# mode numbers exactly as kscreen-doctor prints them.
 chosen=$(printf '%s\n' "$info" | python3 -c '
 import re
 import sys
@@ -35,7 +61,6 @@ if out and modes:
 [ -n "$chosen" ] || exit 0
 set -- $chosen
 if kscreen-doctor "output.$1.mode.$2" >/dev/null 2>&1; then
-  mkdir -p "$state"
-  : > "$state/vm-display-initialized"
+  done_ok
 fi
 exit 0

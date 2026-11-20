@@ -101,23 +101,23 @@ Fedora KDE 43+ can boot to a black screen because Plymouth holds a `/dev/dri/car
 
 If a machine still boots to black, a one-time test with Plymouth fully disabled can isolate the handoff: select **Boot Blackcomb**, press `e`, append `plymouth.enable=0` to the line beginning with `linux`, and press Ctrl+X or F10.
 
-#### Plasma start-up fix: SDDM waits for Plymouth
+#### Plasma start-up fix: Plasma Login Manager waits for Plymouth
 
-The black-screen/terminal-only symptom is a race: with `rhgb` kept, SDDM can start before Plymouth releases the GPU, so KWin cannot open `/dev/dri/card*` and Plasma never paints. A small `sddm.service` drop-in makes SDDM wait for `plymouth-quit.service` and pause briefly before starting. This keeps the splash **and** loads Plasma.
+The black-screen/wallpaper-only symptom is a race: with `rhgb` kept, the display manager can start before Plymouth releases the GPU, so KWin cannot open `/dev/dri/card*` and Plasma never paints. Inspection of Fedora 45's live image shows it uses **Plasma Login Manager** (`plasmalogin.service`), not SDDM, so Blackcomb now ships drop-ins for **both** services. Each waits for `plymouth-quit.service` (not `plymouth-quit-wait.service`, which would create an ordering cycle) and pauses briefly before starting. This keeps the splash **and** lets Plasma load. No safe-graphics mode is used.
 
-The drop-in is copied into the writable live root by a dracut **pre-pivot hook** inside the existing `dracut-pre-pivot.service` — after the live overlay is mounted and before switch-root. It adds **no new systemd unit** to the boot transaction, runs no boot-critical command, and always exits 0, so it cannot put the session into emergency mode.
+The settings are copied into the writable live root by a dracut **pre-pivot hook** inside the existing `dracut-pre-pivot.service` — after the live overlay is mounted and before switch-root. It adds **no new systemd unit** to the boot transaction, runs no boot-critical command, and always exits 0, so it cannot put the session into emergency mode.
 
 #### Live-session keyboard, display and wallpaper
 
 The same hook applies these automatically, with no command from you:
 
 - the active live user can change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt (live media has no root password);
-- a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. Physical hardware is untouched;
+- a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. It also supports `xrandr` if an X11 session is present. Physical hardware is untouched;
 - `kim-stargazer.png` is the initial live-session wallpaper.
 
 The old opt-in script (`blackcomb/apply-live-fixes.sh`) is still shipped as a manual fallback for earlier media; you do not need it with this build.
 
-VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**. A duplicate mouse pointer is normally VirtualBox pointer integration; Guest Additions or host mouse capture resolves it.
+VirtualBox cannot truly follow the host window without Guest Additions. For exact window-following with the live ISO, use **View → Scaled Mode** on the host. In the installed system, install Guest Additions and enable **View → Auto-resize Guest Display**. Fedora 45's live session provides only Plasma Wayland, not Plasma X11; a duplicate pointer under VirtualBox is a host/guest pointer-integration artefact and can be avoided with **View → Mouse Integration** off on the host.
 
 ### VirtualBox black-screen and kernel-panic diagnostics
 

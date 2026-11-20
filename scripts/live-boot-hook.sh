@@ -13,17 +13,27 @@ dst=/sysroot
 [ -d "$src" ] || exit 0
 [ -d "$dst/etc" ] || exit 0
 
-mkdir -p "$dst/etc/systemd/system/sddm.service.d" \
+mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
+         "$dst/etc/systemd/system/sddm.service.d" \
+         "$dst/etc/sddm.conf.d" \
+         "$dst/etc/plasmalogin.conf.d" \
          "$dst/etc/xdg/autostart" \
          "$dst/etc/polkit-1/rules.d" \
          "$dst/usr/local/bin" \
          "$dst/usr/share/backgrounds/blackcomb" 2>/dev/null || exit 0
 
-# SDDM must wait for Plymouth to release the DRM device (RHBZ 2404966).
+# Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
+# start before Plymouth releases the DRM device (RHBZ 2404966). Wait only for
+# plymouth-quit.service; plymouth-quit-wait.service is ordered after the
+# display manager and would create a cycle. Drop-ins for absent units are
+# ignored, so shipping both is harmless.
+cp -f "$src/plasmalogin-wait.conf" \
+  "$dst/etc/systemd/system/plasmalogin.service.d/10-blackcomb-wait.conf" 2>/dev/null || :
 cp -f "$src/sddm-wait.conf" \
   "$dst/etc/systemd/system/sddm.service.d/10-blackcomb-wait.conf" 2>/dev/null || :
 
-# VM display autostart.
+# VM display autostart. This keeps working when Plasma loads; the helper uses
+# KScreen on Wayland and xrandr if an X11 session is ever present.
 cp -f "$src/live-vm-display.sh" "$dst/usr/local/bin/blackcomb-vm-display" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-vm-display" 2>/dev/null || :
 cp -f "$src/live-vm-display.desktop" \

@@ -40,12 +40,12 @@ still involved.
 
 LIVE SESSION START-UP, KEYBOARD AND SCREEN SIZE:
 Plasma is started only after Plymouth has released the graphics device, so
-the splash and the desktop both work. The active live user can also change
-the system keyboard layout without the root-password prompt, a virtual
-machine picks a modest screen mode (preferring 1024x768) at login, and
-kim-stargazer is the initial wallpaper. These settings are applied to the
-live session as it starts; no command is needed. They are copied by a dracut
-pre-pivot hook that runs inside the existing dracut-pre-pivot service and
+the splash and the desktop both work. Drop-ins are supplied for both SDDM and
+Fedora 44+'s Plasma Login Manager; Fedora 45 uses the latter. The active live
+user can change the system keyboard layout without the root-password prompt,
+a virtual machine picks a modest screen mode (preferring 1024x768) at login,
+and kim-stargazer is the initial wallpaper. No command is needed. A dracut
+pre-pivot hook copies these settings into the live session as it starts; it
 adds no boot-critical unit, so booting is unaffected.
 
 The apply-live-fixes.sh script on this media is only a manual fallback for
@@ -54,8 +54,9 @@ older Blackcomb media. You do not need it with this build.
 VirtualBox cannot truly follow the host window without Guest Additions. For
 exact window-following with this live media, use View > Scaled Mode on the
 host. In the installed system, install Guest Additions and enable View >
-Auto-resize Guest Display. A duplicate mouse pointer is normally VirtualBox
-pointer integration; Guest Additions or host mouse capture resolves it.
+Auto-resize Guest Display. Fedora 45's live session provides only Plasma
+Wayland; if you see two pointers, turn off View > Mouse Integration on the
+host.
 
 VirtualBox normally uses VMSVGA for Linux guests. Changing to VBoxSVGA is not
 a confirmed fix and caused a kernel panic in one reported Blackcomb VM. If it
