@@ -40,6 +40,16 @@ boot without the Blackcomb splash overlay, press e on the normal boot entry,
 delete only ($root)/blackcomb-boot/plymouth.cpio from the initrd line and
 boot with Ctrl+X or F10; this is temporary and may show Fedora's splash.
 
+If the wallpaper appears but the panel never loads, try pressing Alt+F2 and
+running:
+
+  systemctl --user restart plasma-plasmashell.service
+
+This is a temporary recovery attempt, not a confirmed fix. If it fails, the
+following command in a terminal may show useful errors:
+
+  journalctl --user -b -u plasma-plasmashell.service --no-pager -n 50
+
 If the VM window is oversized, try View > Scaled Mode (Host+C); this scales
 the picture, not the guest resolution. For two pointers, try turning off
 Input > Mouse Integration, click inside the VM to capture the mouse and press
