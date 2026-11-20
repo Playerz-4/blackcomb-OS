@@ -114,10 +114,12 @@ def write_live_session_fixes(boot_dir):
              'blackcomb-launcher.desktop')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())
-    (live / 'kim-stargazer.png').write_bytes(
-        (repo / 'backgrounds' / 'kim-stargazer.png').read_bytes())
-    (live / 'blackcomb-launcher.png').write_bytes(
-        (repo / 'assets/branding' / 'blackcomb-launcher.png').read_bytes())
+    # All backgrounds go into the live root, not just the default one, so the
+    # live wallpaper picker shows every Kim/Blackcomb image.
+    for source in sorted((repo / 'backgrounds').glob('*.png')):
+        (live / source.name).write_bytes(source.read_bytes())
+    (live / 'crescent-moon-start-icon.png').write_bytes(
+        (repo / 'assets/branding' / 'crescent-moon-start-icon.png').read_bytes())
     (live / 'live-vm-display.sh').chmod(0o755)
     (live / 'blackcomb-wallpaper.sh').chmod(0o755)
     (live / 'blackcomb-launcher.sh').chmod(0o755)

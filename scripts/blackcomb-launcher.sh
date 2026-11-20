@@ -5,7 +5,7 @@
 # the live user after Plasma has created its panel configuration.
 set -eu
 
-icon=/usr/share/blackcomb/branding/blackcomb-launcher.png
+icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png
 cfg="${XDG_CONFIG_HOME:-$HOME/.config}/plasma-org.kde.plasma.desktop-appletsrc"
 
 i=0

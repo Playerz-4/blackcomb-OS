@@ -18,7 +18,7 @@ grep -Fq 'plasmalogin.service.d/10-blackcomb-wait.conf' "$hook"
 grep -Fq 'plasmalogin.conf.d/99-blackcomb-live.conf' "$hook"
 grep -Fq 'plasmalogin.conf.d/50-blackcomb-wallpaper.conf' "$hook"
 grep -Fq '00-blackcomb-live-keyboard.rules' "$hook"
-grep -Fq 'blackcomb-launcher.png' "$hook"
+grep -Fq 'crescent-moon-start-icon.png' "$hook"
 grep -Fq 'blackcomb-launcher.desktop' "$hook"
 grep -Fq 'plymouth-quit-wait' "$hook"
 grep -Fq 'exit 0' "$hook"
@@ -56,12 +56,13 @@ grep -Fq 'plasma-workspace/env/99-blackcomb-kwin-vm.sh' "$hook"
 grep -Fq 'xrandr --output' \
   "$tmp/extracted/usr/share/blackcomb/live/live-vm-display.sh"
 test -x "$tmp/extracted/usr/share/blackcomb/live/live-vm-display.sh"
-cmp "$tmp/extracted/usr/share/blackcomb/live/kim-stargazer.png" \
-  "$root/backgrounds/kim-stargazer.png"
-cmp "$tmp/extracted/usr/share/blackcomb/live/blackcomb-launcher.png" \
-  "$root/assets/branding/blackcomb-launcher.png"
+for bg in "$root"/backgrounds/*.png; do
+  cmp "$tmp/extracted/usr/share/blackcomb/live/$(basename "$bg")" "$bg"
+done
+cmp "$tmp/extracted/usr/share/blackcomb/live/crescent-moon-start-icon.png" \
+  "$root/assets/branding/crescent-moon-start-icon.png"
 launcher="$tmp/extracted/usr/share/blackcomb/live/blackcomb-launcher.sh"
-grep -Fxq 'icon=/usr/share/blackcomb/branding/blackcomb-launcher.png' "$launcher"
+grep -Fxq 'icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png' "$launcher"
 grep -Fq 'org.kde.plasma.kickoff' "$launcher"
 test -x "$launcher"
 echo 'Uncompressed live boot archive test passed.'

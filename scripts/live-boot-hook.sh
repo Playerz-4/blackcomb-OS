@@ -63,17 +63,24 @@ cp -f "$src/live-vm-display.desktop" \
 cp -f "$src/live-keyboard.rules" \
   "$dst/etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules" 2>/dev/null || :
 
-# Initial wallpaper for new live users and the PLM greeter.
-cp -f "$src/kim-stargazer.png" \
-  "$dst/usr/share/backgrounds/blackcomb/kim-stargazer.png" 2>/dev/null || :
+# Initial wallpaper for new live users and the PLM greeter. Copy every staged
+# background so the live wallpaper picker has all Kim/Blackcomb images, not only
+# the default stargazer image.
+for bg in "$src"/*.png; do
+  [ -e "$bg" ] || continue
+  case "$(basename "$bg")" in
+    crescent-moon-start-icon.png) continue ;;
+  esac
+  cp -f "$bg" "$dst/usr/share/backgrounds/blackcomb/" 2>/dev/null || :
+done
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-wallpaper.desktop" 2>/dev/null || :
 
 # Plasma application-launcher icon supplied with Blackcomb.
-cp -f "$src/blackcomb-launcher.png" \
-  "$dst/usr/share/blackcomb/branding/blackcomb-launcher.png" 2>/dev/null || :
+cp -f "$src/crescent-moon-start-icon.png" \
+  "$dst/usr/share/blackcomb/branding/crescent-moon-start-icon.png" 2>/dev/null || :
 cp -f "$src/blackcomb-launcher.sh" \
   "$dst/usr/local/bin/blackcomb-launcher" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-launcher" 2>/dev/null || :

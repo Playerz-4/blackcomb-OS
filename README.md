@@ -120,8 +120,8 @@ The same hook applies these automatically, with no command from you:
 
 - the live user can change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt. The polkit rule matches `liveuser` directly and does not require an "active" session flag (live media has no root password);
 - a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. It also supports `xrandr` if an X11 session is present. Physical hardware is untouched;
-- `kim-stargazer.png` is both the initial live-session wallpaper and the Plasma Login Manager greeter wallpaper;
-- the supplied `blackcomb-launcher.png` is applied automatically as the Plasma application-launcher icon. No SVG editing or manual icon picking is needed.
+- `kim-stargazer.png` is both the initial live-session wallpaper and the Plasma Login Manager greeter wallpaper. All other Kim and Blackcomb backgrounds are also copied into the live session so they appear in Plasma's wallpaper picker;
+- the supplied `crescent-moon-start-icon.png` is applied automatically as the Plasma application-launcher icon. No SVG editing or manual icon picking is needed.
 
 The old opt-in script (`blackcomb/apply-live-fixes.sh`) is still shipped as a manual fallback for earlier media; you do not need it with this build.
 

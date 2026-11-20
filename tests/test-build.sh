@@ -58,7 +58,7 @@ case " $* " in
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
-    test -f "$payload/assets/branding/blackcomb-launcher.png"
+    test -f "$payload/assets/branding/crescent-moon-start-icon.png"
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
     test -f "$payload/scripts/blackcomb-launcher.sh"
     test -f "$payload/scripts/blackcomb-launcher.desktop"
@@ -85,10 +85,16 @@ test -f usr/share/blackcomb/live/sddm-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-autologin.conf
 test -f usr/share/blackcomb/live/plasmalogin-wallpaper.conf
-test -f usr/share/blackcomb/live/blackcomb-launcher.png
+test -f usr/share/blackcomb/live/crescent-moon-start-icon.png
 test -f usr/share/blackcomb/live/blackcomb-launcher.sh
 test -f usr/share/blackcomb/live/blackcomb-launcher.desktop
 test -f usr/share/blackcomb/live/kim-stargazer.png
+test -f usr/share/blackcomb/live/kim-alpine.png
+test -f usr/share/blackcomb/live/kim-sunrise.png
+test -f usr/share/blackcomb/live/blackcomb-aurora.png
+test -f usr/share/blackcomb/live/blackcomb-blue-hour.png
+test -f usr/share/blackcomb/live/blackcomb-midnight.png
+test -f usr/share/blackcomb/live/blackcomb-moonlit-forest.png
 printf 'mock archive'
 MOCK
 cat > "$tmp/bin/implantisomd5" <<'MOCK'
