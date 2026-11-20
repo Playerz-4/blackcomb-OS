@@ -23,7 +23,7 @@ if grep -q 'initrd-switch-root.target.wants' "$hook"; then
 fi
 wait="$tmp/extracted/usr/share/blackcomb/live/sddm-wait.conf"
 grep -Fxq 'After=plymouth-quit.service' "$wait"
-if grep -q 'plymouth-quit-wait.service' "$wait"; then
+if grep -Eq '^[[:space:]]*After=.*plymouth-quit-wait\.service' "$wait"; then
   echo 'plymouth-quit-wait would create an ordering cycle' >&2
   exit 1
 fi
