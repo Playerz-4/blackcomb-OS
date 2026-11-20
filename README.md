@@ -103,7 +103,7 @@ If a machine still boots to black, a one-time test with Plymouth fully disabled 
 
 #### Plasma start-up fix: Plymouth handoff plus KWin VM settings
 
-The original black-screen symptom is a Plymouth/DRM handoff race. Fedora 45's `plasmalogin.service` already waits for `plymouth-quit.service` and runs `udevadm settle`; Blackcomb additionally ships drop-ins for **both** Plasma Login Manager and SDDM that wait and pause briefly, without using `plymouth-quit-wait.service` (which can create an ordering cycle). The splash and Plasma can therefore both run.
+The original black-screen symptom is a Plymouth/DRM handoff race. Fedora 45's `plasmalogin.service` already waits for `plymouth-quit.service` and runs `udevadm settle`; Blackcomb additionally ships drop-ins for **both** Plasma Login Manager and SDDM that wait and pause briefly, without using `plymouth-quit-wait.service` (which can create an ordering cycle). A per-seat PLM autologin override (`[Autologin][seat0]`) also reinforces Fedora's `liveuser`/`plasma.desktop` setting, avoiding the wallpaper-only greeter if the main config's global values are ignored. The splash and Plasma can therefore both run.
 
 A wallpaper-and-cursor with no panels is a different failure: Fedora 45 KDE is Wayland-only, and KWin's atomic DRM mode-setting and hardware cursor plane are unreliable with VirtualBox's VMSVGA driver. The default boot entry now sets KDE's documented VM variables through `systemd.setenv=`:
 

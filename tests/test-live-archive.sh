@@ -15,6 +15,7 @@ hook="$tmp/extracted/var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh"
 test -x "$hook"
 grep -Fq 'sddm.service.d/10-blackcomb-wait.conf' "$hook"
 grep -Fq 'plasmalogin.service.d/10-blackcomb-wait.conf' "$hook"
+grep -Fq 'plasmalogin.conf.d/99-blackcomb-live.conf' "$hook"
 grep -Fq 'plymouth-quit-wait' "$hook"
 grep -Fq 'exit 0' "$hook"
 if grep -q 'initrd-switch-root.target.wants' "$hook"; then
@@ -30,6 +31,10 @@ fi
 grep -Fxq 'ExecStartPre=/bin/sleep 5' "$wait"
 grep -Fxq 'ExecStartPre=/bin/sleep 5' \
   "$tmp/extracted/usr/share/blackcomb/live/plasmalogin-wait.conf"
+autologin="$tmp/extracted/usr/share/blackcomb/live/plasmalogin-autologin.conf"
+grep -Fxq '[Autologin][seat0]' "$autologin"
+grep -Fxq 'User=liveuser' "$autologin"
+grep -Fxq 'Session=plasma.desktop' "$autologin"
 kwin_env="$tmp/extracted/usr/share/blackcomb/live/kwin-vm-env.sh"
 grep -Fxq 'export KWIN_DRM_NO_AMS=1' "$kwin_env"
 grep -Fxq 'export KWIN_FORCE_SW_CURSOR=1' "$kwin_env"

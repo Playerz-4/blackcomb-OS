@@ -34,6 +34,12 @@ cp -f "$src/plasmalogin-wait.conf" \
 cp -f "$src/sddm-wait.conf" \
   "$dst/etc/systemd/system/sddm.service.d/10-blackcomb-wait.conf" 2>/dev/null || :
 
+# Reinforce Fedora's runtime autologin. PLM reads named [Autologin][seatN]
+# groups separately from the main config, so this cannot be overridden by the
+# global User/Session values that livesys writes into /etc/plasmalogin.conf.
+cp -f "$src/plasmalogin-autologin.conf" \
+  "$dst/etc/plasmalogin.conf.d/99-blackcomb-live.conf" 2>/dev/null || :
+
 # KWin in a VM: legacy DRM mode plus software cursor, per KDE's VirtualBox
 # documentation. Also set from the kernel command line so the greeter inherits
 # it; these copies cover the live user's Plasma session even if it is restarted.

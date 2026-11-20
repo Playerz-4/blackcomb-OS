@@ -47,7 +47,8 @@ plus a software cursor. They are not safe graphics; modesetting stays on.
 
 LIVE SESSION START-UP, KEYBOARD AND SCREEN SIZE:
 Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
-Fedora 45 uses the latter. A virtual machine picks a modest screen mode
+Fedora 45 uses the latter. A per-seat autologin override reinforces the
+liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
 layout without the root-password prompt, and kim-stargazer is the initial
 wallpaper. No command is needed. A dracut pre-pivot hook copies these settings

@@ -80,6 +80,7 @@ grep -qx 'Theme=blackcomb-live' etc/plymouth/plymouthd.conf
 test -f var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
 test -f usr/share/blackcomb/live/sddm-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-wait.conf
+test -f usr/share/blackcomb/live/plasmalogin-autologin.conf
 test -f usr/share/blackcomb/live/kim-stargazer.png
 printf 'mock archive'
 MOCK
