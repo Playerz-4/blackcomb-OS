@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/themes/mountain/metadata.json" "$HERE/themes/mountain/contents/defaults" "$HERE/scripts/mountain-lookandfeel.conf" "$HERE/scripts/blackcomb-update.sh" "$HERE/scripts/blackcomb-update.desktop" "$HERE/scripts/blackcomb-update.conf" "$HERE/scripts/blackcomb-version" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/themes/mountain/metadata.json" "$HERE/themes/mountain/contents/defaults" "$HERE/scripts/mountain-lookandfeel.conf" "$HERE/scripts/blackcomb-update.sh" "$HERE/scripts/blackcomb-update.desktop" "$HERE/scripts/blackcomb-update.conf" "$HERE/scripts/blackcomb-version" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/blackcomb-macos.sh" "$HERE/scripts/blackcomb-macos.desktop" "$HERE/scripts/install-darling.sh" "$HERE/scripts/install-darling.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -82,7 +82,15 @@ install -m 644 "$HERE/scripts/blackcomb-version" /usr/local/lib/blackcomb/versio
 # helper that also understands Wineskin-style macOS .app wrappers.
 install -m 755 "$HERE/scripts/blackcomb-wine.sh" /usr/local/bin/blackcomb-wine
 install -m 644 "$HERE/scripts/blackcomb-wine.desktop" /usr/share/applications/blackcomb-wine.desktop
-printf '[Default Applications]\napplication/x-ms-dos-executable=blackcomb-wine.desktop\napplication/x-dosexec=blackcomb-wine.desktop\napplication/x-msi=blackcomb-wine.desktop\napplication/x-bat=blackcomb-wine.desktop\napplication/x-ms-shortcut=blackcomb-wine.desktop\n' > /etc/xdg/mimeapps.list
+
+# Native macOS .app/.dmg support is provided by Darling. The helper and its
+# opt-in source installer are always installed; building Darling itself is
+# optional because it is large and its GUI compatibility is still experimental.
+install -m 755 "$HERE/scripts/blackcomb-macos.sh" /usr/local/bin/blackcomb-macos
+install -m 644 "$HERE/scripts/blackcomb-macos.desktop" /usr/share/applications/blackcomb-macos.desktop
+install -m 755 "$HERE/scripts/install-darling.sh" /usr/local/bin/blackcomb-install-darling
+install -m 644 "$HERE/scripts/install-darling.desktop" /usr/share/applications/install-darling.desktop
+printf '[Default Applications]\napplication/x-ms-dos-executable=blackcomb-wine.desktop\napplication/x-dosexec=blackcomb-wine.desktop\napplication/x-msi=blackcomb-wine.desktop\napplication/x-bat=blackcomb-wine.desktop\napplication/x-ms-shortcut=blackcomb-wine.desktop\napplication/x-apple-diskimage=blackcomb-macos.desktop\napplication/x-dmg=blackcomb-macos.desktop\napplication/vnd.apple.dmg=blackcomb-macos.desktop\napplication/x-macapplication=blackcomb-macos.desktop\napplication/x-apple-app=blackcomb-macos.desktop\napplication/x-apple-macos-pkg=blackcomb-macos.desktop\n' > /etc/xdg/mimeapps.list
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database /usr/share/applications >/dev/null 2>&1 || :
 fi
@@ -114,6 +122,21 @@ if [[ -n ${SUDO_USER:-} && $SUDO_USER != root ]]; then
       set_user_config kwinrc org.kde.kdecoration2 theme Breeze
       set_user_config ksplashrc KSplash Theme org.kde.breeze.desktop
     fi
+  fi
+fi
+
+# Native macOS support is opt-in: Darling has no Fedora 45 package and must be
+# built from its official source release. BLACKCOMB_INSTALL_DARLING=1 enables
+# this in unattended installs; the interactive prompt defaults to no.
+if [[ ${BLACKCOMB_INSTALL_DARLING:-0} == 1 ]]; then
+  /usr/local/bin/blackcomb-install-darling --yes || \
+    echo 'Warning: Darling installation failed; blackcomb-macos is installed but needs Darling.' >&2
+elif [[ ${1:-} != --yes ]]; then
+  printf 'Build and install experimental native macOS app support (Darling)? [y/N] '
+  read -r answer
+  if [[ $answer == y || $answer == Y || $answer == yes || $answer == YES ]]; then
+    /usr/local/bin/blackcomb-install-darling --yes || \
+      echo 'Warning: Darling installation failed; blackcomb-macos is installed but needs Darling.' >&2
   fi
 fi
 

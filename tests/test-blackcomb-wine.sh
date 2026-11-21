@@ -14,6 +14,7 @@ grep -Fq 'MimeType=application/x-ms-dos-executable;' "$desktop"
 grep -Fq 'application/x-msi=' "$desktop" || grep -Fq 'application/x-msi;' "$desktop"
 grep -Fq 'Wineskin-style .app directory' "$script"
 grep -Fq 'native macOS Mach-O app' "$script"
+grep -Fq 'handing off to blackcomb-macos' "$script"
 
 tmp=$(mktemp -d)
 trap 'rm -rf -- "$tmp"' EXIT
@@ -23,8 +24,13 @@ cat > "$tmp/bin/wine" <<'MOCK'
 set -eu
 printf '%s\n' "$*" >> "$WINE_LOG"
 MOCK
-chmod +x "$tmp/bin/wine"
-export PATH="$tmp/bin:$PATH" WINE_LOG="$tmp/wine.log"
+cat > "$tmp/bin/blackcomb-macos" <<'MOCK'
+#!/usr/bin/env bash
+set -eu
+printf '%s\n' "$*" >> "$MACOS_LOG"
+MOCK
+chmod +x "$tmp/bin/wine" "$tmp/bin/blackcomb-macos"
+export PATH="$tmp/bin:$PATH" WINE_LOG="$tmp/wine.log" MACOS_LOG="$tmp/macos.log"
 
 # A Wineskin wrapper must launch its embedded Windows executable.
 printf 'windows payload' > "$tmp/app/Contents/Resources/TestApp.exe"
@@ -42,13 +48,24 @@ tar -czf "$tmp/wrapper.tar.gz" -C "$tmp/tarroot" TestApp.app
 bash "$script" "$tmp/wrapper.tar.gz" >/dev/null 2>&1
 grep -Fq 'TestApp.app/Contents/Resources/TestApp.exe' "$tmp/wine.log"
 
-# A true Mach-O macOS app must be rejected clearly, not passed to Wine.
+# A native Mach-O app must be handed to the Darling helper, not passed to Wine.
 printf '#!/bin/sh\n' > "$tmp/native/Contents/MacOS/NativeApp"
 chmod +x "$tmp/native/Contents/MacOS/NativeApp"
-if bash "$script" "$tmp/native" > "$tmp/native.out" 2>&1; then
-  echo 'Native macOS app was accepted by Wine' >&2
+bash "$script" "$tmp/native" > "$tmp/native.out" 2>&1
+grep -Fq "$tmp/native" "$tmp/macos.log"
+if grep -Fq "$tmp/native" "$tmp/wine.log"; then
+  echo 'Native macOS app was passed to Wine' >&2
   exit 1
 fi
-grep -Fq 'native macOS Mach-O app' "$tmp/native.out"
+grep -Fq 'handing off to blackcomb-macos' "$tmp/native.out"
+
+# Without the Darling helper, the error must still be explicit.
+mkdir -p "$tmp/fallback-bin"
+cp "$tmp/bin/wine" "$tmp/fallback-bin/wine"
+if PATH="$tmp/fallback-bin:/usr/bin:/bin" bash "$script" "$tmp/native" > "$tmp/fallback.out" 2>&1; then
+  echo 'Native macOS app was accepted without Darling' >&2
+  exit 1
+fi
+grep -Fq 'native macOS Mach-O app' "$tmp/fallback.out"
 
 echo 'Blackcomb Wine tests passed.'

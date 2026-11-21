@@ -98,10 +98,12 @@ Blackcomb Plymouth theme, using the transparent logo. After setup, find Blackcom
 Update under Settings or run "blackcomb-update". It checks GitHub Releases,
 verifies the release checksum, upgrades Fedora packages and refreshes Blackcomb
 assets. Run "blackcomb-wine" to launch Windows apps or Wineskin-style macOS .app
-wrappers; true Mach-O macOS apps are not supported by Wine. Reboot to see the
-installed-system theme. Firmware logos shown before the operating system starts
-are not changed. Some media formats may require additional codecs not supplied
-by Fedora.
+wrappers. Native macOS .app, .dmg and .pkg files use "blackcomb-macos"; install
+Darling first with "blackcomb-install-darling" or Settings -> Install macOS App
+Support. Darling's GUI compatibility is experimental and app-dependent. Reboot
+to see the installed-system theme. Firmware logos shown before the operating
+system starts are not changed. Some media formats may require additional codecs
+not supplied by Fedora.
 
 To return to Fedora's default Plymouth theme, run:
 

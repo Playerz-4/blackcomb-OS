@@ -68,6 +68,8 @@ install -m 755 "$ROOT_DIR/scripts/blackcomb-update.sh" "$work/blackcomb/scripts/
 install -m 644 "$ROOT_DIR/scripts/blackcomb-update.desktop" "$ROOT_DIR/scripts/blackcomb-update.conf" "$ROOT_DIR/scripts/blackcomb-version" "$work/blackcomb/scripts/"
 install -m 755 "$ROOT_DIR/scripts/blackcomb-wine.sh" "$work/blackcomb/scripts/blackcomb-wine.sh"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wine.desktop" "$work/blackcomb/scripts/"
+install -m 755 "$ROOT_DIR/scripts/blackcomb-macos.sh" "$ROOT_DIR/scripts/install-darling.sh" "$work/blackcomb/scripts/"
+install -m 644 "$ROOT_DIR/scripts/blackcomb-macos.desktop" "$ROOT_DIR/scripts/install-darling.desktop" "$work/blackcomb/scripts/"
 for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
   install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
 done

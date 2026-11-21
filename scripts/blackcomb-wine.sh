@@ -90,7 +90,12 @@ run_app_bundle() {
     return $?
   fi
   if native=$(native_macos_executable "$app") && [[ -n $native ]]; then
-    die 'This is a native macOS Mach-O app. Wine cannot run it; use Darling or a virtual machine.'
+    if command -v blackcomb-macos >/dev/null 2>&1; then
+      printf 'Native macOS app detected; handing off to blackcomb-macos (Darling).\n' >&2
+      blackcomb-macos "$app" "$@"
+      exit $?
+    fi
+    die 'This is a native macOS Mach-O app. Wine cannot run it; install Darling or use a virtual machine.'
   fi
   die 'No Windows .exe was found in this .app bundle.'
 }

@@ -25,6 +25,7 @@ jobs:
           bash tests/test-live-archive.sh
           bash tests/test-blackcomb-update.sh
           bash tests/test-blackcomb-wine.sh
+          bash tests/test-blackcomb-macos.sh
       - name: Build ISO
         env:
           ISO_SHA256: ${{ inputs.iso_sha256 }}

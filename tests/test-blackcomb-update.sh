@@ -34,7 +34,9 @@ tar -tzf "$tmp/blackcomb-update.tar.gz" > "$tmp/bundle-list"
 for path in blackcomb/setup-blackcomb.sh blackcomb/scripts/blackcomb-update.sh \
             blackcomb/scripts/blackcomb-update.desktop blackcomb/scripts/blackcomb-update.conf \
             blackcomb/scripts/blackcomb-version blackcomb/scripts/blackcomb-wine.sh \
-            blackcomb/scripts/blackcomb-wine.desktop blackcomb/scripts/neofetch \
+            blackcomb/scripts/blackcomb-wine.desktop blackcomb/scripts/blackcomb-macos.sh \
+             blackcomb/scripts/blackcomb-macos.desktop blackcomb/scripts/install-darling.sh \
+             blackcomb/scripts/install-darling.desktop blackcomb/scripts/neofetch \
             blackcomb/backgrounds/kim-stargazer.png blackcomb/assets/branding/crescent-moon-start-icon.png \
             blackcomb/themes/opencode/OpenCode-Catppuccin.colors \
             blackcomb/themes/mountain/metadata.json blackcomb/wallpapers/kim-stargazer/metadata.json; do
