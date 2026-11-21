@@ -76,7 +76,7 @@ install -m 644 "$ROOT_DIR/third-party/neofetch/LICENSE.md" "$work/blackcomb/scri
 install -m 644 "$ROOT_DIR/third-party/neofetch/README.md" "$ROOT_DIR/assets/branding/crescent-moon-neofetch.txt" "$work/blackcomb/scripts/"
 # Opt-in live-session fixes: shipped on the media but never run at boot.
 install -m 755 "$ROOT_DIR/scripts/apply-live-fixes.sh" "$work/blackcomb/apply-live-fixes.sh"
-install -m 644 "$ROOT_DIR/scripts/live-keyboard.rules" "$work/blackcomb/live-keyboard.rules"
+install -m 644 "$ROOT_DIR/scripts/live-keyboard.rules" "$ROOT_DIR/scripts/live-keyboard.pkla" "$work/blackcomb/"
 install -m 755 "$ROOT_DIR/scripts/live-vm-display.sh" "$work/blackcomb/live-vm-display.sh"
 install -m 644 "$ROOT_DIR/scripts/live-vm-display.desktop" "$work/blackcomb/live-vm-display.desktop"
 install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/blackcomb/backgrounds/"

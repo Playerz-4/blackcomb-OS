@@ -118,7 +118,7 @@ The settings are copied into the writable live root by a dracut **pre-pivot hook
 
 The same hook applies these automatically, with no command from you:
 
-- the live user can change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt. The live-only polkit rule allows `org.freedesktop.locale1.set-keyboard` and `set-locale` without depending on a username or "active" session flag, since KDE setup helpers can call D-Bus under a different account and live media has no root password;
+- the live user can change the system keyboard layout without the **"Authentication is required to change the system keyboard layout"** root-password prompt. The live-only polkit rule allows every `org.freedesktop.locale1.*` action without depending on a username or "active" session flag, since KDE/KISS setup helpers can call D-Bus under a different account and live media has no root password. A matching legacy `.pkla` is installed as a fallback;
 - a login autostart script asks KScreen for a modest screen mode (preferring 1024×768) in a virtual machine so Plasma fits a typical VirtualBox window. It also supports `xrandr` if an X11 session is present. Physical hardware is untouched;
 - `kim-stargazer.png` is both the initial live-session wallpaper and the Plasma Login Manager greeter wallpaper. All other Kim and Blackcomb backgrounds are also copied into the live session so they appear in Plasma's wallpaper picker;
 - the supplied `crescent-moon-start-icon.png` is applied automatically as the Plasma application-launcher icon, and the Plasma panel is docked on the **left edge** as a vertical taskbar. No SVG editing or manual icon picking is needed;

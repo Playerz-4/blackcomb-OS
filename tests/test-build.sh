@@ -58,6 +58,8 @@ case " $* " in
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
+    test -f "$payload/live-keyboard.rules"
+    test -f "$payload/live-keyboard.pkla"
     test -f "$payload/assets/branding/crescent-moon-start-icon.png"
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
     test -f "$payload/scripts/blackcomb-launcher.sh"
@@ -90,6 +92,8 @@ test -f usr/share/plymouth/themes/spinner/watermark.png
 test -f usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth
 grep -qx 'Theme=blackcomb-live' etc/plymouth/plymouthd.conf
 test -f var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
+test -f usr/share/blackcomb/live/live-keyboard.rules
+test -f usr/share/blackcomb/live/live-keyboard.pkla
 test -f usr/share/blackcomb/live/sddm-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-autologin.conf

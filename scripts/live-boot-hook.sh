@@ -23,6 +23,8 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/xdg/autostart" \
          "$dst/etc/profile.d" \
          "$dst/etc/polkit-1/rules.d" \
+         "$dst/usr/share/polkit-1/rules.d" \
+         "$dst/var/lib/polkit-1/localauthority/50-local.d" \
          "$dst/home/liveuser/.config/plasma-workspace/env" \
          "$dst/usr/local/bin" \
          "$dst/usr/local/lib/blackcomb/neofetch" \
@@ -67,6 +69,11 @@ cp -f "$src/live-vm-display.desktop" \
 # packaged rules that would otherwise ask for authentication.
 cp -f "$src/live-keyboard.rules" \
   "$dst/etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules" 2>/dev/null || :
+cp -f "$src/live-keyboard.rules" \
+  "$dst/usr/share/polkit-1/rules.d/00-blackcomb-live-keyboard.rules" 2>/dev/null || :
+# Legacy pklocalauthority fallback for the same live-only actions.
+cp -f "$src/live-keyboard.pkla" \
+  "$dst/var/lib/polkit-1/localauthority/50-local.d/00-blackcomb-live-keyboard.pkla" 2>/dev/null || :
 
 # Initial wallpaper for new live users and the PLM greeter. Copy every staged
 # background so the live wallpaper picker has all Kim/Blackcomb images, not only

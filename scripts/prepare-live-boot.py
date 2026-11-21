@@ -109,8 +109,9 @@ def write_live_session_fixes(boot_dir):
     names = ('sddm-wait.conf', 'plasmalogin-wait.conf',
              'plasmalogin-autologin.conf', 'plasmalogin-wallpaper.conf',
              'live-vm-display.sh', 'live-vm-display.desktop', 'kwin-vm-env.sh',
-             'live-keyboard.rules', 'blackcomb-wallpaper.sh',
-             'blackcomb-wallpaper.desktop', 'blackcomb-launcher.sh',
+             'live-keyboard.rules', 'live-keyboard.pkla',
+             'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop',
+             'blackcomb-launcher.sh',
              'blackcomb-launcher.desktop', 'neofetch.conf',
              'neofetch-ascii.conf', 'neofetch-launcher.sh')
     for name in names:
