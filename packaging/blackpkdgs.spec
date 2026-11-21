@@ -6,6 +6,8 @@ Summary:        Blackcomb recommended application bundle
 License:        MIT
 URL:            https://github.com/Playerz-4/blackcomb-OS
 BuildArch:      noarch
+Source0:        blackpkdgs.sh
+Source1:        blackpkdgs-README.md
 
 Requires:       firefox
 Requires:       vlc

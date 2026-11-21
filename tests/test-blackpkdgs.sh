@@ -4,6 +4,8 @@ root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 spec="$root/packaging/blackpkdgs.spec"
 grep -Fxq 'Name:           blackpkdgs' "$spec"
 grep -Fxq 'BuildArch:      noarch' "$spec"
+grep -Fxq 'Source0:        blackpkdgs.sh' "$spec"
+grep -Fxq 'Source1:        blackpkdgs-README.md' "$spec"
 for package in firefox vlc libreoffice-writer kcalc chafa imagemagick; do
   grep -Fxq "Requires:       $package" "$spec"
 done
