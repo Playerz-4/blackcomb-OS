@@ -2,7 +2,7 @@
 Type=Application
 Name=Blackcomb Wine
 GenericName=Windows Compatibility
-Comment=Run Windows apps and Wineskin-style macOS .app wrappers
+Comment=Run Windows apps with Wine
 Exec=blackcomb-wine %f
 Icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png
 Terminal=false

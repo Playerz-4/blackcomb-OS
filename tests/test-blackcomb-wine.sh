@@ -12,60 +12,47 @@ grep -Fq 'blackcomb-wine.sh' "$root/scripts/build-update-bundle.sh"
 grep -Fxq 'Exec=blackcomb-wine %f' "$desktop"
 grep -Fq 'MimeType=application/x-ms-dos-executable;' "$desktop"
 grep -Fq 'application/x-msi=' "$desktop" || grep -Fq 'application/x-msi;' "$desktop"
-grep -Fq 'Wineskin-style .app directory' "$script"
-grep -Fq 'native macOS Mach-O app' "$script"
-grep -Fq 'handing off to blackcomb-macos' "$script"
+
+# Standard Wine only: no Darling, macOS wrapper or .app code paths.
+if grep -Eqi 'darling|macos|wineskin|\.app' "$script" "$desktop" "$root/scripts/setup-blackcomb.sh"; then
+  echo 'macOS compatibility code is still present' >&2
+  exit 1
+fi
+[[ ! -e $root/scripts/blackcomb-macos.sh ]] || { echo 'blackcomb-macos.sh still present' >&2; exit 1; }
+[[ ! -e $root/scripts/install-darling.sh ]] || { echo 'install-darling.sh still present' >&2; exit 1; }
 
 tmp=$(mktemp -d)
 trap 'rm -rf -- "$tmp"' EXIT
-mkdir -p "$tmp/bin" "$tmp/app/Contents/Resources" "$tmp/native/Contents/MacOS" "$tmp/tarroot"
+mkdir -p "$tmp/bin"
 cat > "$tmp/bin/wine" <<'MOCK'
 #!/usr/bin/env bash
 set -eu
+if [[ ${1:-} == --version ]]; then
+  printf 'wine-11.20\n'
+  exit 0
+fi
 printf '%s\n' "$*" >> "$WINE_LOG"
 MOCK
-cat > "$tmp/bin/blackcomb-macos" <<'MOCK'
-#!/usr/bin/env bash
-set -eu
-printf '%s\n' "$*" >> "$MACOS_LOG"
-MOCK
-chmod +x "$tmp/bin/wine" "$tmp/bin/blackcomb-macos"
-export PATH="$tmp/bin:$PATH" WINE_LOG="$tmp/wine.log" MACOS_LOG="$tmp/macos.log"
+chmod +x "$tmp/bin/wine"
+export PATH="$tmp/bin:$PATH" WINE_LOG="$tmp/wine.log"
 
-# A Wineskin wrapper must launch its embedded Windows executable.
-printf 'windows payload' > "$tmp/app/Contents/Resources/TestApp.exe"
-bash "$script" "$tmp/app" >/dev/null 2>&1
-grep -Fq "$tmp/app/Contents/Resources/TestApp.exe" "$tmp/wine.log"
+bash "$script" --check > "$tmp/check.out"
+grep -Fxq 'wine-11.20' "$tmp/check.out"
 
-# MSI files go through msiexec.
+printf 'exe payload' > "$tmp/Program.exe"
+bash "$script" "$tmp/Program.exe" --option
+grep -Fq "$tmp/Program.exe --option" "$WINE_LOG"
+
 : > "$tmp/setup.msi"
-bash "$script" "$tmp/setup.msi" >/dev/null 2>&1
-grep -Fq "msiexec /i $tmp/setup.msi" "$tmp/wine.log"
+bash "$script" "$tmp/setup.msi"
+grep -Fq "msiexec /i $tmp/setup.msi" "$WINE_LOG"
 
-# A compressed Wineskin wrapper containing a .app bundle must also work.
-cp -R "$tmp/app" "$tmp/tarroot/TestApp.app"
-tar -czf "$tmp/wrapper.tar.gz" -C "$tmp/tarroot" TestApp.app
-bash "$script" "$tmp/wrapper.tar.gz" >/dev/null 2>&1
-grep -Fq 'TestApp.app/Contents/Resources/TestApp.exe' "$tmp/wine.log"
+printf 'echo hi' > "$tmp/run.bat"
+bash "$script" "$tmp/run.bat"
+grep -Fq "cmd /c $tmp/run.bat" "$WINE_LOG"
 
-# A native Mach-O app must be handed to the Darling helper, not passed to Wine.
-printf '#!/bin/sh\n' > "$tmp/native/Contents/MacOS/NativeApp"
-chmod +x "$tmp/native/Contents/MacOS/NativeApp"
-bash "$script" "$tmp/native" > "$tmp/native.out" 2>&1
-grep -Fq "$tmp/native" "$tmp/macos.log"
-if grep -Fq "$tmp/native" "$tmp/wine.log"; then
-  echo 'Native macOS app was passed to Wine' >&2
-  exit 1
-fi
-grep -Fq 'handing off to blackcomb-macos' "$tmp/native.out"
-
-# Without the Darling helper, the error must still be explicit.
-mkdir -p "$tmp/fallback-bin"
-cp "$tmp/bin/wine" "$tmp/fallback-bin/wine"
-if PATH="$tmp/fallback-bin:/usr/bin:/bin" bash "$script" "$tmp/native" > "$tmp/fallback.out" 2>&1; then
-  echo 'Native macOS app was accepted without Darling' >&2
-  exit 1
-fi
-grep -Fq 'native macOS Mach-O app' "$tmp/fallback.out"
+: > "$tmp/shortcut.lnk"
+bash "$script" "$tmp/shortcut.lnk"
+grep -Fq "start $tmp/shortcut.lnk" "$WINE_LOG"
 
 echo 'Blackcomb Wine tests passed.'

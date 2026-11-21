@@ -178,27 +178,12 @@ To publish a release, run `scripts/build-update-bundle.sh`, then upload both `bl
 
 ### Wine support
 
-`setup-blackcomb.sh` installs Fedora's Wine package, `winetricks`, `cabextract` and `unzip`, and registers Blackcomb Wine as the default launcher for `.exe`, `.msi` and `.bat` files.
+`setup-blackcomb.sh` installs Fedora's Wine package, `winetricks`, `cabextract` and `unzip`, and registers Blackcomb Wine as the default launcher for `.exe`, `.msi`, `.bat` and `.lnk` files.
 
 ```bash
 blackcomb-wine --check
 blackcomb-wine ~/Downloads/Program.exe
 blackcomb-wine ~/Downloads/Installer.msi
-blackcomb-wine ~/Downloads/Game.app
 ```
 
-`blackcomb-wine` also supports **Wineskin-style macOS `.app` wrappers**: it looks for a Windows `.exe` inside `Contents/Resources` or `Contents/MacOS` and launches it with the system Wine. Compressed `.app` bundles and zip/tar archives containing a `.app` are extracted into a temporary directory first. A native Mach-O `.app` is handed to `blackcomb-macos` when Darling is installed; otherwise the helper reports that Wine cannot run it. Fedora's Wine build is 64-bit only, so some 32-bit Windows programs may still need a separate Wine setup.
-
-### Native macOS app support
-
-Blackcomb includes a separate **Darling** path for native macOS software. **Install macOS App Support** appears in Plasma's Settings launcher and builds Darling from its official source release; this is opt-in because there is no Fedora 45 package, the build is large, and Cocoa GUI support is still experimental.
-
-```bash
-blackcomb-install-darling       # prompt, then build/install Darling
-blackcomb-macos --check          # confirm Darling can start
-blackcomb-macos ~/Downloads/App.app
-blackcomb-macos ~/Downloads/Game.dmg
-blackcomb-macos ~/Downloads/Package.pkg
-```
-
-`blackcomb-macos` copies `.app` bundles into the Darling prefix, attaches `.dmg` images with Darling's `hdiutil`, launches the embedded macOS executable, and runs `.pkg` installers with `installer`. If a `.app` turns out to be a Wineskin wrapper with a Windows `.exe`, it is handed back to `blackcomb-wine` automatically. Compatibility is app-dependent; check the [Darling AppDB](https://appdb.darlinghq.org/) before expecting a specific game or program to work. It cannot guarantee that every macOS app or copy-protected game will run.
+`blackcomb-wine` runs standard Windows executables, installers, batch files and shortcuts with Fedora's Wine. It does not run native macOS apps, `.app` bundles or `.dmg` images. Fedora's Wine build is 64-bit only, so some 32-bit Windows programs may still need a separate Wine setup.

@@ -16,13 +16,11 @@ mkdir -p "$stage/scripts" "$stage/backgrounds" "$stage/assets/branding" \
 
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$stage/setup-blackcomb.sh"
 for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh \
-              create-plymouth-theme.sh install-plymouth-theme.sh blackcomb-update.sh blackcomb-wine.sh \
-               blackcomb-macos.sh install-darling.sh; do
+              create-plymouth-theme.sh install-plymouth-theme.sh blackcomb-update.sh blackcomb-wine.sh; do
   install -m 755 "$ROOT_DIR/scripts/$script" "$stage/scripts/$script"
 done
 for file in blackcomb-wallpaper.desktop blackcomb-launcher.desktop blackcomb-update.desktop \
-            blackcomb-wine.desktop blackcomb-macos.desktop install-darling.desktop \
-            blackcomb-update.conf blackcomb-version mountain-lookandfeel.conf \
+            blackcomb-wine.desktop blackcomb-update.conf blackcomb-version mountain-lookandfeel.conf \
             neofetch.conf neofetch-ascii.conf; do
   install -m 644 "$ROOT_DIR/scripts/$file" "$stage/scripts/$file"
 done
