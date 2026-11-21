@@ -59,7 +59,8 @@ is docked on the left as a vertical taskbar. The bundled neofetch command shows
 that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
 color schemes, selectable in System Settings > Appearance > Color Scheme; the
-live session starts with OpenCode Catppuccin. No command is needed. A dracut
+live session starts with OpenCode Catppuccin. The blackpkdgs helper command is
+also available in the live session. No command is needed for the theme. A dracut
 pre-pivot hook copies these settings into the live session as it starts; it
 adds no boot-critical unit, so booting is unaffected.
 
@@ -92,8 +93,10 @@ repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick;
 neofetch is bundled on this media. Setup installs all seven wallpaper packages
 (with stargazing as the default), the Mountain global theme, the left-side
 vertical taskbar, the neofetch crescent image, the OpenCode Plasma color schemes
-(with OpenCode Catppuccin as the default) and the Blackcomb Plymouth theme,
-using the transparent logo. Reboot to see the
+(with OpenCode Catppuccin as the default), the blackpkdgs helper and the
+Blackcomb Plymouth theme, using the transparent logo. The blackpkdgs RPM is at
+/blackcomb/packages/blackpkdgs.rpm on this media and can be installed with
+"sudo dnf install /path/to/blackcomb/packages/blackpkdgs.rpm". Reboot to see the
 installed-system theme. Firmware logos shown before the operating
 system starts are not changed. Some media formats may require additional
 codecs not supplied by Fedora.

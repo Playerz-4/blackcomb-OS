@@ -163,3 +163,14 @@ sudo dnf remove firefox
 sudo dnf autoremove
 
 ```
+
+### blackpkdgs
+
+`blackpkdgs` is Blackcomb's noarch application-bundle package. It installs Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick, and provides the `blackpkdgs` command to reinstall the bundle later. The built RPM is shipped at `/blackcomb/packages/blackpkdgs.rpm` on the media and as a separate CI artifact:
+
+```bash
+sudo dnf install /path/to/blackpkdgs.rpm
+blackpkdgs
+```
+
+`setup-blackcomb.sh` also installs the helper command at `/usr/local/bin/blackpkdgs` for convenience. No SVG artwork is involved.

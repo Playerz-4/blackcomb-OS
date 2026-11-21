@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/themes/mountain/metadata.json" "$HERE/themes/mountain/contents/defaults" "$HERE/scripts/mountain-lookandfeel.conf" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/themes/mountain/metadata.json" "$HERE/themes/mountain/contents/defaults" "$HERE/scripts/mountain-lookandfeel.conf" "$HERE/scripts/blackpkdgs.sh" "$HERE/scripts/blackpkdgs-README.md" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -32,7 +32,7 @@ if [[ ${1:-} != --yes ]]; then
   [[ $answer == y || $answer == Y || $answer == yes || $answer == YES ]] || exit 0
 fi
 dnf install -y firefox vlc libreoffice-writer kcalc plymouth-theme-spinner chafa imagemagick
-install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/color-schemes /usr/share/wallpapers /usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/defaults /usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/previews /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg/autostart /etc/skel/.config
+install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/blackcomb/blackpkdgs /usr/share/color-schemes /usr/share/wallpapers /usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/defaults /usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/previews /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg/autostart /etc/skel/.config
 install -m 644 "$HERE"/backgrounds/*.png /usr/share/backgrounds/blackcomb/
 
 # Register each background as a Plasma wallpaper package. Loose PNGs are not
@@ -70,6 +70,11 @@ install -m 644 "$HERE/scripts/neofetch-ascii.conf" /usr/local/lib/blackcomb/neof
 install -m 644 "$HERE/assets/branding/crescent-moon-neofetch.txt" /usr/local/lib/blackcomb/neofetch/crescent-moon-neofetch.txt
 install -m 644 "$HERE/scripts/neofetch-LICENSE.md" /usr/local/lib/blackcomb/neofetch/LICENSE.md
 install -m 755 "$HERE/scripts/neofetch-launcher.sh" /usr/local/bin/neofetch
+
+# blackpkdgs helper and documentation. The packaged RPM in /blackcomb/packages
+# installs the same command at /usr/bin/blackpkdgs for DNF users.
+install -m 755 "$HERE/scripts/blackpkdgs.sh" /usr/local/bin/blackpkdgs
+install -m 644 "$HERE/scripts/blackpkdgs-README.md" /usr/share/blackcomb/blackpkdgs/README.md
 
 # Start new users with Mountain and the matching OpenCode Catppuccin scheme.
 # Mountain's package defaults do not set ColorScheme, so the active Plasma

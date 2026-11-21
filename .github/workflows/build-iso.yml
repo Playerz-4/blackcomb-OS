@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Install Fedora build tools
-        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils diffutils python3 dracut cpio
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils diffutils findutils python3 dracut cpio rpm-build
       - uses: actions/checkout@v4
       - name: Check scripts and mock assembly
         run: |
@@ -43,4 +43,11 @@ jobs:
             blackcomb-fedora-45-x86_64.iso.sha256
           if-no-files-found: error
           compression-level: 0
+          retention-days: 3
+      - name: Upload blackpkdgs RPM
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackpkdgs-rpm
+          path: blackpkdgs.rpm
+          if-no-files-found: error
           retention-days: 3

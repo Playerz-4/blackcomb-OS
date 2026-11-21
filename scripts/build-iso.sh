@@ -6,6 +6,7 @@ ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 ISO_URL=${FEDORA_ISO_URL:-https://download.fedoraproject.org/pub/fedora/linux/releases/45/KDE/x86_64/iso/Fedora-KDE-Desktop-Live-45-1.4.x86_64.iso}
 OUTPUT_ISO=${OUTPUT_ISO:-$ROOT_DIR/blackcomb-fedora-45-x86_64.iso}
 WORK_DIR=${WORK_DIR:-$ROOT_DIR/.build}
+RPM_OUTPUT=${RPM_OUTPUT:-$ROOT_DIR/blackpkdgs.rpm}
 # Published by Fedora for this exact image. Override only with a trusted checksum.
 ISO_SHA256=${ISO_SHA256:-79703d9f3b21a4f7873f2874ec129d6511cb00a08532d8f9b36daacaa96e97a5}
 usage() {
@@ -20,18 +21,20 @@ FEDORA_ISO_URL          Override download URL.
 ISO_SHA256              Trusted input SHA-256 (defaults to Fedora 45-1.4 hash).
 OUTPUT_ISO              Output path (default: ./blackcomb-fedora-45-x86_64.iso).
 WORK_DIR                Temporary directory (default: ./.build).
-Requires xorriso, curl, Python 3, cpio, lsinitrd, isomd5sum utilities, and ample disk space.
+RPM_OUTPUT              Built blackpkdgs RPM path (default: ./blackpkdgs.rpm).
+Requires xorriso, curl, Python 3, cpio, rpmbuild, lsinitrd, isomd5sum utilities, and ample disk space.
 Root access is not required.
 HELP
 }
 if [[ ${1:-} == --help || ${1:-} == -h ]]; then usage; exit 0; fi
 if (($#)); then usage >&2; exit 2; fi
-for cmd in xorriso curl sha256sum realpath implantisomd5 checkisomd5 python3 lsinitrd cpio; do
+for cmd in xorriso curl sha256sum realpath implantisomd5 checkisomd5 python3 lsinitrd cpio rpmbuild find; do
   command -v "$cmd" >/dev/null || { echo "Missing dependency: $cmd" >&2; exit 1; }
 done
 mkdir -p "$WORK_DIR" "$(dirname -- "$OUTPUT_ISO")"
 work=$(realpath -- "$(mktemp -d "$WORK_DIR/blackcomb.XXXXXXXX")")
 trap 'rm -rf -- "$work"' EXIT
+"$ROOT_DIR/scripts/build-blackpkdgs.sh" "$RPM_OUTPUT"
 if [[ -n ${FEDORA_ISO:-} ]]; then
   input=$(realpath -- "$FEDORA_ISO")
   [[ -f $input ]] || { echo 'Input ISO not found.' >&2; exit 1; }
@@ -62,8 +65,11 @@ python3 "$ROOT_DIR/scripts/prepare-live-boot.py" "$work/original-grub.cfg" "$wor
 mkdir -p "$work/blackcomb-boot"
 "$ROOT_DIR/scripts/create-live-boot-archive.sh" "$work/boot-overlay" \
   "$ROOT_DIR/assets/branding/blackcomb-boot-watermark.png" "$work/blackcomb-boot/plymouth.cpio"
-mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/themes/mountain/contents" "$work/blackcomb/wallpapers"
+mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/themes/mountain/contents" "$work/blackcomb/wallpapers" "$work/blackcomb/packages"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
+install -m 644 "$RPM_OUTPUT" "$work/blackcomb/packages/blackpkdgs.rpm"
+install -m 755 "$ROOT_DIR/scripts/blackpkdgs.sh" "$work/blackcomb/scripts/blackpkdgs.sh"
+install -m 644 "$ROOT_DIR/scripts/blackpkdgs-README.md" "$work/blackcomb/scripts/"
 for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
   install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
 done
