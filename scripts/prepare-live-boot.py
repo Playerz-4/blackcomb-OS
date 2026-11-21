@@ -112,8 +112,8 @@ def write_live_session_fixes(boot_dir):
              'live-keyboard.rules', 'live-keyboard.pkla',
              'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop',
              'blackcomb-launcher.sh',
-             'blackcomb-launcher.desktop', 'neofetch.conf',
-             'neofetch-ascii.conf', 'neofetch-launcher.sh')
+             'blackcomb-launcher.desktop', 'mountain-lookandfeel.conf',
+             'neofetch.conf', 'neofetch-ascii.conf', 'neofetch-launcher.sh')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())
     # Fedora 45 does not ship neofetch in its base repositories. Bundle upstream
@@ -131,6 +131,31 @@ def write_live_session_fixes(boot_dir):
         (repo / 'assets/branding' / 'crescent-moon-start-icon.png').read_bytes())
     (live / 'crescent-moon-neofetch.txt').write_bytes(
         (repo / 'assets/branding' / 'crescent-moon-neofetch.txt').read_bytes())
+
+    # Plasma 6's image wallpaper picker only lists registered KPackages under
+    # /usr/share/wallpapers. Stage each package definition here; the pre-pivot
+    # hook fills its image and screenshot from the staged background PNGs.
+    wallpaper_stage = live / 'wallpapers'
+    for source in sorted((repo / 'wallpapers').glob('*/metadata.json')):
+        package = wallpaper_stage / source.parent.name
+        package.mkdir(parents=True, exist_ok=True)
+        (package / 'metadata.json').write_bytes(source.read_bytes())
+
+    # Mountain is a Plasma/LookAndFeel package. It contains no custom QML or
+    # SVG, so Plasma falls back to Breeze components and every color comes
+    # from the active Plasma color scheme. Its preview uses the default
+    # wallpaper so System Settings can show the theme.
+    mountain_source = repo / 'themes/mountain'
+    theme_stage = live / 'lookandfeel/com.blackcomb.mountain.desktop'
+    (theme_stage / 'contents/defaults').parent.mkdir(parents=True, exist_ok=True)
+    (theme_stage / 'contents/previews').mkdir(parents=True, exist_ok=True)
+    (theme_stage / 'metadata.json').write_bytes(
+        (mountain_source / 'metadata.json').read_bytes())
+    (theme_stage / 'contents/defaults').write_bytes(
+        (mountain_source / 'contents/defaults').read_bytes())
+    (theme_stage / 'contents/previews/preview.png').write_bytes(
+        (repo / 'backgrounds/kim-stargazer.png').read_bytes())
+
     # Plasma color schemes converted from OpenCode's built-in themes. Plasma
     # Login Manager and the live user session discover them once the pre-pivot
     # hook copies them into /usr/share/color-schemes.

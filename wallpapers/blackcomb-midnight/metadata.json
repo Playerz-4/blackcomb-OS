@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Midnight background",
+        "Id": "blackcomb-midnight",
+        "License": "See project README",
+        "Name": "Blackcomb Midnight"
+    },
+    "Keywords": "Blackcomb;Midnight;Mountain;"
+}

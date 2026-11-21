@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Kim Alpine background",
+        "Id": "kim-alpine",
+        "License": "See project README",
+        "Name": "Kim Alpine"
+    },
+    "Keywords": "Kim;Alpine;Mountain;"
+}

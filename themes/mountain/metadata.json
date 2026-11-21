@@ -1,0 +1,19 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "",
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Desktop Theme",
+        "Description": "Blackcomb's smooth, sharp Plasma theme. It uses Breeze's native components and follows the active Plasma color scheme.",
+        "Id": "com.blackcomb.mountain.desktop",
+        "License": "MIT",
+        "Name": "Mountain",
+        "Website": "https://github.com/Playerz-4/blackcomb-OS"
+    },
+    "Keywords": "Blackcomb;Mountain;Smooth;Sharp;Plasma;Look and Feel;",
+    "X-Plasma-APIVersion": "2"
+}

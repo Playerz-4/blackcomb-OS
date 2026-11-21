@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import importlib.util
+import tempfile
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
@@ -54,4 +55,19 @@ for bad in [original.replace('Test this media', 'Unexpected test'),
         pass
     else:
         raise AssertionError('Unexpected menu layout was accepted')
+with tempfile.TemporaryDirectory() as directory:
+    boot = Path(directory) / 'boot'
+    mod.write_live_session_fixes(boot)
+    live = boot / 'usr/share/blackcomb/live'
+    assert (live / 'wallpapers/kim-stargazer/metadata.json').is_file()
+    assert (live / 'wallpapers/blackcomb-aurora/metadata.json').is_file()
+    theme = live / 'lookandfeel/com.blackcomb.mountain.desktop'
+    assert (theme / 'metadata.json').is_file()
+    assert (theme / 'contents/defaults').is_file()
+    assert (theme / 'contents/previews/preview.png').is_file()
+    hook = (boot / 'var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh').read_text()
+    assert '/usr/share/wallpapers' in hook
+    assert 'com.blackcomb.mountain.desktop' in hook
+    assert 'LookAndFeelPackage=com.blackcomb.mountain.desktop' in hook
+    assert 'ColorScheme' not in (theme / 'contents/defaults').read_text()
 print('Live GRUB menu tests passed.')

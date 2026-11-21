@@ -30,6 +30,9 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/usr/local/lib/blackcomb/neofetch" \
          "$dst/usr/share/backgrounds/blackcomb" \
          "$dst/usr/share/blackcomb/branding" \
+         "$dst/usr/share/wallpapers" \
+         "$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/defaults" \
+         "$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/previews" \
          "$dst/usr/share/color-schemes" 2>/dev/null || exit 0
 
 # Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
@@ -85,6 +88,33 @@ for bg in "$src"/*.png; do
   esac
   cp -f "$bg" "$dst/usr/share/backgrounds/blackcomb/" 2>/dev/null || :
 done
+
+# Register every image as a Plasma wallpaper package. Copying loose PNGs into
+# /usr/share/backgrounds is not enough: Plasma 6's picker scans KPackages in
+# /usr/share/wallpapers, so each staged metadata.json needs its image too.
+for package in "$src/wallpapers"/*; do
+  [ -d "$package" ] || continue
+  [ -f "$package/metadata.json" ] || continue
+  id=$(basename "$package")
+  mkdir -p "$dst/usr/share/wallpapers/$id/contents/images" 2>/dev/null || :
+  cp -f "$package/metadata.json" "$dst/usr/share/wallpapers/$id/" 2>/dev/null || :
+  [ -f "$src/$id.png" ] || continue
+  cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/contents/images/$id.png" 2>/dev/null || :
+  cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/screenshot.png" 2>/dev/null || :
+done
+
+# Mountain is the default Blackcomb global theme. It ships no custom QML or
+# SVG: Plasma falls back to Breeze components, so colors always follow the
+# active Plasma color scheme instead of being baked into the theme.
+lookandfeel="$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop"
+mkdir -p "$lookandfeel/contents/defaults" "$lookandfeel/contents/previews" 2>/dev/null || :
+cp -f "$src/lookandfeel/com.blackcomb.mountain.desktop/metadata.json" \
+  "$lookandfeel/" 2>/dev/null || :
+cp -f "$src/lookandfeel/com.blackcomb.mountain.desktop/contents/defaults" \
+  "$lookandfeel/contents/" 2>/dev/null || :
+cp -f "$src/lookandfeel/com.blackcomb.mountain.desktop/contents/previews/preview.png" \
+  "$lookandfeel/contents/previews/" 2>/dev/null || :
+
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.desktop" \
@@ -129,11 +159,35 @@ for neofetch_dir in "$dst/home/liveuser/.config/neofetch" \
   cp -f "$src/neofetch.conf" "$neofetch_dir/config.conf" 2>/dev/null || :
 done
 
-for kdeglobals in "$dst/home/liveuser/.config/kdeglobals" \
-                  "$dst/etc/skel/.config/kdeglobals"; do
-  cat > "$kdeglobals" <<'EOF' 2>/dev/null || :
+# Start the live session with Mountain. The theme's defaults deliberately do
+# not set ColorScheme, so changing the Plasma color scheme keeps working.
+for config_dir in "$dst/home/liveuser/.config" "$dst/etc/skel/.config"; do
+  mkdir -p "$config_dir" 2>/dev/null || :
+  cat > "$config_dir/kdeglobals" <<'EOF' 2>/dev/null || :
 [General]
 ColorScheme=OpenCode-Catppuccin
+fontSmoothing=2
+
+[KDE]
+LookAndFeelPackage=com.blackcomb.mountain.desktop
+widgetStyle=Breeze
+EOF
+  cat > "$config_dir/plasmarc" <<'EOF' 2>/dev/null || :
+[Theme]
+name=default
+EOF
+  cat > "$config_dir/kcminputrc" <<'EOF' 2>/dev/null || :
+[Mouse]
+cursorTheme=breeze_cursors
+EOF
+  cat > "$config_dir/kwinrc" <<'EOF' 2>/dev/null || :
+[org.kde.kdecoration2]
+library=org.kde.breeze
+theme=Breeze
+EOF
+  cat > "$config_dir/ksplashrc" <<'EOF' 2>/dev/null || :
+[KSplash]
+Theme=org.kde.breeze.desktop
 EOF
 done
 

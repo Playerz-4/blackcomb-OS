@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Kim Sunrise background",
+        "Id": "kim-sunrise",
+        "License": "See project README",
+        "Name": "Kim Sunrise"
+    },
+    "Keywords": "Kim;Sunrise;Mountain;"
+}

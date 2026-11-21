@@ -51,14 +51,15 @@ Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
 layout or locale without the root-password prompt, kim-stargazer is the desktop and
-login-screen wallpaper, all Kim and Blackcomb backgrounds are available in the
-wallpaper picker, the supplied crescent-moon-start-icon.png is set as the
-launcher icon, and the Plasma panel is docked on the left as a vertical taskbar.
-The bundled neofetch command shows that crescent image through chafa, or a
-bundled ASCII rendering of it when chafa or ImageMagick is absent. OpenCode's
-built-in palettes are installed as 61 Plasma color schemes, selectable in
-System Settings > Appearance > Color Scheme; the live session starts with
-OpenCode Catppuccin. No command is needed. A dracut
+login-screen wallpaper, all seven Kim and Blackcomb backgrounds are registered as
+Plasma wallpaper packages and appear in the wallpaper picker, Mountain is the
+default global theme and follows the active Plasma color scheme, the supplied
+crescent-moon-start-icon.png is set as the launcher icon, and the Plasma panel
+is docked on the left as a vertical taskbar. The bundled neofetch command shows
+that crescent image through chafa, or a bundled ASCII rendering of it when chafa
+or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
+color schemes, selectable in System Settings > Appearance > Color Scheme; the
+live session starts with OpenCode Catppuccin. No command is needed. A dracut
 pre-pivot hook copies these settings into the live session as it starts; it
 adds no boot-critical unit, so booting is unaffected.
 
@@ -88,11 +89,11 @@ mount this media, and run:
 
 Replace the example path with the actual mount path. Setup uses Fedora's DNF
 repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick;
-neofetch is bundled on this media. Setup installs the wallpapers (with
-stargazing as the default), the left-side vertical taskbar, the neofetch
-crescent image, the OpenCode Plasma color schemes (with OpenCode Catppuccin as
-the default) and the
-Blackcomb Plymouth theme, using the transparent logo. Reboot to see the
+neofetch is bundled on this media. Setup installs all seven wallpaper packages
+(with stargazing as the default), the Mountain global theme, the left-side
+vertical taskbar, the neofetch crescent image, the OpenCode Plasma color schemes
+(with OpenCode Catppuccin as the default) and the Blackcomb Plymouth theme,
+using the transparent logo. Reboot to see the
 installed-system theme. Firmware logos shown before the operating
 system starts are not changed. Some media formats may require additional
 codecs not supplied by Fedora.

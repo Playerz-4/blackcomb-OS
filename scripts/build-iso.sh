@@ -62,7 +62,7 @@ python3 "$ROOT_DIR/scripts/prepare-live-boot.py" "$work/original-grub.cfg" "$wor
 mkdir -p "$work/blackcomb-boot"
 "$ROOT_DIR/scripts/create-live-boot-archive.sh" "$work/boot-overlay" \
   "$ROOT_DIR/assets/branding/blackcomb-boot-watermark.png" "$work/blackcomb-boot/plymouth.cpio"
-mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode"
+mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/themes/mountain/contents" "$work/blackcomb/wallpapers"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
 for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
   install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
@@ -82,6 +82,15 @@ install -m 644 "$ROOT_DIR/scripts/live-vm-display.desktop" "$work/blackcomb/live
 install -m 644 "$ROOT_DIR"/backgrounds/*.png "$work/blackcomb/backgrounds/"
 install -m 644 "$ROOT_DIR"/assets/branding/*.png "$ROOT_DIR"/assets/branding/*.svg "$work/blackcomb/assets/branding/"
 install -m 644 "$ROOT_DIR"/themes/opencode/*.colors "$ROOT_DIR/themes/opencode/README.md" "$work/blackcomb/themes/opencode/"
+for package in "$ROOT_DIR"/wallpapers/*; do
+  [ -d "$package" ] || continue
+  name=$(basename -- "$package")
+  install -d "$work/blackcomb/wallpapers/$name"
+  install -m 644 "$package/metadata.json" "$work/blackcomb/wallpapers/$name/"
+done
+install -m 644 "$ROOT_DIR/themes/mountain/metadata.json" "$work/blackcomb/themes/mountain/"
+install -m 644 "$ROOT_DIR/themes/mountain/contents/defaults" "$work/blackcomb/themes/mountain/contents/"
+install -m 644 "$ROOT_DIR/scripts/mountain-lookandfeel.conf" "$work/blackcomb/scripts/"
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"
 echo 'Writing Fedora installer media with the Blackcomb kit...'
 xorriso -indev "$input" -outdev "$OUTPUT_ISO" -boot_image any replay \

@@ -71,6 +71,10 @@ case " $* " in
     test -f "$payload/scripts/neofetch-LICENSE.md"
     test -f "$payload/scripts/crescent-moon-neofetch.txt"
     test -f "$payload/backgrounds/kim-sunrise.png"
+    test -f "$payload/wallpapers/kim-stargazer/metadata.json"
+    test -f "$payload/themes/mountain/metadata.json"
+    test -f "$payload/themes/mountain/contents/defaults"
+    test -f "$payload/scripts/mountain-lookandfeel.conf"
     test -f "$payload/themes/opencode/OpenCode-Catppuccin.colors"
     test -f "$payload/themes/opencode/OpenCode-Dracula-Light.colors"
     test -f "$payload/themes/opencode/README.md"
@@ -114,6 +118,11 @@ test -f usr/share/blackcomb/live/blackcomb-aurora.png
 test -f usr/share/blackcomb/live/blackcomb-blue-hour.png
 test -f usr/share/blackcomb/live/blackcomb-midnight.png
 test -f usr/share/blackcomb/live/blackcomb-moonlit-forest.png
+test -f usr/share/blackcomb/live/wallpapers/kim-stargazer/metadata.json
+test -f usr/share/blackcomb/live/wallpapers/blackcomb-aurora/metadata.json
+test -f usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop/metadata.json
+test -f usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop/contents/defaults
+test -f usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop/contents/previews/preview.png
 test -f usr/share/blackcomb/live/themes/OpenCode-Catppuccin.colors
 test -f usr/share/blackcomb/live/themes/OpenCode-Dracula-Light.colors
 printf 'mock archive'
@@ -171,6 +180,7 @@ grep -Fxq "ImageDir=$tmp/theme" "$tmp/theme/blackcomb.plymouth"
 grep -Fxq 'ModuleName=two-step' "$tmp/theme/blackcomb.plymouth"
 python3 "$root/tests/test-live-boot.py"
 python3 "$root/tests/test-opencode-themes.py"
+python3 "$root/tests/test-wallpaper-theme.py"
 bash "$root/tests/test-blackcomb-launcher.sh"
 grep -Fxq 'image_backend="chafa"' "$root/scripts/neofetch.conf"
 grep -Fxq 'image_source="/usr/share/blackcomb/branding/crescent-moon-start-icon.png"' "$root/scripts/neofetch.conf"

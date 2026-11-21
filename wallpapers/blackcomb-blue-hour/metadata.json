@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Blue Hour background",
+        "Id": "blackcomb-blue-hour",
+        "License": "See project README",
+        "Name": "Blackcomb Blue Hour"
+    },
+    "Keywords": "Blackcomb;Blue Hour;Mountain;"
+}

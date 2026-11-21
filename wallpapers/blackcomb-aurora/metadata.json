@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Aurora background",
+        "Id": "blackcomb-aurora",
+        "License": "See project README",
+        "Name": "Blackcomb Aurora"
+    },
+    "Keywords": "Blackcomb;Aurora;Night;Mountain;"
+}

@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Moonlit Forest background",
+        "Id": "blackcomb-moonlit-forest",
+        "License": "See project README",
+        "Name": "Blackcomb Moonlit Forest"
+    },
+    "Keywords": "Blackcomb;Moonlit;Forest;Mountain;"
+}

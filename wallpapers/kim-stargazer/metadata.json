@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Kim Stargazer background",
+        "Id": "kim-stargazer",
+        "License": "See project README",
+        "Name": "Kim Stargazer"
+    },
+    "Keywords": "Kim;Stargazer;Night;Mountain;"
+}

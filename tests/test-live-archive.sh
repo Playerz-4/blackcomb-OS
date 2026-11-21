@@ -23,6 +23,9 @@ grep -Fq 'crescent-moon-start-icon.png' "$hook"
 grep -Fq 'blackcomb-launcher.desktop' "$hook"
 grep -Fq 'usr/share/color-schemes' "$hook"
 grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
+grep -Fq '/usr/share/wallpapers' "$hook"
+grep -Fq 'com.blackcomb.mountain.desktop' "$hook"
+grep -Fq 'LookAndFeelPackage=com.blackcomb.mountain.desktop' "$hook"
 grep -Fq '.config/neofetch' "$hook"
 grep -Fq '/usr/local/bin/neofetch' "$hook"
 grep -Fq '/usr/local/lib/blackcomb/neofetch/neofetch' "$hook"
@@ -95,4 +98,18 @@ cmp "$theme" "$root/themes/opencode/OpenCode-Catppuccin.colors"
 grep -Fxq 'Name=OpenCode Catppuccin' "$theme"
 grep -Fxq 'ColorScheme=OpenCode-Catppuccin' "$theme"
 test -f "$tmp/extracted/usr/share/blackcomb/live/themes/OpenCode-Nord-Light.colors"
+for package in blackcomb-aurora blackcomb-blue-hour blackcomb-midnight \
+               blackcomb-moonlit-forest kim-alpine kim-stargazer kim-sunrise; do
+  test -f "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
+  grep -Fq "\"Id\": \"$package\"" \
+    "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
+done
+lookandfeel="$tmp/extracted/usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop"
+test -f "$lookandfeel/metadata.json"
+test -f "$lookandfeel/contents/defaults"
+cmp "$lookandfeel/contents/previews/preview.png" "$root/backgrounds/kim-stargazer.png"
+if grep -q 'ColorScheme' "$lookandfeel/contents/defaults"; then
+  echo 'Mountain must follow the active Plasma color scheme' >&2
+  exit 1
+fi
 echo 'Uncompressed live boot archive test passed.'
