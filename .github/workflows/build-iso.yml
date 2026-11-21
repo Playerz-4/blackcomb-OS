@@ -16,13 +16,14 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Install Fedora build tools
-        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils diffutils findutils python3 dracut cpio rpm-build
+        run: dnf install -y git tar gzip xorriso curl isomd5sum coreutils diffutils python3 dracut cpio
       - uses: actions/checkout@v4
       - name: Check scripts and mock assembly
         run: |
           bash -n scripts/*.sh tests/*.sh
           bash tests/test-build.sh
           bash tests/test-live-archive.sh
+          bash tests/test-blackcomb-update.sh
       - name: Build ISO
         env:
           ISO_SHA256: ${{ inputs.iso_sha256 }}
@@ -44,10 +45,14 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 3
-      - name: Upload blackpkdgs RPM
+      - name: Build update bundle
+        run: bash ./scripts/build-update-bundle.sh
+      - name: Upload Blackcomb update bundle
         uses: actions/upload-artifact@v4
         with:
-          name: blackpkdgs-rpm
-          path: blackpkdgs.rpm
+          name: blackcomb-update-bundle
+          path: |
+            blackcomb-update.tar.gz
+            blackcomb-update.tar.gz.sha256
           if-no-files-found: error
           retention-days: 3

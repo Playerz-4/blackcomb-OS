@@ -113,7 +113,6 @@ def write_live_session_fixes(boot_dir):
              'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop',
              'blackcomb-launcher.sh',
              'blackcomb-launcher.desktop', 'mountain-lookandfeel.conf',
-             'blackpkdgs.sh', 'blackpkdgs-README.md',
              'neofetch.conf', 'neofetch-ascii.conf', 'neofetch-launcher.sh')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())

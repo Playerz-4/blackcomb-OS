@@ -65,12 +65,11 @@ with tempfile.TemporaryDirectory() as directory:
     assert (theme / 'metadata.json').is_file()
     assert (theme / 'contents/defaults').is_file()
     assert (theme / 'contents/previews/preview.png').is_file()
-    assert (live / 'blackpkdgs.sh').is_file()
-    assert (live / 'blackpkdgs-README.md').is_file()
+    assert not (live / 'blackpkdgs.sh').exists()
     hook = (boot / 'var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh').read_text()
     assert '/usr/share/wallpapers' in hook
     assert 'com.blackcomb.mountain.desktop' in hook
     assert 'LookAndFeelPackage=com.blackcomb.mountain.desktop' in hook
-    assert '/usr/local/bin/blackpkdgs' in hook
+    assert 'blackpkdgs' not in hook
     assert 'ColorScheme' not in (theme / 'contents/defaults').read_text()
 print('Live GRUB menu tests passed.')

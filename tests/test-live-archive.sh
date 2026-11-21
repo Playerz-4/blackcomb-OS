@@ -26,7 +26,10 @@ grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
 grep -Fq '/usr/share/wallpapers' "$hook"
 grep -Fq 'com.blackcomb.mountain.desktop' "$hook"
 grep -Fq 'LookAndFeelPackage=com.blackcomb.mountain.desktop' "$hook"
-grep -Fq '/usr/local/bin/blackpkdgs' "$hook"
+if grep -q 'blackpkdgs' "$hook"; then
+  echo 'Blackcomb packages must not be staged in the live session' >&2
+  exit 1
+fi
 grep -Fq '.config/neofetch' "$hook"
 grep -Fq '/usr/local/bin/neofetch' "$hook"
 grep -Fq '/usr/local/lib/blackcomb/neofetch/neofetch' "$hook"
@@ -83,8 +86,10 @@ grep -Fq 'org.kde.plasma.kickoff' "$launcher"
 grep -Fq 'location=5' "$launcher"
 grep -Fq 'formfactor=3' "$launcher"
 test -x "$launcher"
-test -f "$tmp/extracted/usr/share/blackcomb/live/blackpkdgs.sh"
-test -f "$tmp/extracted/usr/share/blackcomb/live/blackpkdgs-README.md"
+if [[ -e $tmp/extracted/usr/share/blackcomb/live/blackpkdgs.sh ]]; then
+  echo 'blackpkdgs must be removed from the live payload' >&2
+  exit 1
+fi
 cmp "$tmp/extracted/usr/share/blackcomb/live/neofetch.conf" "$root/scripts/neofetch.conf"
 cmp "$tmp/extracted/usr/share/blackcomb/live/neofetch-ascii.conf" \
   "$root/scripts/neofetch-ascii.conf"

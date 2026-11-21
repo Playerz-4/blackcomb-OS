@@ -1,6 +1,7 @@
 .build/
 *.iso
 *.iso.sha256
-blackpkdgs*.rpm
+blackcomb-update.tar.gz
+blackcomb-update.tar.gz.sha256
 __pycache__/
 *.pyc

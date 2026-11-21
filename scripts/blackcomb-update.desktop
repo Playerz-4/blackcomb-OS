@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Blackcomb Update
+GenericName=System Update
+Comment=Check for and install Blackcomb and Fedora updates
+Exec=pkexec /usr/local/bin/blackcomb-update
+Icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png
+Terminal=true
+Categories=Settings;System;PackageManager;
+Keywords=update;upgrade;blackcomb;fedora;
+StartupNotify=true
+NoDisplay=false

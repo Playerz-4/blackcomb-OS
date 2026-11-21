@@ -59,10 +59,9 @@ is docked on the left as a vertical taskbar. The bundled neofetch command shows
 that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
 color schemes, selectable in System Settings > Appearance > Color Scheme; the
-live session starts with OpenCode Catppuccin. The blackpkdgs helper command is
-also available in the live session. No command is needed for the theme. A dracut
-pre-pivot hook copies these settings into the live session as it starts; it
-adds no boot-critical unit, so booting is unaffected.
+live session starts with OpenCode Catppuccin. No command is needed for the theme.
+A dracut pre-pivot hook copies these settings into the live session as it starts;
+it adds no boot-critical unit, so booting is unaffected.
 
 The apply-live-fixes.sh script on this media is only a manual fallback for
 older Blackcomb media. You do not need it with this build.
@@ -93,11 +92,11 @@ repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick;
 neofetch is bundled on this media. Setup installs all seven wallpaper packages
 (with stargazing as the default), the Mountain global theme, the left-side
 vertical taskbar, the neofetch crescent image, the OpenCode Plasma color schemes
-(with OpenCode Catppuccin as the default), the blackpkdgs helper and the
-Blackcomb Plymouth theme, using the transparent logo. The blackpkdgs RPM is at
-/blackcomb/packages/blackpkdgs.rpm on this media and can be installed with
-"sudo dnf install /path/to/blackcomb/packages/blackpkdgs.rpm". Reboot to see the
-installed-system theme. Firmware logos shown before the operating
+(with OpenCode Catppuccin as the default), the Blackcomb Update launcher and the
+Blackcomb Plymouth theme, using the transparent logo. After setup, find Blackcomb
+Update under Settings or run "blackcomb-update". It checks GitHub Releases,
+verifies the release checksum, upgrades Fedora packages and refreshes Blackcomb
+assets. Reboot to see the installed-system theme. Firmware logos shown before the operating
 system starts are not changed. Some media formats may require additional
 codecs not supplied by Fedora.
 

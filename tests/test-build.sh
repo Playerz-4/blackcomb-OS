@@ -57,9 +57,10 @@ case " $* " in
     if grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"; then exit 1; fi
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
-    test -f "$payload/packages/blackpkdgs.rpm"
-    test -f "$payload/scripts/blackpkdgs.sh"
-    test -f "$payload/scripts/blackpkdgs-README.md"
+    test -f "$payload/scripts/blackcomb-update.sh"
+    test -f "$payload/scripts/blackcomb-update.desktop"
+    test -f "$payload/scripts/blackcomb-update.conf"
+    test -f "$payload/scripts/blackcomb-version"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
     test -f "$payload/live-keyboard.rules"
     test -f "$payload/live-keyboard.pkla"
@@ -108,8 +109,6 @@ test -f usr/share/blackcomb/live/plasmalogin-wallpaper.conf
 test -f usr/share/blackcomb/live/crescent-moon-start-icon.png
 test -f usr/share/blackcomb/live/blackcomb-launcher.sh
 test -f usr/share/blackcomb/live/blackcomb-launcher.desktop
-test -f usr/share/blackcomb/live/blackpkdgs.sh
-test -f usr/share/blackcomb/live/blackpkdgs-README.md
 test -f usr/share/blackcomb/live/neofetch.conf
 test -f usr/share/blackcomb/live/neofetch-ascii.conf
 test -f usr/share/blackcomb/live/neofetch-launcher.sh
@@ -145,33 +144,16 @@ set -eu
 printf 'check\n' >> "$TEST_LOG"
 [[ ${FAIL_MEDIA_CHECK:-0} != 1 ]]
 MOCK
-cat > "$tmp/bin/rpmbuild" <<'MOCK'
-#!/usr/bin/env bash
-set -eu
-[[ $* == *' -bb '* ]]
-topdir=
-while (($#)); do
-  if [[ $1 == --define && ${2:-} == _topdir\ * ]]; then
-    topdir=${2#_topdir }
-  fi
-  shift
-done
-[[ -n $topdir ]]
-mkdir -p "$topdir/RPMS/noarch"
-printf 'mock blackpkdgs rpm\n' > "$topdir/RPMS/noarch/blackpkdgs-1.0.0-1.fc45.noarch.rpm"
-MOCK
 chmod +x "$tmp/bin/"*
 export PATH="$tmp/bin:$PATH" TEST_LOG="$tmp/log" TEST_ROOT="$root"
 export FEDORA_ISO="$tmp/input.iso" ISO_SHA256
 ISO_SHA256=$(sha256sum "$FEDORA_ISO" | cut -d' ' -f1)
-export OUTPUT_ISO="$tmp/output.iso" WORK_DIR="$tmp/work" RPM_OUTPUT="$tmp/blackpkdgs.rpm"
+export OUTPUT_ISO="$tmp/output.iso" WORK_DIR="$tmp/work"
 "$root/scripts/build-iso.sh"
 (cd "$tmp" && sha256sum -c output.iso.sha256)
 grep -q -- '-boot_image any replay' "$TEST_LOG"
 grep -q '^implant$' "$TEST_LOG"
 grep -q '^check$' "$TEST_LOG"
-test -f "$RPM_OUTPUT"
-grep -q 'mock blackpkdgs rpm' "$RPM_OUTPUT"
 if ISO_SHA256=$(printf '0%.0s' {1..64}) "$root/scripts/build-iso.sh" 2>/dev/null; then
   echo 'Bad input hash accepted' >&2; exit 1
 fi
@@ -204,7 +186,7 @@ python3 "$root/tests/test-live-boot.py"
 python3 "$root/tests/test-opencode-themes.py"
 python3 "$root/tests/test-wallpaper-theme.py"
 bash "$root/tests/test-blackcomb-launcher.sh"
-bash "$root/tests/test-blackpkdgs.sh"
+bash "$root/tests/test-blackcomb-update.sh"
 grep -Fxq 'image_backend="chafa"' "$root/scripts/neofetch.conf"
 grep -Fxq 'image_source="/usr/share/blackcomb/branding/crescent-moon-start-icon.png"' "$root/scripts/neofetch.conf"
 grep -Fxq 'image_backend="ascii"' "$root/scripts/neofetch-ascii.conf"

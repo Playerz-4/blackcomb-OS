@@ -138,7 +138,7 @@ VirtualBox normally uses VMSVGA for Linux guests. Switching to VBoxSVGA is **not
 
 A kernel panic has multiple possible causes. Capture a screenshot of the **complete panic message and lines above it**, along with your VirtualBox version and VM settings; do not assume it is the graphics controller. To reveal boot messages, select the normal boot entry, press `e`, remove `quiet` from the line beginning with `linux`, add `plymouth.enable=0` to the end of that same line, and press Ctrl+X or F10. This is a one-time diagnostic and does not change the ISO. If the screen remains black, include that result too.
 
-The installed system receives the Blackcomb splash, seven registered wallpaper packages, the Mountain global theme and the other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
+The installed system receives the Blackcomb splash, seven registered wallpaper packages, the Mountain global theme, the Settings updater and the other assets only after manually running `blackcomb/setup-blackcomb.sh` from the installation media. Firmware logos shown before Linux starts are not changed.
 
 ## 💿 Anaconda Installer
 
@@ -164,13 +164,14 @@ sudo dnf autoremove
 
 ```
 
-### blackpkdgs
+### Blackcomb Update
 
-`blackpkdgs` is Blackcomb's noarch application-bundle package. It installs Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick, and provides the `blackpkdgs` command to reinstall the bundle later. The built RPM is shipped at `/blackcomb/packages/blackpkdgs.rpm` on the media and as a separate CI artifact:
+After running `blackcomb/setup-blackcomb.sh`, **Blackcomb Update** appears in Plasma's Settings launcher. It checks the latest GitHub release of `Playerz-4/blackcomb-OS`, downloads `blackcomb-update.tar.gz`, verifies its SHA-256, runs `dnf upgrade --refresh -y`, refreshes Blackcomb wallpapers, themes, splash and configs, then records the installed version.
 
 ```bash
-sudo dnf install /path/to/blackpkdgs.rpm
-blackpkdgs
+blackcomb-update --check   # report available releases without changing anything
+blackcomb-update            # prompt, then install Fedora and Blackcomb updates
+blackcomb-update --yes      # non-interactive update
 ```
 
-`setup-blackcomb.sh` also installs the helper command at `/usr/local/bin/blackpkdgs` for convenience. No SVG artwork is involved.
+To publish a release, run `scripts/build-update-bundle.sh`, then upload both `blackcomb-update.tar.gz` and `blackcomb-update.tar.gz.sha256` to the new GitHub release. The updater accepts the SHA-256 digest published by GitHub or the `.sha256` asset. No SVG artwork is involved.

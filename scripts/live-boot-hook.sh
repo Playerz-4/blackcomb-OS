@@ -30,7 +30,6 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/usr/local/lib/blackcomb/neofetch" \
          "$dst/usr/share/backgrounds/blackcomb" \
          "$dst/usr/share/blackcomb/branding" \
-         "$dst/usr/share/blackcomb/blackpkdgs" \
          "$dst/usr/share/wallpapers" \
          "$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/defaults" \
          "$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/previews" \
@@ -129,14 +128,6 @@ cp -f "$src/blackcomb-launcher.sh" \
 chmod 755 "$dst/usr/local/bin/blackcomb-launcher" 2>/dev/null || :
 cp -f "$src/blackcomb-launcher.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-launcher.desktop" 2>/dev/null || :
-
-# blackpkdgs installs Blackcomb's recommended application bundle. The RPM is
-# also shipped in /blackcomb/packages on the media; this helper is available
-# immediately in the live session.
-cp -f "$src/blackpkdgs.sh" "$dst/usr/local/bin/blackpkdgs" 2>/dev/null || :
-chmod 755 "$dst/usr/local/bin/blackpkdgs" 2>/dev/null || :
-cp -f "$src/blackpkdgs-README.md" \
-  "$dst/usr/share/blackcomb/blackpkdgs/README.md" 2>/dev/null || :
 
 # Plasma color schemes converted from OpenCode's built-in themes. All variants
 # are available in System Settings; start the live session with Catppuccin.
