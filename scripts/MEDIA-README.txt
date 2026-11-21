@@ -88,17 +88,20 @@ mount this media, and run:
   sudo bash /path/to/mounted-installer-media/blackcomb/setup-blackcomb.sh
 
 Replace the example path with the actual mount path. Setup uses Fedora's DNF
-repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa and ImageMagick;
-neofetch is bundled on this media. Setup installs all seven wallpaper packages
-(with stargazing as the default), the Mountain global theme, the left-side
-vertical taskbar, the neofetch crescent image, the OpenCode Plasma color schemes
-(with OpenCode Catppuccin as the default), the Blackcomb Update launcher and the
+repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa, ImageMagick,
+Wine, winetricks, cabextract and unzip; neofetch is bundled on this media. Setup
+installs all seven wallpaper packages (with stargazing as the default), the
+Mountain global theme, the left-side vertical taskbar, the neofetch crescent
+image, the OpenCode Plasma color schemes (with OpenCode Catppuccin as the
+default), the Blackcomb Update launcher, Wine file associations and the
 Blackcomb Plymouth theme, using the transparent logo. After setup, find Blackcomb
 Update under Settings or run "blackcomb-update". It checks GitHub Releases,
 verifies the release checksum, upgrades Fedora packages and refreshes Blackcomb
-assets. Reboot to see the installed-system theme. Firmware logos shown before the operating
-system starts are not changed. Some media formats may require additional
-codecs not supplied by Fedora.
+assets. Run "blackcomb-wine" to launch Windows apps or Wineskin-style macOS .app
+wrappers; true Mach-O macOS apps are not supported by Wine. Reboot to see the
+installed-system theme. Firmware logos shown before the operating system starts
+are not changed. Some media formats may require additional codecs not supplied
+by Fedora.
 
 To return to Fedora's default Plymouth theme, run:
 

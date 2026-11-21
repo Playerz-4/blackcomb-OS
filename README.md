@@ -175,3 +175,16 @@ blackcomb-update --yes      # non-interactive update
 ```
 
 To publish a release, run `scripts/build-update-bundle.sh`, then upload both `blackcomb-update.tar.gz` and `blackcomb-update.tar.gz.sha256` to the new GitHub release. The updater accepts the SHA-256 digest published by GitHub or the `.sha256` asset. No SVG artwork is involved.
+
+### Wine support
+
+`setup-blackcomb.sh` installs Fedora's Wine package, `winetricks`, `cabextract` and `unzip`, and registers Blackcomb Wine as the default launcher for `.exe`, `.msi` and `.bat` files.
+
+```bash
+blackcomb-wine --check
+blackcomb-wine ~/Downloads/Program.exe
+blackcomb-wine ~/Downloads/Installer.msi
+blackcomb-wine ~/Downloads/Game.app
+```
+
+`blackcomb-wine` also supports **Wineskin-style macOS `.app` wrappers**: it looks for a Windows `.exe` inside `Contents/Resources` or `Contents/MacOS` and launches it with the system Wine. Compressed `.app` bundles and zip/tar archives containing a `.app` are extracted into a temporary directory first. A true native macOS Mach-O app cannot run under Wine, and the helper reports that clearly instead of failing silently. Fedora's Wine build is 64-bit only, so some 32-bit Windows programs may still need a separate Wine setup.
