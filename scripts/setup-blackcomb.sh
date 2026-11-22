@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/themes/mountain/metadata.json" "$HERE/themes/mountain/contents/defaults" "$HERE/scripts/mountain-lookandfeel.conf" "$HERE/scripts/blackcomb-update.sh" "$HERE/scripts/blackcomb-update.desktop" "$HERE/scripts/blackcomb-update.conf" "$HERE/scripts/blackcomb-version" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -32,7 +32,7 @@ if [[ ${1:-} != --yes ]]; then
   [[ $answer == y || $answer == Y || $answer == yes || $answer == YES ]] || exit 0
 fi
 dnf install -y firefox vlc libreoffice-writer kcalc plymouth-theme-spinner chafa imagemagick curl tar python3 wine winetricks cabextract unzip
-install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/applications /usr/share/color-schemes /usr/share/wallpapers /usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/defaults /usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/previews /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg /etc/xdg/autostart /etc/skel/.config
+install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/applications /usr/share/color-schemes /usr/share/wallpapers /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg /etc/xdg/autostart /etc/skel/.config
 install -m 644 "$HERE"/backgrounds/*.png /usr/share/backgrounds/blackcomb/
 
 # Register each background as a Plasma wallpaper package. Loose PNGs are not
@@ -47,13 +47,6 @@ for package in "$HERE"/wallpapers/*; do
   install -m 644 "$HERE/backgrounds/$name.png" \
     "/usr/share/wallpapers/$name/screenshot.png"
 done
-
-# Mountain is a Plasma global theme using Breeze's native components. It has
-# no custom QML or SVG, so its appearance follows the active Plasma colors.
-theme=/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop
-install -m 644 "$HERE/themes/mountain/metadata.json" "$theme/"
-install -m 644 "$HERE/themes/mountain/contents/defaults" "$theme/contents/"
-install -m 644 "$HERE/backgrounds/kim-stargazer.png" "$theme/contents/previews/preview.png"
 
 install -m 644 "$HERE"/assets/branding/*.png "$HERE"/assets/branding/*.svg /usr/share/blackcomb/branding/
 install -m 644 "$HERE"/themes/opencode/*.colors /usr/share/color-schemes/
@@ -71,12 +64,6 @@ install -m 644 "$HERE/assets/branding/crescent-moon-neofetch.txt" /usr/local/lib
 install -m 644 "$HERE/scripts/neofetch-LICENSE.md" /usr/local/lib/blackcomb/neofetch/LICENSE.md
 install -m 755 "$HERE/scripts/neofetch-launcher.sh" /usr/local/bin/neofetch
 
-# Blackcomb Update appears under Settings and can also be run from a terminal.
-install -m 755 "$HERE/scripts/blackcomb-update.sh" /usr/local/bin/blackcomb-update
-install -m 644 "$HERE/scripts/blackcomb-update.desktop" /usr/share/applications/blackcomb-update.desktop
-install -m 644 "$HERE/scripts/blackcomb-update.conf" /usr/local/lib/blackcomb/update.conf
-install -m 644 "$HERE/scripts/blackcomb-version" /usr/local/lib/blackcomb/version
-
 # Wine desktop integration. Fedora's wine.desktop no longer carries MIME types,
 # so Blackcomb supplies its own launch action for Windows executables.
 install -m 755 "$HERE/scripts/blackcomb-wine.sh" /usr/local/bin/blackcomb-wine
@@ -86,10 +73,9 @@ if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database /usr/share/applications >/dev/null 2>&1 || :
 fi
 
-# Start new users with Mountain and the matching OpenCode Catppuccin scheme.
-# Mountain's package defaults do not set ColorScheme, so the active Plasma
-# color scheme continues to control every themed element.
-printf '[General]\nColorScheme=OpenCode-Catppuccin\nfontSmoothing=2\n\n[KDE]\nLookAndFeelPackage=com.blackcomb.mountain.desktop\nwidgetStyle=Breeze\n' > /etc/skel/.config/kdeglobals
+# Start new users with the standard Breeze global theme and the OpenCode
+# Catppuccin color scheme, which changes colors without replacing Plasma parts.
+printf '[General]\nColorScheme=OpenCode-Catppuccin\nfontSmoothing=2\n\n[KDE]\nLookAndFeelPackage=org.kde.breeze.desktop\nwidgetStyle=Breeze\n' > /etc/skel/.config/kdeglobals
 printf '[Theme]\nname=default\n' > /etc/skel/.config/plasmarc
 printf '[Mouse]\ncursorTheme=breeze_cursors\n' > /etc/skel/.config/kcminputrc
 printf '[org.kde.kdecoration2]\nlibrary=org.kde.breeze\ntheme=Breeze\n' > /etc/skel/.config/kwinrc
@@ -105,7 +91,7 @@ if [[ -n ${SUDO_USER:-} && $SUDO_USER != root ]]; then
       }
       set_user_config kdeglobals General ColorScheme OpenCode-Catppuccin
       set_user_config kdeglobals General fontSmoothing 2
-      set_user_config kdeglobals KDE LookAndFeelPackage com.blackcomb.mountain.desktop
+      set_user_config kdeglobals KDE LookAndFeelPackage org.kde.breeze.desktop
       set_user_config kdeglobals KDE widgetStyle Breeze
       set_user_config plasmarc Theme name default
       set_user_config kcminputrc Mouse cursorTheme breeze_cursors

@@ -62,10 +62,8 @@ python3 "$ROOT_DIR/scripts/prepare-live-boot.py" "$work/original-grub.cfg" "$wor
 mkdir -p "$work/blackcomb-boot"
 "$ROOT_DIR/scripts/create-live-boot-archive.sh" "$work/boot-overlay" \
   "$ROOT_DIR/assets/branding/blackcomb-boot-watermark.png" "$work/blackcomb-boot/plymouth.cpio"
-mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/themes/mountain/contents" "$work/blackcomb/wallpapers"
+mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/wallpapers"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
-install -m 755 "$ROOT_DIR/scripts/blackcomb-update.sh" "$work/blackcomb/scripts/blackcomb-update.sh"
-install -m 644 "$ROOT_DIR/scripts/blackcomb-update.desktop" "$ROOT_DIR/scripts/blackcomb-update.conf" "$ROOT_DIR/scripts/blackcomb-version" "$work/blackcomb/scripts/"
 install -m 755 "$ROOT_DIR/scripts/blackcomb-wine.sh" "$work/blackcomb/scripts/blackcomb-wine.sh"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wine.desktop" "$work/blackcomb/scripts/"
 for script in blackcomb-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
@@ -92,9 +90,6 @@ for package in "$ROOT_DIR"/wallpapers/*; do
   install -d "$work/blackcomb/wallpapers/$name"
   install -m 644 "$package/metadata.json" "$work/blackcomb/wallpapers/$name/"
 done
-install -m 644 "$ROOT_DIR/themes/mountain/metadata.json" "$work/blackcomb/themes/mountain/"
-install -m 644 "$ROOT_DIR/themes/mountain/contents/defaults" "$work/blackcomb/themes/mountain/contents/"
-install -m 644 "$ROOT_DIR/scripts/mountain-lookandfeel.conf" "$work/blackcomb/scripts/"
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"
 echo 'Writing Fedora installer media with the Blackcomb kit...'
 xorriso -indev "$input" -outdev "$OUTPUT_ISO" -boot_image any replay \

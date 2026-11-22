@@ -52,9 +52,9 @@ liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
 layout or locale without the root-password prompt, kim-stargazer is the desktop and
 login-screen wallpaper, all seven Kim and Blackcomb backgrounds are registered as
-Plasma wallpaper packages and appear in the wallpaper picker, Mountain is the
-default global theme and follows the active Plasma color scheme, the supplied
-crescent-moon-start-icon.png is set as the launcher icon, and the Plasma panel
+Plasma wallpaper packages and appear in the wallpaper picker, the standard Breeze
+global theme is the default, the supplied crescent-moon-start-icon.png is set as
+the launcher icon, and the Plasma panel
 is docked on the left as a vertical taskbar. The bundled neofetch command shows
 that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
@@ -91,13 +91,11 @@ Replace the example path with the actual mount path. Setup uses Fedora's DNF
 repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa, ImageMagick,
 Wine, winetricks, cabextract and unzip; neofetch is bundled on this media. Setup
 installs all seven wallpaper packages (with stargazing as the default), the
-Mountain global theme, the left-side vertical taskbar, the neofetch crescent
+standard Breeze global theme, the left-side vertical taskbar, the neofetch crescent
 image, the OpenCode Plasma color schemes (with OpenCode Catppuccin as the
-default), the Blackcomb Update launcher, Wine file associations and the
-Blackcomb Plymouth theme, using the transparent logo. After setup, find Blackcomb
-Update under Settings or run "blackcomb-update". It checks GitHub Releases,
-verifies the release checksum, upgrades Fedora packages and refreshes Blackcomb
-assets. Run "blackcomb-wine" to launch standard Windows apps; native macOS apps
+default), Wine file associations and the Blackcomb Plymouth theme, using the
+transparent logo. Use Fedora's "sudo dnf upgrade --refresh" for package updates.
+Run "blackcomb-wine" to launch standard Windows apps; native macOS apps
 and .dmg files are not supported. Reboot to see the installed-system theme. Firmware logos shown before the operating system starts
 are not changed. Some media formats may require additional codecs not supplied
 by Fedora.

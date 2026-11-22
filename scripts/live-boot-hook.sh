@@ -31,8 +31,6 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/usr/share/backgrounds/blackcomb" \
          "$dst/usr/share/blackcomb/branding" \
          "$dst/usr/share/wallpapers" \
-         "$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/defaults" \
-         "$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop/contents/previews" \
          "$dst/usr/share/color-schemes" 2>/dev/null || exit 0
 
 # Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
@@ -103,18 +101,6 @@ for package in "$src/wallpapers"/*; do
   cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/screenshot.png" 2>/dev/null || :
 done
 
-# Mountain is the default Blackcomb global theme. It ships no custom QML or
-# SVG: Plasma falls back to Breeze components, so colors always follow the
-# active Plasma color scheme instead of being baked into the theme.
-lookandfeel="$dst/usr/share/plasma/look-and-feel/com.blackcomb.mountain.desktop"
-mkdir -p "$lookandfeel/contents/defaults" "$lookandfeel/contents/previews" 2>/dev/null || :
-cp -f "$src/lookandfeel/com.blackcomb.mountain.desktop/metadata.json" \
-  "$lookandfeel/" 2>/dev/null || :
-cp -f "$src/lookandfeel/com.blackcomb.mountain.desktop/contents/defaults" \
-  "$lookandfeel/contents/" 2>/dev/null || :
-cp -f "$src/lookandfeel/com.blackcomb.mountain.desktop/contents/previews/preview.png" \
-  "$lookandfeel/contents/previews/" 2>/dev/null || :
-
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.desktop" \
@@ -159,8 +145,8 @@ for neofetch_dir in "$dst/home/liveuser/.config/neofetch" \
   cp -f "$src/neofetch.conf" "$neofetch_dir/config.conf" 2>/dev/null || :
 done
 
-# Start the live session with Mountain. The theme's defaults deliberately do
-# not set ColorScheme, so changing the Plasma color scheme keeps working.
+# Start the live session with the standard Breeze global theme. The OpenCode
+# Catppuccin color scheme changes colors without replacing Plasma components.
 for config_dir in "$dst/home/liveuser/.config" "$dst/etc/skel/.config"; do
   mkdir -p "$config_dir" 2>/dev/null || :
   cat > "$config_dir/kdeglobals" <<'EOF' 2>/dev/null || :
@@ -169,7 +155,7 @@ ColorScheme=OpenCode-Catppuccin
 fontSmoothing=2
 
 [KDE]
-LookAndFeelPackage=com.blackcomb.mountain.desktop
+LookAndFeelPackage=org.kde.breeze.desktop
 widgetStyle=Breeze
 EOF
   cat > "$config_dir/plasmarc" <<'EOF' 2>/dev/null || :

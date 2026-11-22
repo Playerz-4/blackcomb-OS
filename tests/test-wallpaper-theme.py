@@ -14,17 +14,7 @@ for metadata in wallpaper_metadata:
     assert data['KPlugin']['Name']
     assert package in backgrounds
 
-theme_metadata = json.loads((root / 'themes/mountain/metadata.json').read_text())
-assert theme_metadata['KPackageStructure'] == 'Plasma/LookAndFeel'
-assert theme_metadata['KPlugin']['Id'] == 'com.blackcomb.mountain.desktop'
-assert theme_metadata['KPlugin']['Name'] == 'Mountain'
+assert not (root / 'themes/mountain').exists()
+assert not (root / 'scripts/mountain-lookandfeel.conf').exists()
 
-defaults = (root / 'themes/mountain/contents/defaults').read_text()
-assert '[kdeglobals][KDE]\nwidgetStyle=Breeze' in defaults
-assert '[kdeglobals][General]\nfontSmoothing=2' in defaults
-assert '[plasmarc][Theme]\nname=default' in defaults
-assert '[Wallpaper]\nImage=kim-stargazer' in defaults
-assert 'ColorScheme' not in defaults
-assert '[kwinrc][org.kde.kdecoration2]\nlibrary=org.kde.breeze' in defaults
-
-print('Wallpaper packages and Mountain theme tests passed.')
+print('Wallpaper package tests passed.')

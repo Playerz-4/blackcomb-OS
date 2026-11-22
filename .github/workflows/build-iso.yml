@@ -23,7 +23,6 @@ jobs:
           bash -n scripts/*.sh tests/*.sh
           bash tests/test-build.sh
           bash tests/test-live-archive.sh
-          bash tests/test-blackcomb-update.sh
           bash tests/test-blackcomb-wine.sh
       - name: Build ISO
         env:
@@ -45,15 +44,4 @@ jobs:
             blackcomb-fedora-45-x86_64.iso.sha256
           if-no-files-found: error
           compression-level: 0
-          retention-days: 3
-      - name: Build update bundle
-        run: bash ./scripts/build-update-bundle.sh
-      - name: Upload Blackcomb update bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: blackcomb-update-bundle
-          path: |
-            blackcomb-update.tar.gz
-            blackcomb-update.tar.gz.sha256
-          if-no-files-found: error
           retention-days: 3

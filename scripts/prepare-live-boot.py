@@ -112,7 +112,7 @@ def write_live_session_fixes(boot_dir):
              'live-keyboard.rules', 'live-keyboard.pkla',
              'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop',
              'blackcomb-launcher.sh',
-             'blackcomb-launcher.desktop', 'mountain-lookandfeel.conf',
+             'blackcomb-launcher.desktop',
              'neofetch.conf', 'neofetch-ascii.conf', 'neofetch-launcher.sh')
     for name in names:
         (live / name).write_bytes((scripts / name).read_bytes())
@@ -140,21 +140,6 @@ def write_live_session_fixes(boot_dir):
         package = wallpaper_stage / source.parent.name
         package.mkdir(parents=True, exist_ok=True)
         (package / 'metadata.json').write_bytes(source.read_bytes())
-
-    # Mountain is a Plasma/LookAndFeel package. It contains no custom QML or
-    # SVG, so Plasma falls back to Breeze components and every color comes
-    # from the active Plasma color scheme. Its preview uses the default
-    # wallpaper so System Settings can show the theme.
-    mountain_source = repo / 'themes/mountain'
-    theme_stage = live / 'lookandfeel/com.blackcomb.mountain.desktop'
-    (theme_stage / 'contents/defaults').parent.mkdir(parents=True, exist_ok=True)
-    (theme_stage / 'contents/previews').mkdir(parents=True, exist_ok=True)
-    (theme_stage / 'metadata.json').write_bytes(
-        (mountain_source / 'metadata.json').read_bytes())
-    (theme_stage / 'contents/defaults').write_bytes(
-        (mountain_source / 'contents/defaults').read_bytes())
-    (theme_stage / 'contents/previews/preview.png').write_bytes(
-        (repo / 'backgrounds/kim-stargazer.png').read_bytes())
 
     # Plasma color schemes converted from OpenCode's built-in themes. Plasma
     # Login Manager and the live user session discover them once the pre-pivot

@@ -57,10 +57,10 @@ case " $* " in
     if grep -Fq 'Start Blackcomb (basic graphics, no splash)' "$grub"; then exit 1; fi
     if grep -q 'rd.live.check' "$grub"; then exit 1; fi
     test -f "$payload/setup-blackcomb.sh"
-    test -f "$payload/scripts/blackcomb-update.sh"
-    test -f "$payload/scripts/blackcomb-update.desktop"
-    test -f "$payload/scripts/blackcomb-update.conf"
-    test -f "$payload/scripts/blackcomb-version"
+    if [[ -e $payload/scripts/blackcomb-update.sh || -e $payload/scripts/blackcomb-update.desktop || -e $payload/scripts/blackcomb-update.conf || -e $payload/scripts/blackcomb-version ]]; then
+      echo 'Blackcomb Update must not be shipped' >&2
+      exit 1
+    fi
     test -f "$payload/scripts/blackcomb-wine.sh"
     test -f "$payload/scripts/blackcomb-wine.desktop"
     test -f "$payload/assets/branding/blackcomb-boot-watermark.png"
@@ -78,9 +78,10 @@ case " $* " in
     test -f "$payload/scripts/crescent-moon-neofetch.txt"
     test -f "$payload/backgrounds/kim-sunrise.png"
     test -f "$payload/wallpapers/kim-stargazer/metadata.json"
-    test -f "$payload/themes/mountain/metadata.json"
-    test -f "$payload/themes/mountain/contents/defaults"
-    test -f "$payload/scripts/mountain-lookandfeel.conf"
+    if [[ -e $payload/themes/mountain || -e $payload/scripts/mountain-lookandfeel.conf ]]; then
+      echo 'Custom Mountain theme must not be shipped' >&2
+      exit 1
+    fi
     test -f "$payload/themes/opencode/OpenCode-Catppuccin.colors"
     test -f "$payload/themes/opencode/OpenCode-Dracula-Light.colors"
     test -f "$payload/themes/opencode/README.md"
@@ -126,9 +127,11 @@ test -f usr/share/blackcomb/live/blackcomb-midnight.png
 test -f usr/share/blackcomb/live/blackcomb-moonlit-forest.png
 test -f usr/share/blackcomb/live/wallpapers/kim-stargazer/metadata.json
 test -f usr/share/blackcomb/live/wallpapers/blackcomb-aurora/metadata.json
-test -f usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop/metadata.json
-test -f usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop/contents/defaults
-test -f usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop/contents/previews/preview.png
+if [[ -e usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop ]]; then
+  echo 'Custom Mountain theme must not be in the live archive' >&2
+  exit 1
+fi
+grep -Fq 'LookAndFeelPackage=org.kde.breeze.desktop' var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
 test -f usr/share/blackcomb/live/themes/OpenCode-Catppuccin.colors
 test -f usr/share/blackcomb/live/themes/OpenCode-Dracula-Light.colors
 printf 'mock archive'
@@ -188,7 +191,6 @@ python3 "$root/tests/test-live-boot.py"
 python3 "$root/tests/test-opencode-themes.py"
 python3 "$root/tests/test-wallpaper-theme.py"
 bash "$root/tests/test-blackcomb-launcher.sh"
-bash "$root/tests/test-blackcomb-update.sh"
 bash "$root/tests/test-blackcomb-wine.sh"
 grep -Fxq 'image_backend="chafa"' "$root/scripts/neofetch.conf"
 grep -Fxq 'image_source="/usr/share/blackcomb/branding/crescent-moon-start-icon.png"' "$root/scripts/neofetch.conf"
@@ -199,4 +201,13 @@ grep -Fq 'ascii.conf' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'command -v convert' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'command -v identify' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'chafa imagemagick' "$root/scripts/setup-blackcomb.sh"
+grep -Fq 'LookAndFeelPackage=org.kde.breeze.desktop' "$root/scripts/setup-blackcomb.sh"
+if grep -Fq 'com.blackcomb.mountain.desktop' "$root/scripts/setup-blackcomb.sh"; then
+  echo 'Custom Mountain theme is still referenced by setup' >&2
+  exit 1
+fi
+if grep -Rq 'blackcomb-update\|build-update-bundle\|blackcomb-version' "$root/scripts" "$root/README.md" "$root/.github"; then
+  echo 'Blackcomb Update is still referenced' >&2
+  exit 1
+fi
 echo 'Mock assembly and Plymouth theme tests passed.'

@@ -24,8 +24,11 @@ grep -Fq 'blackcomb-launcher.desktop' "$hook"
 grep -Fq 'usr/share/color-schemes' "$hook"
 grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
 grep -Fq '/usr/share/wallpapers' "$hook"
-grep -Fq 'com.blackcomb.mountain.desktop' "$hook"
-grep -Fq 'LookAndFeelPackage=com.blackcomb.mountain.desktop' "$hook"
+if grep -q 'com.blackcomb.mountain.desktop' "$hook"; then
+  echo 'Custom Mountain theme must not be configured in the live hook' >&2
+  exit 1
+fi
+grep -Fq 'LookAndFeelPackage=org.kde.breeze.desktop' "$hook"
 if grep -q 'blackpkdgs' "$hook"; then
   echo 'Blackcomb packages must not be staged in the live session' >&2
   exit 1
@@ -112,12 +115,8 @@ for package in blackcomb-aurora blackcomb-blue-hour blackcomb-midnight \
   grep -Fq "\"Id\": \"$package\"" \
     "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
 done
-lookandfeel="$tmp/extracted/usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop"
-test -f "$lookandfeel/metadata.json"
-test -f "$lookandfeel/contents/defaults"
-cmp "$lookandfeel/contents/previews/preview.png" "$root/backgrounds/kim-stargazer.png"
-if grep -q 'ColorScheme' "$lookandfeel/contents/defaults"; then
-  echo 'Mountain must follow the active Plasma color scheme' >&2
+if [[ -e $tmp/extracted/usr/share/blackcomb/live/lookandfeel ]]; then
+  echo 'Custom global theme must not be staged in the live archive' >&2
   exit 1
 fi
 echo 'Uncompressed live boot archive test passed.'
