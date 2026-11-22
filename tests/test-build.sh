@@ -70,6 +70,7 @@ case " $* " in
     test -f "$payload/assets/branding/blackcomb-launcher.svg"
     test -f "$payload/scripts/blackcomb-launcher.sh"
     test -f "$payload/scripts/blackcomb-launcher.desktop"
+    test -f "$payload/scripts/patch-breeze-wallpaper.sh"
     test -f "$payload/scripts/neofetch.conf"
     test -f "$payload/scripts/neofetch-ascii.conf"
     test -f "$payload/scripts/neofetch-launcher.sh"
@@ -112,6 +113,7 @@ test -f usr/share/blackcomb/live/plasmalogin-wallpaper.conf
 test -f usr/share/blackcomb/live/crescent-moon-start-icon.png
 test -f usr/share/blackcomb/live/blackcomb-launcher.sh
 test -f usr/share/blackcomb/live/blackcomb-launcher.desktop
+test -f usr/share/blackcomb/live/patch-breeze-wallpaper.sh
 test -f usr/share/blackcomb/live/neofetch.conf
 test -f usr/share/blackcomb/live/neofetch-ascii.conf
 test -f usr/share/blackcomb/live/neofetch-launcher.sh
@@ -191,6 +193,7 @@ python3 "$root/tests/test-live-boot.py"
 python3 "$root/tests/test-opencode-themes.py"
 python3 "$root/tests/test-wallpaper-theme.py"
 bash "$root/tests/test-blackcomb-launcher.sh"
+bash "$root/tests/test-blackcomb-wallpaper.sh"
 bash "$root/tests/test-blackcomb-wine.sh"
 grep -Fxq 'image_backend="chafa"' "$root/scripts/neofetch.conf"
 grep -Fxq 'image_source="/usr/share/blackcomb/branding/crescent-moon-start-icon.png"' "$root/scripts/neofetch.conf"

@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Glacial Lake background",
+        "Id": "blackcomb-glacial-lake",
+        "License": "See project README",
+        "Name": "Blackcomb Glacial Lake"
+    },
+    "Keywords": "Blackcomb;Glacial;Lake;Mountain;"
+}

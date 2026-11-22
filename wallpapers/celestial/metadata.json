@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Celestial background",
+        "Id": "celestial",
+        "License": "See project README",
+        "Name": "Celestial"
+    },
+    "Keywords": "Celestial;Crab;Space;Night;"
+}

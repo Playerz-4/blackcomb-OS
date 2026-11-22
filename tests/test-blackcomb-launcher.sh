@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Verify that the launcher helper docks the Plasma panel left and sets the
-# crescent PNG as the Kickoff icon, without disturbing other containments.
+# Verify that the launcher helper docks the Plasma panel left, sets the
+# crescent PNG as the Kickoff icon, and adds the standard panel widgets without
+# disturbing other containments or duplicating changes on a second run.
 set -Eeuo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 tmp=$(mktemp -d)
@@ -34,8 +35,8 @@ HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
 grep -Fxq 'location=5' "$cfg"
 grep -Fxq 'formfactor=3' "$cfg"
 grep -Fq 'org.kde.PlasmaShell.evaluateScript' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'allPanels[i].location = "left"' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'w.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'allPanels[i].location = "left"' "$root/scripts/blackcomb-launcher.sh" || grep -Fq 'panel.location = "left"' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'w.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh" || grep -Fq 'current.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'currentConfigGroup = ["General"]' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq -- '--print-reply' "$root/scripts/blackcomb-launcher.sh"
@@ -45,8 +46,24 @@ test "$(grep -Ec '^location=5$' "$cfg")" -eq 1
 test "$(grep -Ec '^plugin=org.kde.plasma.desktop$' "$cfg")" -eq 1
 grep -Fxq 'location=1' "$cfg"
 
+for plugin in org.kde.plasma.systemmonitor.memory org.kde.plasma.battery \
+              org.kde.plasma.systemmonitor org.kde.plasma.digitalclock; do
+  grep -Fxq "plugin=$plugin" "$cfg"
+  test "$(grep -Ec "^plugin=$plugin\$" "$cfg")" -eq 1
+done
+grep -Fxq 'title=RAM' "$cfg"
+grep -Fxq 'chartFace=org.kde.ksysguard.horizontalbars' "$cfg"
+grep -Fxq 'sensorIds=["memory/physical/usedPercent"]' "$cfg"
+grep -Fxq 'title=GPU' "$cfg"
+grep -Fxq 'blackcombWidget=gpu' "$cfg"
+grep -Fxq 'sensorIds=["gpu/all/usage"]' "$cfg"
+grep -Fq 'panel.addWidget(spec.id)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'memory/physical/usedPercent' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'gpu/all/usage' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'org.kde.plasma.digitalclock' "$root/scripts/blackcomb-launcher.sh"
+
 cp "$cfg" "$tmp/before"
 HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
   sh "$root/scripts/blackcomb-launcher.sh"
 cmp "$cfg" "$tmp/before"
-echo 'Plasma left taskbar and crescent launcher tests passed.'
+echo 'Plasma taskbar, launcher and panel widget tests passed.'

@@ -101,6 +101,14 @@ for package in "$src/wallpapers"/*; do
   cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/screenshot.png" 2>/dev/null || :
 done
 
+# Keep the standard Breeze global theme, but make its advertised default
+# wallpaper the Kim Stargazer package. Without this, applying Global Theme or
+# Defaults inside the live session puts Fedora's wallpaper back over the user's
+# Kim selection. This only edits Breeze's defaults file; no custom theme is used.
+if [ -f "$src/patch-breeze-wallpaper.sh" ]; then
+  sh "$src/patch-breeze-wallpaper.sh" "$dst" 2>/dev/null || :
+fi
+
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.desktop" \

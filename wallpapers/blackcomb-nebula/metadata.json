@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Nebula background",
+        "Id": "blackcomb-nebula",
+        "License": "See project README",
+        "Name": "Blackcomb Nebula"
+    },
+    "Keywords": "Blackcomb;Nebula;Space;Night;"
+}

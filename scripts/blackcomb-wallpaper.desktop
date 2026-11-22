@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Blackcomb wallpaper setup
-Comment=Set the initial Blackcomb wallpaper for new users
+Comment=Keep a Kim wallpaper selected in the Plasma desktop
 Exec=/usr/local/bin/blackcomb-wallpaper
 OnlyShowIn=KDE;
 X-KDE-autostart-phase=2

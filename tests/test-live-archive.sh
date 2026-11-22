@@ -21,6 +21,7 @@ grep -Fq '00-blackcomb-live-keyboard.rules' "$hook"
 grep -Fq '00-blackcomb-live-keyboard.pkla' "$hook"
 grep -Fq 'crescent-moon-start-icon.png' "$hook"
 grep -Fq 'blackcomb-launcher.desktop' "$hook"
+grep -Fq 'patch-breeze-wallpaper.sh' "$hook"
 grep -Fq 'usr/share/color-schemes' "$hook"
 grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
 grep -Fq '/usr/share/wallpapers' "$hook"
@@ -88,7 +89,14 @@ grep -Fq '[General]' "$launcher"
 grep -Fq 'org.kde.plasma.kickoff' "$launcher"
 grep -Fq 'location=5' "$launcher"
 grep -Fq 'formfactor=3' "$launcher"
+grep -Fq 'org.kde.plasma.systemmonitor.memory' "$launcher"
+grep -Fq 'org.kde.plasma.battery' "$launcher"
+grep -Fq 'gpu/all/usage' "$launcher"
+grep -Fq 'org.kde.plasma.digitalclock' "$launcher"
 test -x "$launcher"
+patch_defaults="$tmp/extracted/usr/share/blackcomb/live/patch-breeze-wallpaper.sh"
+test -f "$patch_defaults"
+grep -Fq 'Image=kim-stargazer' "$patch_defaults"
 if [[ -e $tmp/extracted/usr/share/blackcomb/live/blackpkdgs.sh ]]; then
   echo 'blackpkdgs must be removed from the live payload' >&2
   exit 1
@@ -109,8 +117,9 @@ cmp "$theme" "$root/themes/opencode/OpenCode-Catppuccin.colors"
 grep -Fxq 'Name=OpenCode Catppuccin' "$theme"
 grep -Fxq 'ColorScheme=OpenCode-Catppuccin' "$theme"
 test -f "$tmp/extracted/usr/share/blackcomb/live/themes/OpenCode-Nord-Light.colors"
-for package in blackcomb-aurora blackcomb-blue-hour blackcomb-midnight \
-               blackcomb-moonlit-forest kim-alpine kim-stargazer kim-sunrise; do
+for package in blackcomb-aurora blackcomb-blue-hour blackcomb-glacial-lake \
+               blackcomb-midnight blackcomb-moonlit-forest blackcomb-nebula \
+               celestial kim-alpine kim-stargazer kim-sunrise; do
   test -f "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
   grep -Fq "\"Id\": \"$package\"" \
     "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
