@@ -25,6 +25,7 @@ grep -Fq 'patch-breeze-wallpaper.sh' "$hook"
 grep -Fq 'usr/share/color-schemes' "$hook"
 grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
 grep -Fq '/usr/share/wallpapers' "$hook"
+grep -Fq '/usr/share/plasma/plasmoids' "$hook"
 if grep -q 'com.blackcomb.mountain.desktop' "$hook"; then
   echo 'Custom Mountain theme must not be configured in the live hook' >&2
   exit 1
@@ -93,8 +94,9 @@ grep -Fq 'org.kde.plasma.systemmonitor.memory' "$launcher"
 grep -Fq 'org.kde.plasma.battery' "$launcher"
 grep -Fq 'gpu/all/usage' "$launcher"
 grep -Fq 'org.kde.plasma.digitalclock' "$launcher"
-grep -Fq 'org.kde.plasma.mediacontroller' "$launcher"
-grep -Fq 'org.kde.plasma.notifications' "$launcher"
+grep -Fq 'com.blackcomb.dynamic-music' "$launcher"
+grep -Fq 'com.blackcomb.search-center' "$launcher"
+grep -Fq 'ensureCustomPanel' "$launcher"
 test -x "$launcher"
 patch_defaults="$tmp/extracted/usr/share/blackcomb/live/patch-breeze-wallpaper.sh"
 test -f "$patch_defaults"
@@ -125,6 +127,12 @@ for package in blackcomb-aurora blackcomb-blue-hour blackcomb-glacial-lake \
   test -f "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
   grep -Fq "\"Id\": \"$package\"" \
     "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
+done
+for applet in com.blackcomb.dynamic-music com.blackcomb.search-center; do
+  test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
+  test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
+  grep -Fq "\"Id\": \"$applet\"" \
+    "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
 done
 if [[ -e $tmp/extracted/usr/share/blackcomb/live/lookandfeel ]]; then
   echo 'Custom global theme must not be staged in the live archive' >&2

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Verify that the launcher helper docks the Plasma panel left, sets the
-# crescent PNG as the Kickoff icon, and adds the standard panel widgets without
-# disturbing other containments or duplicating changes on a second run.
+# Verify that the launcher helper docks the main taskbar left, sets the
+# crescent PNG as the Kickoff icon, adds the standard system widgets, hosts the
+# two custom applets on dedicated panels, removes the old stock-widget
+# approximation, and stays idempotent.
 set -Eeuo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 tmp=$(mktemp -d)
@@ -29,14 +30,14 @@ plugin=org.kde.plasma.desktop
 wallpaperplugin=org.kde.image
 EOF
 
-HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+DBUS_SESSION_BUS_ADDRESS= HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
   sh "$root/scripts/blackcomb-launcher.sh"
 
 grep -Fxq 'location=5' "$cfg"
 grep -Fxq 'formfactor=3' "$cfg"
 grep -Fq 'org.kde.PlasmaShell.evaluateScript' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'allPanels[i].location = "left"' "$root/scripts/blackcomb-launcher.sh" || grep -Fq 'panel.location = "left"' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'w.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh" || grep -Fq 'current.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'current.writeConfig("icon"' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'currentConfigGroup = ["General"]' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq -- '--print-reply' "$root/scripts/blackcomb-launcher.sh"
@@ -44,19 +45,37 @@ grep -Fxq '[Containments][1][Applets][2][General]' "$cfg"
 grep -Fxq 'icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png' "$cfg"
 test "$(grep -Ec '^location=5$' "$cfg")" -eq 1
 test "$(grep -Ec '^plugin=org.kde.plasma.desktop$' "$cfg")" -eq 1
-grep -Fxq 'location=1' "$cfg"
 
 for plugin in org.kde.plasma.systemmonitor.memory org.kde.plasma.battery \
               org.kde.plasma.systemmonitor org.kde.plasma.digitalclock; do
   grep -Fxq "plugin=$plugin" "$cfg"
   test "$(grep -Ec "^plugin=$plugin\$" "$cfg")" -eq 1
 done
-# Dynamic Music is added once to the panel and once to the desktop so the
-# artist/title remain readable in either layout.
-test "$(grep -Ec '^plugin=org.kde.plasma.mediacontroller$' "$cfg")" -eq 2
-test "$(grep -Ec '^plugin=org.kde.plasma.notifications$' "$cfg")" -eq 1
+
+# The two custom applets each live on their own dedicated panel.
+test "$(grep -Ec '^plugin=com\.blackcomb\.dynamic-music$' "$cfg")" -eq 1
+test "$(grep -Ec '^plugin=com\.blackcomb\.search-center$' "$cfg")" -eq 1
+music_panel=$(sed -n '/^\[Containments\]\[4\]$/,/^\[/p' "$cfg")
+search_panel=$(sed -n '/^\[Containments\]\[5\]$/,/^\[/p' "$cfg")
+grep -Fxq 'location=3' <<<"$music_panel"
+grep -Fxq 'formfactor=2' <<<"$music_panel"
+grep -Fxq 'alignment=2' <<<"$music_panel"
+grep -Fxq 'panelLengthMode=1' <<<"$music_panel"
+grep -Fxq 'location=4' <<<"$search_panel"
+grep -Fxq 'formfactor=2' <<<"$search_panel"
+grep -Fxq 'alignment=132' <<<"$search_panel"
+grep -Fxq 'panelLengthMode=1' <<<"$search_panel"
+grep -Fxq 'plugin=org.kde.panel' <<<"$music_panel"
+grep -Fxq 'plugin=org.kde.panel' <<<"$search_panel"
+grep -Fxq '[Containments][5][Applets][4][Shortcuts]' "$cfg"
 grep -Fxq 'global=Meta+N' "$cfg"
-grep -Fxq '[Containments][1][Applets][8][Shortcuts]' "$cfg"
+
+# The earlier stock-widget approximation must be gone from the saved layout.
+if grep -Eq '^plugin=org\.kde\.plasma\.(mediacontroller|notifications)$' "$cfg"; then
+  echo 'Stock media/notification widgets were added to the layout' >&2
+  exit 1
+fi
+
 grep -Fxq 'title=RAM' "$cfg"
 grep -Fxq 'chartFace=org.kde.ksysguard.horizontalbars' "$cfg"
 grep -Fxq 'sensorIds=["memory/physical/usedPercent"]' "$cfg"
@@ -68,14 +87,93 @@ grep -Fq 'addWidgetTo(panel, blackcombWidgets[k], seen)' "$root/scripts/blackcom
 grep -Fq 'memory/physical/usedPercent' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'gpu/all/usage' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'org.kde.plasma.digitalclock' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'org.kde.plasma.mediacontroller' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'org.kde.plasma.notifications' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'com.blackcomb.dynamic-music' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'ensureCustomPanel("com.blackcomb.dynamic-music", "top", "right", 72)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'panel.location = location' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'panel.alignment = alignment' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'panel.lengthMode = "fit"' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'append_custom_panels()' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'if [ "$layout_ok" -eq 0 ] && [ "$want_config_panels" -eq 0 ]; then' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq '[ "$want_config_panels" -eq 1 ] && append_custom_panels' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'removeStock(panel)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'type === "org.kde.plasma.mediacontroller"' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'type === "org.kde.plasma.notifications"' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'Meta+N' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'var allDesktops = desktops();' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'addWidgetTo(desktop, blackcombWidgets[4], desktopSeen)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
 
 cp "$cfg" "$tmp/before"
-HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+DBUS_SESSION_BUS_ADDRESS= HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
   sh "$root/scripts/blackcomb-launcher.sh"
 cmp "$cfg" "$tmp/before"
+
+# When Plasma scripting succeeds, it creates and persists the panels itself,
+# so the shell must not also append them to the saved config.
+mkdir -p "$tmp/bin" "$tmp/dbus-home/.config"
+cat > "$tmp/bin/qdbus6" <<'MOCK'
+#!/usr/bin/env bash
+printf 'BLACKCOMB_OK:1:1:4:0:2\n'
+MOCK
+chmod +x "$tmp/bin/qdbus6"
+dbus_cfg="$tmp/dbus-home/.config/plasma-org.kde.plasma.desktop-appletsrc"
+cat > "$dbus_cfg" <<'EOF'
+[Containments][1]
+activityId=
+formfactor=2
+lastScreen=0
+location=4
+plugin=org.kde.panel
+
+[Containments][1][Applets][2]
+plugin=org.kde.plasma.kickoff
+EOF
+PATH="$tmp/bin:$PATH" DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/blackcomb-fake-bus \
+  HOME="$tmp/dbus-home" XDG_CONFIG_HOME="$tmp/dbus-home/.config" \
+  sh "$root/scripts/blackcomb-launcher.sh"
+if grep -Eq '^plugin=com\.blackcomb\.(dynamic-music|search-center)$' "$dbus_cfg"; then
+  echo 'Custom panels were appended even though Plasma scripting succeeded' >&2
+  exit 1
+fi
+
+# A layout saved by the previous stock-widget build is cleaned up on upgrade.
+mkdir -p "$tmp/stock-home/.config"
+stock_cfg="$tmp/stock-home/.config/plasma-org.kde.plasma.desktop-appletsrc"
+cat > "$stock_cfg" <<'EOF'
+[Containments][1]
+activityId=
+formfactor=2
+lastScreen=0
+location=4
+plugin=org.kde.panel
+
+[Containments][1][Applets][2]
+plugin=org.kde.plasma.kickoff
+
+[Containments][1][Applets][9]
+plugin=org.kde.plasma.mediacontroller
+
+[Containments][1][Applets][10]
+plugin=org.kde.plasma.mediacontroller
+
+[Containments][1][Applets][11]
+plugin=org.kde.plasma.notifications
+
+[Containments][1][Applets][11][Shortcuts]
+global=Meta+N
+EOF
+DBUS_SESSION_BUS_ADDRESS= HOME="$tmp/stock-home" XDG_CONFIG_HOME="$tmp/stock-home/.config" \
+  sh "$root/scripts/blackcomb-launcher.sh"
+if grep -Eq '^plugin=org\.kde\.plasma\.(mediacontroller|notifications)$' "$stock_cfg"; then
+  echo 'Old stock widgets survived the upgrade cleanup' >&2
+  exit 1
+fi
+if grep -Fq '[Containments][1][Applets][11][Shortcuts]' "$stock_cfg"; then
+  echo 'Old notification shortcut survived the upgrade cleanup' >&2
+  exit 1
+fi
+grep -Fxq 'plugin=com.blackcomb.dynamic-music' "$stock_cfg"
+grep -Fxq 'plugin=com.blackcomb.search-center' "$stock_cfg"
+
 echo 'Plasma taskbar, launcher and panel widget tests passed.'

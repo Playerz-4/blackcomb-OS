@@ -62,7 +62,7 @@ python3 "$ROOT_DIR/scripts/prepare-live-boot.py" "$work/original-grub.cfg" "$wor
 mkdir -p "$work/blackcomb-boot"
 "$ROOT_DIR/scripts/create-live-boot-archive.sh" "$work/boot-overlay" \
   "$ROOT_DIR/assets/branding/blackcomb-boot-watermark.png" "$work/blackcomb-boot/plymouth.cpio"
-mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/wallpapers"
+mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcomb/assets/branding" "$work/blackcomb/themes/opencode" "$work/blackcomb/wallpapers" "$work/blackcomb/applets"
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
 install -m 755 "$ROOT_DIR/scripts/blackcomb-wine.sh" "$work/blackcomb/scripts/blackcomb-wine.sh"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wine.desktop" "$work/blackcomb/scripts/"
@@ -89,6 +89,13 @@ for package in "$ROOT_DIR"/wallpapers/*; do
   name=$(basename -- "$package")
   install -d "$work/blackcomb/wallpapers/$name"
   install -m 644 "$package/metadata.json" "$work/blackcomb/wallpapers/$name/"
+done
+for applet in "$ROOT_DIR"/applets/*; do
+  [ -d "$applet" ] || continue
+  name=$(basename -- "$applet")
+  install -d "$work/blackcomb/applets/$name/contents/ui"
+  install -m 644 "$applet/metadata.json" "$work/blackcomb/applets/$name/"
+  install -m 644 "$applet"/contents/ui/*.qml "$work/blackcomb/applets/$name/contents/ui/"
 done
 install -m 644 "$ROOT_DIR/scripts/MEDIA-README.txt" "$work/blackcomb/README.txt"
 echo 'Writing Fedora installer media with the Blackcomb kit...'

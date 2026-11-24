@@ -79,6 +79,11 @@ case " $* " in
     test -f "$payload/scripts/crescent-moon-neofetch.txt"
     test -f "$payload/backgrounds/kim-sunrise.png"
     test -f "$payload/wallpapers/kim-stargazer/metadata.json"
+    for applet in com.blackcomb.dynamic-music com.blackcomb.search-center; do
+      test -f "$payload/applets/$applet/metadata.json"
+      test -f "$payload/applets/$applet/contents/ui/main.qml"
+      grep -Fq "\"Id\": \"$applet\"" "$payload/applets/$applet/metadata.json"
+    done
     if [[ -e $payload/themes/mountain || -e $payload/scripts/mountain-lookandfeel.conf ]]; then
       echo 'Custom Mountain theme must not be shipped' >&2
       exit 1
@@ -129,6 +134,10 @@ test -f usr/share/blackcomb/live/blackcomb-midnight.png
 test -f usr/share/blackcomb/live/blackcomb-moonlit-forest.png
 test -f usr/share/blackcomb/live/wallpapers/kim-stargazer/metadata.json
 test -f usr/share/blackcomb/live/wallpapers/blackcomb-aurora/metadata.json
+for applet in com.blackcomb.dynamic-music com.blackcomb.search-center; do
+  test -f "usr/share/blackcomb/live/applets/$applet/metadata.json"
+  test -f "usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
+done
 if [[ -e usr/share/blackcomb/live/lookandfeel/com.blackcomb.mountain.desktop ]]; then
   echo 'Custom Mountain theme must not be in the live archive' >&2
   exit 1
@@ -204,8 +213,22 @@ grep -Fq 'ascii.conf' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'command -v convert' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'command -v identify' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'chafa imagemagick' "$root/scripts/setup-blackcomb.sh"
-grep -Fq 'org.kde.plasma.mediacontroller' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'org.kde.plasma.notifications' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'com.blackcomb.dynamic-music' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'ensureCustomPanel' "$root/scripts/blackcomb-launcher.sh"
+if grep -Fq 'addWidget("org.kde.plasma.mediacontroller")' "$root/scripts/blackcomb-launcher.sh"; then
+  echo 'Stock Media Player is still being added' >&2
+  exit 1
+fi
+if grep -Fq 'addWidget("org.kde.plasma.notifications")' "$root/scripts/blackcomb-launcher.sh"; then
+  echo 'Stock Notifications widget is still being added' >&2
+  exit 1
+fi
+for applet in com.blackcomb.dynamic-music com.blackcomb.search-center; do
+  test -f "$root/applets/$applet/metadata.json"
+  test -f "$root/applets/$applet/contents/ui/main.qml"
+  grep -Fq "\"Id\": \"$applet\"" "$root/applets/$applet/metadata.json"
+done
 grep -Fq 'LookAndFeelPackage=org.kde.breeze.desktop' "$root/scripts/setup-blackcomb.sh"
 if grep -Fq 'com.blackcomb.mountain.desktop' "$root/scripts/setup-blackcomb.sh"; then
   echo 'Custom Mountain theme is still referenced by setup' >&2

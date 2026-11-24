@@ -1,0 +1,22 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Utilities",
+        "Description": "Centered search and notification panel with pinned apps, app/web suggestions and recent notifications",
+        "Id": "com.blackcomb.search-center",
+        "EnabledByDefault": true,
+        "FormFactors": [
+            "desktop"
+        ],
+        "Icon": "search",
+        "License": "See project README",
+        "Name": "Blackcomb Search Center",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

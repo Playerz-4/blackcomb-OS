@@ -31,6 +31,7 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/usr/share/backgrounds/blackcomb" \
          "$dst/usr/share/blackcomb/branding" \
          "$dst/usr/share/wallpapers" \
+         "$dst/usr/share/plasma/plasmoids" \
          "$dst/usr/share/color-schemes" 2>/dev/null || exit 0
 
 # Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
@@ -99,6 +100,21 @@ for package in "$src/wallpapers"/*; do
   [ -f "$src/$id.png" ] || continue
   cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/contents/images/$id.png" 2>/dev/null || :
   cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/screenshot.png" 2>/dev/null || :
+done
+
+# Install Blackcomb's pure-QML Plasma applets as KPackages. Dynamic Music is
+# placed on a dedicated top-right panel and Search Center on a bottom-center
+# panel by the launcher helper; this loop only makes the applets discoverable.
+for package in "$src/applets"/*; do
+  [ -d "$package" ] || continue
+  [ -f "$package/metadata.json" ] || continue
+  id=$(basename "$package")
+  mkdir -p "$dst/usr/share/plasma/plasmoids/$id/contents/ui" 2>/dev/null || :
+  cp -f "$package/metadata.json" "$dst/usr/share/plasma/plasmoids/$id/" 2>/dev/null || :
+  for qml in "$package"/contents/ui/*.qml; do
+    [ -f "$qml" ] || continue
+    cp -f "$qml" "$dst/usr/share/plasma/plasmoids/$id/contents/ui/" 2>/dev/null || :
+  done
 done
 
 # Keep the standard Breeze global theme, but make its advertised default

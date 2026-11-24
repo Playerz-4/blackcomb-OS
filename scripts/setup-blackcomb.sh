@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/patch-breeze-wallpaper.sh" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/patch-breeze-wallpaper.sh" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/applets/com.blackcomb.dynamic-music/metadata.json" "$HERE/applets/com.blackcomb.dynamic-music/contents/ui/main.qml" "$HERE/applets/com.blackcomb.search-center/metadata.json" "$HERE/applets/com.blackcomb.search-center/contents/ui/main.qml" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -32,7 +32,7 @@ if [[ ${1:-} != --yes ]]; then
   [[ $answer == y || $answer == Y || $answer == yes || $answer == YES ]] || exit 0
 fi
 dnf install -y firefox vlc libreoffice-writer kcalc plymouth-theme-spinner chafa imagemagick curl tar python3 wine winetricks cabextract unzip
-install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/applications /usr/share/color-schemes /usr/share/wallpapers /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg /etc/xdg/autostart /etc/skel/.config
+install -d /usr/share/backgrounds/blackcomb /usr/share/blackcomb/branding /usr/share/applications /usr/share/color-schemes /usr/share/wallpapers /usr/share/plasma/plasmoids /usr/local/bin /usr/local/sbin /usr/local/lib/blackcomb /usr/local/lib/blackcomb/neofetch /etc/xdg /etc/xdg/autostart /etc/skel/.config
 install -m 644 "$HERE"/backgrounds/*.png /usr/share/backgrounds/blackcomb/
 
 # Register each background as a Plasma wallpaper package. Loose PNGs are not
@@ -46,6 +46,18 @@ for package in "$HERE"/wallpapers/*; do
     "/usr/share/wallpapers/$name/contents/images/$name.png"
   install -m 644 "$HERE/backgrounds/$name.png" \
     "/usr/share/wallpapers/$name/screenshot.png"
+done
+
+# Install the custom QML applets used by the top-right music card and the
+# centered search/notification panel. They are plain KPackages; no new binary
+# or SVG assets are needed.
+for applet in "$HERE"/applets/*; do
+  [[ -d $applet && -f $applet/metadata.json ]] || continue
+  name=${applet##*/}
+  install -d "/usr/share/plasma/plasmoids/$name/contents/ui"
+  install -m 644 "$applet/metadata.json" "/usr/share/plasma/plasmoids/$name/"
+  install -m 644 "$applet"/contents/ui/*.qml \
+    "/usr/share/plasma/plasmoids/$name/contents/ui/"
 done
 
 install -m 644 "$HERE"/assets/branding/*.png "$HERE"/assets/branding/*.svg /usr/share/blackcomb/branding/

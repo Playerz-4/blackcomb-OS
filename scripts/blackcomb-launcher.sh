@@ -1,16 +1,18 @@
 #!/bin/sh
-# Configure the Plasma panel for the Blackcomb live/installed session:
+# Configure the Blackcomb Plasma layout:
 #   - use the supplied crescent PNG for the Kickoff launcher button;
-#   - dock the panel on the left edge as a vertical taskbar;
+#   - keep the existing taskbar docked on the left edge;
 #   - add RAM, battery, GPU usage and digital clock widgets;
-#   - add the stock Media Player widget (Dynamic Music) with track/artist;
-#   - expose the stock Notifications center with a Meta+N shortcut.
+#   - place Blackcomb Dynamic Music in a dedicated top-right panel;
+#   - place Blackcomb Search Center in a dedicated bottom-center panel;
+#   - remove the stock Media Player and Notifications approximations.
 #
-# Plasma::Types::Location is 5 for LeftEdge and FormFactor is 3 for Vertical.
-# Applet settings are appended to plasma-org.kde.plasma.desktop-appletsrc so
-# they survive logout, and a guarded Plasma scripting call applies them to the
-# running shell too. Only standard Plasma/systemmonitor plugins are used; no
-# icon theme or SVG editing is needed.
+# Plasma::Types::Location is 3 for TopEdge, 4 for BottomEdge and 5 for
+# LeftEdge. FormFactor is 2 for Horizontal and 3 for Vertical. Applet settings
+# are appended to plasma-org.kde.plasma.desktop-appletsrc so they survive
+# logout, and a guarded Plasma scripting call applies them to the running
+# shell too. The two custom applets are plain QML packages; no SVG editing or
+# new binary dependency is needed.
 set -eu
 
 icon=/usr/share/blackcomb/branding/crescent-moon-start-icon.png
@@ -29,8 +31,9 @@ desktops=$(mktemp)
 icon_groups=$(mktemp)
 panel_groups=$(mktemp)
 widgets=$(mktemp)
-desktop_widgets=$(mktemp)
-trap 'rm -f "$parsed" "$panels" "$desktops" "$icon_groups" "$panel_groups" "$widgets" "$desktop_widgets"' EXIT HUP INT TERM
+removed=$(mktemp)
+clean=$(mktemp)
+trap 'rm -f "$parsed" "$panels" "$desktops" "$icon_groups" "$panel_groups" "$widgets" "$removed" "$clean"' EXIT HUP INT TERM
 
 # Collect existing panel containments, their applet plugins and the highest
 # applet id in one pass. KConfig merges duplicate sections with later values
@@ -42,12 +45,21 @@ awk -F= '
     sub(/\]$/, "", group)
     containment=group
     applet=""
-    plugin[containment]=""
-    location[containment]=""
-    formfactor[containment]=""
+    # The helper appends a second [Containments][N] section when it docks a
+    # panel left. Preserve values from the first section instead of wiping
+    # them, so the panel is still recognized on the next run.
+    if (!(containment in seen)) {
+      plugin[containment]=""
+      location[containment]=""
+      formfactor[containment]=""
+      customMusic[containment]=0
+      customSearch[containment]=0
+      seen[containment]=1
+    }
     next
   }
   /^\[Containments\]\[[^]]+\]\[Applets\]\[[0-9]+\]$/ {
+    section=$0
     group=$0
     sub(/^\[/, "", group)
     sub(/\]$/, "", group)
@@ -67,41 +79,62 @@ awk -F= '
       else if ($1 == "location") location[containment]=$2
       else if ($1 == "formfactor") formfactor[containment]=$2
     } else if ($1 == "plugin") {
-      print "APPLET\t" containment "\t" $2
+      print "APPLET\t" containment "\t" $2 "\t" section "\t" location[containment]
       if ($2 == "org.kde.plasma.kickoff") print "ICON\t" applet
+      if ($2 == "com.blackcomb.dynamic-music") customMusic[containment]=1
+      if ($2 == "com.blackcomb.search-center") customSearch[containment]=1
     }
   }
   END {
     for (group in plugin) {
+      special = (customMusic[group] || customSearch[group]) ? 1 : 0
       if (plugin[group] == "org.kde.panel") {
-        print "PANEL\t" group "\t" location[group] "\t" formfactor[group]
+        print "PANEL\t" group "\t" location[group] "\t" formfactor[group] "\t" special
       } else if (plugin[group] == "org.kde.plasma.desktop") {
-        print "DESKTOP\t" group
+        print "DESKTOP\t" group "\t" special
       }
     }
     print "MAXID\t" maxid
   }
 ' "$cfg" > "$parsed"
 
-awk -F '\t' '$1 == "PANEL" { print $2 }' "$parsed" | sort -u > "$panels"
+awk -F '\t' '$1 == "PANEL" && $5 != "1" { print $2 }' "$parsed" | sort -u > "$panels"
 awk -F '\t' '$1 == "DESKTOP" { print $2 }' "$parsed" | sort -u > "$desktops"
 awk -F '\t' '$1 == "ICON" { print $2 }' "$parsed" | sort -u > "$icon_groups"
-awk -F '\t' '$1 == "PANEL" && ($3 != "5" || $4 != "3") { print $2 }' "$parsed" | sort -u > "$panel_groups"
+awk -F '\t' '$1 == "PANEL" && ($3 != "5" || $4 != "3") && $5 != "1" { print $2 }' "$parsed" | sort -u > "$panel_groups"
 maxid=$(awk -F '\t' '$1 == "MAXID" && $2 + 0 > m { m = $2 + 0 } END { print m + 0 }' "$parsed")
+
+# Replace the earlier stock-widget approximation. Removing the applet sections
+# (including their shortcut subsections) keeps the config free of duplicate
+# media and notification widgets on later runs.
+awk -F '\t' '
+  $1 == "APPLET" && ($3 == "org.kde.plasma.mediacontroller" || $3 == "org.kde.plasma.notifications") {
+    print $4
+  }
+' "$parsed" > "$removed"
+awk -v prefixes="$removed" '
+  BEGIN {
+    while ((getline prefix < prefixes) > 0) bad[prefix] = 1
+    close(prefixes)
+  }
+  /^\[/ {
+    skip = 0
+    for (prefix in bad) {
+      if (index($0, prefix) == 1) {
+        skip = 1
+        break
+      }
+    }
+  }
+  !skip { print }
+' "$cfg" > "$clean"
+cp "$clean" "$cfg"
 
 cat > "$widgets" <<'EOF'
 org.kde.plasma.systemmonitor.memory
 org.kde.plasma.battery
 org.kde.plasma.systemmonitor
 org.kde.plasma.digitalclock
-org.kde.plasma.mediacontroller
-org.kde.plasma.notifications
-EOF
-
-# A desktop copy of the stock Media Player widget keeps the artist and track
-# readable even when the left taskbar is too narrow for the compact layout.
-cat > "$desktop_widgets" <<'EOF'
-org.kde.plasma.mediacontroller
 EOF
 
 has_applet() {
@@ -109,6 +142,15 @@ has_applet() {
   plugin=$2
   awk -F '\t' -v g="$group" -v p="$plugin" '
     $1 == "APPLET" && $2 == g && $3 == p { found=1; exit }
+    END { exit !found }
+  ' "$parsed"
+}
+
+has_applet_at() {
+  plugin=$1
+  location=$2
+  awk -F '\t' -v p="$plugin" -v l="$location" '
+    $1 == "APPLET" && $3 == p && $5 == l { found=1; exit }
     END { exit !found }
   ' "$parsed"
 }
@@ -137,12 +179,44 @@ append_widget() {
       printf '[%s][Applets][%s][Configuration][Appearance]\ntitle=GPU\nchartFace=org.kde.ksysguard.horizontalbars\nblackcombWidget=gpu\n' "$group" "$id" >> "$cfg"
       printf '[%s][Applets][%s][Configuration][Sensors]\nsensorIds=["gpu/all/usage"]\nhighPrioritySensorIds=["gpu/all/usage"]\ntotalSensors=["gpu/all/usage"]\nlowPrioritySensorIds=\n' "$group" "$id" >> "$cfg"
       ;;
-    org.kde.plasma.notifications)
-      # Meta+N opens the stock notification history from anywhere in Plasma.
+    com.blackcomb.search-center)
+      # Meta+N opens the Blackcomb Search Center from anywhere in Plasma.
       printf '[%s][Applets][%s][Shortcuts]\nglobal=Meta+N\n' "$group" "$id" >> "$cfg"
       ;;
   esac
 }
+
+# Fallback for sessions without a working Plasma scripting bridge: append the
+# two dedicated panels to the saved layout. When scripting works, it creates
+# and persists them itself, so doing both would duplicate the panels on the
+# next Plasma start. alignment=2 is Qt.AlignRight for the top card; alignment=132
+# is Qt.AlignCenter for the bottom search panel.
+maxcontainment=$(sed -n 's/^\[Containments\]\[\([0-9][0-9]*\)\]$/\1/p' "$cfg" | sort -n | tail -n 1)
+[ -n "$maxcontainment" ] || maxcontainment=0
+
+append_custom_panels() {
+  if ! has_applet_at com.blackcomb.dynamic-music 3; then
+    maxcontainment=$((maxcontainment + 1))
+    maxid=$((maxid + 1))
+    printf '\n[Containments][%s]\nactivityId=\nformfactor=2\nlastScreen=0\nlocation=3\nplugin=org.kde.panel\nwallpaperplugin=org.kde.image\nalignment=2\npanelLengthMode=1\n' "$maxcontainment" >> "$cfg"
+    printf '\n[Containments][%s][Applets][%s]\nplugin=com.blackcomb.dynamic-music\n' "$maxcontainment" "$maxid" >> "$cfg"
+  fi
+
+  if ! has_applet_at com.blackcomb.search-center 4; then
+    maxcontainment=$((maxcontainment + 1))
+    maxid=$((maxid + 1))
+    printf '\n[Containments][%s]\nactivityId=\nformfactor=2\nlastScreen=0\nlocation=4\nplugin=org.kde.panel\nwallpaperplugin=org.kde.image\nalignment=132\npanelLengthMode=1\n' "$maxcontainment" >> "$cfg"
+    printf '\n[Containments][%s][Applets][%s]\nplugin=com.blackcomb.search-center\n' "$maxcontainment" "$maxid" >> "$cfg"
+    printf '[Containments][%s][Applets][%s][Shortcuts]\nglobal=Meta+N\n' "$maxcontainment" "$maxid" >> "$cfg"
+  fi
+}
+
+# Without a session bus, write the panels immediately so the fallback keeps
+# the usual id order ahead of the system widgets. With a bus, wait for the
+# scripting result below and only fall back if it fails.
+want_config_panels=1
+[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] || want_config_panels=0
+[ "$want_config_panels" -eq 1 ] && append_custom_panels
 
 while IFS= read -r group; do
   [ -n "$group" ] || continue
@@ -155,9 +229,8 @@ while IFS= read -r group; do
   printf '\n[%s]\nlocation=5\nformfactor=3\n' "$group" >> "$cfg"
 done < "$panel_groups"
 
-# Add each missing standard widget once per panel. The dedicated memory applet
-# supplies RAM; the generic systemmonitor applet uses the ksystemstats GPU usage
-# sensor because Plasma has no built-in analog speedometer face.
+# Add each missing standard widget once per main panel. The dedicated music and
+# search panels are intentionally excluded from the left-side system widgets.
 while IFS= read -r group; do
   [ -n "$group" ] || continue
   while IFS= read -r plugin; do
@@ -167,18 +240,6 @@ while IFS= read -r group; do
     append_widget "$group" "$plugin" "$maxid"
   done < "$widgets"
 done < "$panels"
-
-# Dynamic Music is also placed on the desktop, where Plasma renders the full
-# Media Player representation with the current track and artist.
-while IFS= read -r group; do
-  [ -n "$group" ] || continue
-  while IFS= read -r plugin; do
-    [ -n "$plugin" ] || continue
-    if has_applet "$group" "$plugin"; then continue; fi
-    maxid=$((maxid + 1))
-    append_widget "$group" "$plugin" "$maxid"
-  done < "$desktop_widgets"
-done < "$desktops"
 
 # Ask a running Plasma shell to apply the changes immediately. The config
 # append only takes full effect on the next Plasma start, so this keeps the
@@ -190,14 +251,30 @@ var allDesktops = desktops();
 var moved = 0;
 var icons = 0;
 var added = 0;
+var removed = 0;
+var customized = 0;
 var blackcombWidgets = [
-  {id:"org.kde.plasma.systemmonitor.memory", title:"RAM", face:"org.kde.ksysguard.horizontalbars", sensors:'["memory/physical/usedPercent"]', total:'["memory/physical/usedPercent"]', low:'["memory/physical/total"]', marker:"", shortcut:""},
-  {id:"org.kde.plasma.battery", title:"", face:"", sensors:"", total:"", low:"", marker:"", shortcut:""},
-  {id:"org.kde.plasma.systemmonitor", title:"GPU", face:"org.kde.ksysguard.horizontalbars", sensors:'["gpu/all/usage"]', total:'["gpu/all/usage"]', low:"", marker:"gpu", shortcut:""},
-  {id:"org.kde.plasma.digitalclock", title:"", face:"", sensors:"", total:"", low:"", marker:"", shortcut:""},
-  {id:"org.kde.plasma.mediacontroller", title:"", face:"", sensors:"", total:"", low:"", marker:"", shortcut:""},
-  {id:"org.kde.plasma.notifications", title:"", face:"", sensors:"", total:"", low:"", marker:"", shortcut:"Meta+N"}
+  {id:"org.kde.plasma.systemmonitor.memory", title:"RAM", face:"org.kde.ksysguard.horizontalbars", sensors:'["memory/physical/usedPercent"]', total:'["memory/physical/usedPercent"]', low:'["memory/physical/total"]', marker:""},
+  {id:"org.kde.plasma.battery", title:"", face:"", sensors:"", total:"", low:"", marker:""},
+  {id:"org.kde.plasma.systemmonitor", title:"GPU", face:"org.kde.ksysguard.horizontalbars", sensors:'["gpu/all/usage"]', total:'["gpu/all/usage"]', low:"", marker:"gpu"},
+  {id:"org.kde.plasma.digitalclock", title:"", face:"", sensors:"", total:"", low:"", marker:""}
 ];
+function hasType(widgets, type) {
+  for (var i = 0; i < widgets.length; i++) {
+    if (widgets[i].type === type) return true;
+  }
+  return false;
+}
+function removeStock(containment) {
+  var widgets = containment.widgets();
+  for (var i = 0; i < widgets.length; i++) {
+    var type = widgets[i].type;
+    if (type === "org.kde.plasma.mediacontroller" || type === "org.kde.plasma.notifications") {
+      widgets[i].remove();
+      removed++;
+    }
+  }
+}
 function addWidgetTo(containment, spec, seen) {
   if (seen[spec.id]) return;
   try {
@@ -216,22 +293,60 @@ function addWidgetTo(containment, spec, seen) {
       widget.writeConfig("totalSensors", spec.total);
       widget.writeConfig("lowPrioritySensorIds", spec.low);
     }
-    if (spec.shortcut) {
-      widget.currentConfigGroup = ["Shortcuts"];
-      widget.writeConfig("global", spec.shortcut);
-    }
     widget.reloadConfig();
     added++;
   } catch (error) {
     // A missing optional plugin must never break the layout helper.
   }
 }
+function ensureCustomPanel(type, location, alignment, height) {
+  var panel = null;
+  var i;
+  for (i = 0; i < allPanels.length; i++) {
+    if (hasType(allPanels[i].widgets(), type)) {
+      panel = allPanels[i];
+      break;
+    }
+  }
+  if (!panel) {
+    panel = new Panel();
+    customized++;
+  }
+  panel.location = location;
+  panel.alignment = alignment;
+  panel.lengthMode = "fit";
+  panel.hiding = "none";
+  panel.floating = false;
+  panel.height = height;
+  var widgets = panel.widgets();
+  if (!hasType(widgets, type)) {
+    var widget = panel.addWidget(type);
+    if (widget) {
+      if (type === "com.blackcomb.search-center") widget.globalShortcut = "Meta+N";
+      widget.reloadConfig();
+      added++;
+    }
+  } else if (type === "com.blackcomb.search-center") {
+    for (i = 0; i < widgets.length; i++) {
+      if (widgets[i].type === type) widgets[i].globalShortcut = "Meta+N";
+    }
+  }
+}
 for (var i = 0; i < allPanels.length; i++) {
   var panel = allPanels[i];
-  panel.location = "left";
-  moved++;
-  var seen = {};
   var widgets = panel.widgets();
+  var special = false;
+  for (var w = 0; w < widgets.length; w++) {
+    if (widgets[w].type === "com.blackcomb.dynamic-music" || widgets[w].type === "com.blackcomb.search-center") {
+      special = true;
+    }
+  }
+  removeStock(panel);
+  if (!special) {
+    allPanels[i].location = "left";
+    moved++;
+  }
+  var seen = {};
   for (var j = 0; j < widgets.length; j++) {
     var current = widgets[j];
     seen[current.type] = true;
@@ -242,22 +357,22 @@ for (var i = 0; i < allPanels.length; i++) {
       icons++;
     }
   }
-  for (var k = 0; k < blackcombWidgets.length; k++) {
-    addWidgetTo(panel, blackcombWidgets[k], seen);
+  if (!special) {
+    for (var k = 0; k < blackcombWidgets.length; k++) {
+      addWidgetTo(panel, blackcombWidgets[k], seen);
+    }
   }
 }
-// Dynamic Music gets a desktop copy too, where Plasma shows the full
-// representation with the artist and track name instead of a narrow icon.
+// Dynamic Music is a compact card on a right-aligned top panel; Search Center
+// opens upward from a centered bottom panel.
+ensureCustomPanel("com.blackcomb.dynamic-music", "top", "right", 72);
+ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44);
+
+// The earlier desktop Media Player copy is part of the replaced approximation.
 for (var d = 0; d < allDesktops.length; d++) {
-  var desktop = allDesktops[d];
-  var desktopSeen = {};
-  var desktopWidgets = desktop.widgets();
-  for (var m = 0; m < desktopWidgets.length; m++) {
-    desktopSeen[desktopWidgets[m].type] = true;
-  }
-  addWidgetTo(desktop, blackcombWidgets[4], desktopSeen);
+  removeStock(allDesktops[d]);
 }
-print("BLACKCOMB_OK:" + moved + ":" + icons + ":" + added);
+print("BLACKCOMB_OK:" + moved + ":" + icons + ":" + added + ":" + removed + ":" + customized);
 EOF
 )
 
@@ -276,23 +391,27 @@ apply_live_layout() {
   fi
 }
 
+layout_ok=0
 if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
   i=0
   while [ "$i" -lt 30 ]; do
     result=$(apply_live_layout 2>/dev/null || :)
-    counts=$(printf '%s\n' "$result" |
-      sed -n 's/.*BLACKCOMB_OK:\([0-9][0-9]*\):\([0-9][0-9]*\):\([0-9][0-9]*\).*/\1:\2/p' |
-      head -n 1)
-    if [ -n "$counts" ]; then
-      panel_count=${counts%%:*}
-      kickoff_count=${counts##*:}
-      if [ "$panel_count" -gt 0 ] && [ "$kickoff_count" -gt 0 ]; then
+    # A successful script always prints BLACKCOMB_OK. On a second run the moved
+    # and icon counters can both be zero, so never use them as the success test.
+    case "$result" in
+      *BLACKCOMB_OK:*)
+        layout_ok=1
         break
-      fi
-    fi
+        ;;
+    esac
     i=$((i + 1))
     sleep 1
   done
+fi
+
+# Only persist the panels here when Plasma scripting did not create them.
+if [ "$layout_ok" -eq 0 ] && [ "$want_config_panels" -eq 0 ]; then
+  append_custom_panels
 fi
 
 exit 0

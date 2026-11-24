@@ -55,14 +55,16 @@ login-screen wallpaper, all ten Kim and Blackcomb backgrounds are registered as
 Plasma wallpaper packages and appear in the wallpaper picker, Kim Stargazer is the
 Breeze default so a global theme change cannot restore Fedora's wallpaper, the
 standard Breeze global theme remains the default, the supplied
-crescent-moon-start-icon.png is set as the launcher icon, and the Plasma panel
-is docked on the left as a vertical taskbar with RAM, battery, GPU usage and
-digital clock widgets. Plasma's stock Media Player widget is also added to the
-panel and desktop: while music is playing it shows the track and artist
-(Dynamic Music). The stock Notifications widget is added to the taskbar and
-bound to Meta+N, so the notification center can be opened with that shortcut.
-Kickoff shows pinned apps and searches installed apps; Alt+Space opens KRunner
-for app and web-search suggestions. The bundled neofetch command shows
+crescent-moon-start-icon.png is set as the launcher icon, and the main Plasma
+panel is docked on the left as a vertical taskbar with RAM, battery, GPU usage
+and digital clock widgets. Two custom plain-QML applets replace the earlier
+stock-widget approximation: Dynamic Music is a small right-aligned top panel
+with a circular album-art/icon, track, artist, play/pause and a progress slider,
+while Search Center is a centered bottom panel bound to Meta+N. Pressing Meta+N
+pulls it up with a search field, a row of pinned apps, app and web suggestions,
+and the two latest notifications. Both are standard QML KPackages with no new
+SVG artwork or binary dependency. Kickoff still manages pinned apps; Alt+Space
+opens KRunner directly. The bundled neofetch command shows
 that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
 color schemes, selectable in System Settings > Appearance > Color Scheme; the
@@ -98,9 +100,9 @@ Replace the example path with the actual mount path. Setup uses Fedora's DNF
 repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa, ImageMagick,
 Wine, winetricks, cabextract and unzip; neofetch is bundled on this media. Setup
 installs all ten wallpaper packages (with stargazing as the default and the
-Breeze default), the standard Breeze global theme, the left-side vertical taskbar
-with RAM, battery, GPU usage, clock, now-playing and notification-center widgets,
-the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode
+Breeze default), the standard Breeze global theme, the left-side vertical taskbar with RAM,
+battery, GPU usage and clock widgets, the custom Dynamic Music and Search Center
+QML applets, the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode
 Catppuccin as the default), Wine file associations and the Blackcomb Plymouth theme, using the
 transparent logo. Use Fedora's "sudo dnf upgrade --refresh" for package updates.
 Run "blackcomb-wine" to launch standard Windows apps; native macOS apps

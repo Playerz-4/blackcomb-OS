@@ -142,6 +142,19 @@ def write_live_session_fixes(boot_dir):
         package.mkdir(parents=True, exist_ok=True)
         (package / 'metadata.json').write_bytes(source.read_bytes())
 
+    # Blackcomb's custom Plasma applets are pure QML packages. Stage the whole
+    # package; the pre-pivot hook copies them into /usr/share/plasma/plasmoids
+    # so both the live session and installed-system setup can load them.
+    applet_stage = live / 'applets'
+    for source in sorted((repo / 'applets').glob('*/metadata.json')):
+        package = applet_stage / source.parent.name
+        package.mkdir(parents=True, exist_ok=True)
+        (package / 'metadata.json').write_bytes(source.read_bytes())
+        ui_stage = package / 'contents/ui'
+        ui_stage.mkdir(parents=True, exist_ok=True)
+        for qml in sorted((source.parent / 'contents/ui').glob('*.qml')):
+            (ui_stage / qml.name).write_bytes(qml.read_bytes())
+
     # Plasma color schemes converted from OpenCode's built-in themes. Plasma
     # Login Manager and the live user session discover them once the pre-pivot
     # hook copies them into /usr/share/color-schemes.

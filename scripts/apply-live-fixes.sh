@@ -25,6 +25,17 @@ if [ -d "$HERE/themes/opencode" ]; then
   mkdir -p /usr/share/color-schemes
   cp "$HERE"/themes/opencode/*.colors /usr/share/color-schemes/
 fi
+if [ -d "$HERE/applets" ]; then
+  mkdir -p /usr/share/plasma/plasmoids
+  for applet in "$HERE"/applets/*; do
+    [ -d "$applet" ] || continue
+    [ -f "$applet/metadata.json" ] || continue
+    id=$(basename "$applet")
+    mkdir -p "/usr/share/plasma/plasmoids/$id/contents/ui"
+    cp "$applet/metadata.json" "/usr/share/plasma/plasmoids/$id/"
+    cp "$applet"/contents/ui/*.qml "/usr/share/plasma/plasmoids/$id/contents/ui/"
+  done
+fi
 mkdir -p /usr/local/lib/blackcomb/neofetch /etc/skel/.config/neofetch
 cp "$HERE/scripts/neofetch" /usr/local/lib/blackcomb/neofetch/neofetch
 chmod 755 /usr/local/lib/blackcomb/neofetch/neofetch
