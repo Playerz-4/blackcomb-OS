@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Blackcomb Plasma layout
-Comment=Set the crescent launcher icon, left taskbar and panel widgets
+Comment=Set the crescent launcher icon, left taskbar, panel widgets, now-playing display and notification center
 Exec=/usr/local/bin/blackcomb-launcher
 OnlyShowIn=KDE;
 X-KDE-autostart-phase=2

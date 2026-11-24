@@ -51,16 +51,28 @@ for plugin in org.kde.plasma.systemmonitor.memory org.kde.plasma.battery \
   grep -Fxq "plugin=$plugin" "$cfg"
   test "$(grep -Ec "^plugin=$plugin\$" "$cfg")" -eq 1
 done
+# Dynamic Music is added once to the panel and once to the desktop so the
+# artist/title remain readable in either layout.
+test "$(grep -Ec '^plugin=org.kde.plasma.mediacontroller$' "$cfg")" -eq 2
+test "$(grep -Ec '^plugin=org.kde.plasma.notifications$' "$cfg")" -eq 1
+grep -Fxq 'global=Meta+N' "$cfg"
+grep -Fxq '[Containments][1][Applets][8][Shortcuts]' "$cfg"
 grep -Fxq 'title=RAM' "$cfg"
 grep -Fxq 'chartFace=org.kde.ksysguard.horizontalbars' "$cfg"
 grep -Fxq 'sensorIds=["memory/physical/usedPercent"]' "$cfg"
 grep -Fxq 'title=GPU' "$cfg"
 grep -Fxq 'blackcombWidget=gpu' "$cfg"
 grep -Fxq 'sensorIds=["gpu/all/usage"]' "$cfg"
-grep -Fq 'panel.addWidget(spec.id)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'containment.addWidget(spec.id)' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'addWidgetTo(panel, blackcombWidgets[k], seen)' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'memory/physical/usedPercent' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'gpu/all/usage' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'org.kde.plasma.digitalclock' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'org.kde.plasma.mediacontroller' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'org.kde.plasma.notifications' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'Meta+N' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'var allDesktops = desktops();' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'addWidgetTo(desktop, blackcombWidgets[4], desktopSeen)' "$root/scripts/blackcomb-launcher.sh"
 
 cp "$cfg" "$tmp/before"
 HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \

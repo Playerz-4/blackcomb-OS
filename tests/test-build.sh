@@ -204,6 +204,8 @@ grep -Fq 'ascii.conf' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'command -v convert' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'command -v identify' "$root/scripts/neofetch-launcher.sh"
 grep -Fq 'chafa imagemagick' "$root/scripts/setup-blackcomb.sh"
+grep -Fq 'org.kde.plasma.mediacontroller' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'org.kde.plasma.notifications' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'LookAndFeelPackage=org.kde.breeze.desktop' "$root/scripts/setup-blackcomb.sh"
 if grep -Fq 'com.blackcomb.mountain.desktop' "$root/scripts/setup-blackcomb.sh"; then
   echo 'Custom Mountain theme is still referenced by setup' >&2
