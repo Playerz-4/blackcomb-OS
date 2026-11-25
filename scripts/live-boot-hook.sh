@@ -66,9 +66,9 @@ chmod 755 "$dst/usr/local/bin/blackcomb-vm-display" 2>/dev/null || :
 cp -f "$src/live-vm-display.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-vm-display.desktop" 2>/dev/null || :
 
-# Keyboard layout change without a root password (live media has none).
-# Polkit uses the first matching rule, so 00- takes precedence over Fedora's
-# packaged rules that would otherwise ask for authentication.
+# Keyboard/locale changes and the installer's pkexec helper need no root
+# password on live media. Polkit uses the first matching rule, so 00- takes
+# precedence over Fedora's packaged rules that would ask for authentication.
 cp -f "$src/live-keyboard.rules" \
   "$dst/etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules" 2>/dev/null || :
 cp -f "$src/live-keyboard.rules" \

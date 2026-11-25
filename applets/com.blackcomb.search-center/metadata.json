@@ -13,7 +13,7 @@
         "FormFactors": [
             "desktop"
         ],
-        "Icon": "search",
+        "Icon": "system-search",
         "License": "See project README",
         "Name": "Blackcomb Search Center",
         "Version": "1.0"

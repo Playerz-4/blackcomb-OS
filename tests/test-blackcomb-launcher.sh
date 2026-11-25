@@ -52,22 +52,22 @@ for plugin in org.kde.plasma.systemmonitor.memory org.kde.plasma.battery \
   test "$(grep -Ec "^plugin=$plugin\$" "$cfg")" -eq 1
 done
 
-# The two custom applets each live on their own dedicated panel.
+# Dynamic Music is a desktop widget so it can fully disappear while no player
+# is active. Search Center keeps its own centered bottom panel.
 test "$(grep -Ec '^plugin=com\.blackcomb\.dynamic-music$' "$cfg")" -eq 1
 test "$(grep -Ec '^plugin=com\.blackcomb\.search-center$' "$cfg")" -eq 1
-music_panel=$(sed -n '/^\[Containments\]\[4\]$/,/^\[/p' "$cfg")
-search_panel=$(sed -n '/^\[Containments\]\[5\]$/,/^\[/p' "$cfg")
-grep -Fxq 'location=3' <<<"$music_panel"
-grep -Fxq 'formfactor=2' <<<"$music_panel"
-grep -Fxq 'alignment=2' <<<"$music_panel"
-grep -Fxq 'panelLengthMode=1' <<<"$music_panel"
+grep -Fxq '[Containments][3][Applets][3]' "$cfg"
+if grep -Fxq 'location=3' "$cfg"; then
+  echo 'Dynamic Music must not leave an empty top panel' >&2
+  exit 1
+fi
+search_panel=$(sed -n '/^\[Containments\]\[4\]$/,/^\[/p' "$cfg")
 grep -Fxq 'location=4' <<<"$search_panel"
 grep -Fxq 'formfactor=2' <<<"$search_panel"
 grep -Fxq 'alignment=132' <<<"$search_panel"
 grep -Fxq 'panelLengthMode=1' <<<"$search_panel"
-grep -Fxq 'plugin=org.kde.panel' <<<"$music_panel"
 grep -Fxq 'plugin=org.kde.panel' <<<"$search_panel"
-grep -Fxq '[Containments][5][Applets][4][Shortcuts]' "$cfg"
+grep -Fxq '[Containments][4][Applets][4][Shortcuts]' "$cfg"
 grep -Fxq 'global=Meta+N' "$cfg"
 
 # The earlier stock-widget approximation must be gone from the saved layout.
@@ -89,7 +89,13 @@ grep -Fq 'gpu/all/usage' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'org.kde.plasma.digitalclock' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'com.blackcomb.dynamic-music' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'ensureCustomPanel("com.blackcomb.dynamic-music", "top", "right", 72)' "$root/scripts/blackcomb-launcher.sh"
+if grep -Fq 'ensureCustomPanel("com.blackcomb.dynamic-music"' "$root/scripts/blackcomb-launcher.sh"; then
+  echo 'Dynamic Music must not have a dedicated panel' >&2
+  exit 1
+fi
+grep -Fq 'ensureDesktopMusic()' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'widget.geometry = new QRectF' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'removeLegacyMusicPanels()' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44)' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.location = location' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.alignment = alignment' "$root/scripts/blackcomb-launcher.sh"
@@ -103,6 +109,18 @@ grep -Fq 'type === "org.kde.plasma.notifications"' "$root/scripts/blackcomb-laun
 grep -Fq 'Meta+N' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'var allDesktops = desktops();' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
+
+# The custom applets must hide cleanly and use guaranteed Breeze icon names.
+music_qml="$root/applets/com.blackcomb.dynamic-music/contents/ui/main.qml"
+search_qml="$root/applets/com.blackcomb.search-center/contents/ui/main.qml"
+grep -Fq 'root.isPlaying' "$music_qml"
+grep -Fq 'PlasmaCore.Types.HiddenStatus' "$music_qml"
+grep -Fq '"system-search"' "$search_qml"
+grep -Fq '"Icon": "system-search"' "$root/applets/com.blackcomb.search-center/metadata.json"
+if grep -Eq 'icon\.name: "search"|Plasmoid\.icon: "search"|"Icon": "search"' "$search_qml" "$root/applets/com.blackcomb.search-center/metadata.json"; then
+  echo 'Search Center still uses the non-guaranteed search icon name' >&2
+  exit 1
+fi
 
 cp "$cfg" "$tmp/before"
 DBUS_SESSION_BUS_ADDRESS= HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
@@ -151,6 +169,14 @@ plugin=org.kde.panel
 [Containments][1][Applets][2]
 plugin=org.kde.plasma.kickoff
 
+[Containments][3]
+activityId=
+formfactor=0
+lastScreen=0
+location=1
+plugin=org.kde.plasma.desktop
+wallpaperplugin=org.kde.image
+
 [Containments][1][Applets][9]
 plugin=org.kde.plasma.mediacontroller
 
@@ -175,5 +201,54 @@ if grep -Fq '[Containments][1][Applets][11][Shortcuts]' "$stock_cfg"; then
 fi
 grep -Fxq 'plugin=com.blackcomb.dynamic-music' "$stock_cfg"
 grep -Fxq 'plugin=com.blackcomb.search-center' "$stock_cfg"
+
+# Configs saved by the previous build had a dedicated top music panel. It must
+# be removed, with the applet re-created as a desktop widget.
+mkdir -p "$tmp/legacy-home/.config"
+legacy_cfg="$tmp/legacy-home/.config/plasma-org.kde.plasma.desktop-appletsrc"
+cat > "$legacy_cfg" <<'EOF'
+[Containments][1]
+activityId=
+formfactor=2
+lastScreen=0
+location=3
+plugin=org.kde.panel
+wallpaperplugin=org.kde.image
+alignment=2
+panelLengthMode=1
+
+[Containments][1][Applets][5]
+plugin=com.blackcomb.dynamic-music
+
+[Containments][2]
+activityId=
+formfactor=2
+lastScreen=0
+location=4
+plugin=org.kde.panel
+
+[Containments][2][Applets][6]
+plugin=org.kde.plasma.kickoff
+
+[Containments][3]
+activityId=
+formfactor=0
+lastScreen=0
+location=1
+plugin=org.kde.plasma.desktop
+wallpaperplugin=org.kde.image
+EOF
+DBUS_SESSION_BUS_ADDRESS= HOME="$tmp/legacy-home" XDG_CONFIG_HOME="$tmp/legacy-home/.config" \
+  sh "$root/scripts/blackcomb-launcher.sh"
+if grep -q '^\[Containments\]\[1\]' "$legacy_cfg"; then
+  echo 'Old dedicated Dynamic Music panel survived the upgrade cleanup' >&2
+  exit 1
+fi
+if grep -Fxq 'location=3' "$legacy_cfg"; then
+  echo 'Old top music panel was not removed' >&2
+  exit 1
+fi
+test "$(grep -Ec '^plugin=com\.blackcomb\.dynamic-music$' "$legacy_cfg")" -eq 1
+grep -Fxq '[Containments][3][Applets][7]' "$legacy_cfg"
 
 echo 'Plasma taskbar, launcher and panel widget tests passed.'

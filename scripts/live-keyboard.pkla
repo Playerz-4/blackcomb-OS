@@ -1,6 +1,6 @@
-[Blackcomb live keyboard and locale]
+[Blackcomb live session]
 Identity=unix-user:*
-Action=org.freedesktop.locale1.*
+Action=*
 ResultAny=yes
 ResultInactive=yes
 ResultActive=yes

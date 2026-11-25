@@ -29,6 +29,9 @@ PlasmoidItem {
     readonly property bool canGoNext: mprisModel.currentPlayer?.canGoNext ?? false
     readonly property bool canGoPrevious: mprisModel.currentPlayer?.canGoPrevious ?? false
     readonly property bool isPlaying: root.playbackStatus === Mpris.PlaybackStatus.Playing
+    // The card is only useful while a player actively reports playback. Paused
+    // players and idle system-tray entries must not leave an empty card behind.
+    readonly property bool shouldBeVisible: !!mprisModel.currentPlayer && root.isPlaying
 
     width: Kirigami.Units.gridUnit * 18
     height: Kirigami.Units.gridUnit * 4
@@ -41,7 +44,9 @@ PlasmoidItem {
     default:
         return "audio-x-generic";
     }
-    Plasmoid.status: root.isPlaying ? PlasmaCore.Types.ActiveStatus : PlasmaCore.Types.PassiveStatus
+    Plasmoid.status: root.shouldBeVisible
+        ? PlasmaCore.Types.ActiveStatus
+        : PlasmaCore.Types.HiddenStatus
     toolTipMainText: root.track.length > 0 ? root.track : i18n("No media playing")
     toolTipSubText: root.artist.length > 0 ? root.artist : root.identity
 

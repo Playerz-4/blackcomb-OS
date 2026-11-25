@@ -44,6 +44,36 @@ set_image() {
   esac
 }
 
+# At autostart the Plasma scripting bridge can be unavailable longer than the
+# original retry window. Write the saved layout directly as a fallback so the
+# desktop still has the Kim image on the next Plasma start.
+set_image_config() {
+  image=$1
+  [ -f "$cfg" ] || return 1
+  tmp="$cfg.blackcomb.tmp"
+  awk -F= -v image="$image" '
+    /^\[Containments\]\[[^]]+\]$/ {
+      print
+      plugin=""
+      wallpaper=0
+      next
+    }
+    /^\[Containments\]\[[^]]+\]\[Wallpaper\]\[org\.kde\.image\]\[General\]$/ {
+      print
+      if (plugin == "org.kde.plasma.desktop") wallpaper=1
+      next
+    }
+    /^\[/ { wallpaper=0; print; next }
+    plugin == "" && $1 == "plugin" { plugin=$2; print; next }
+    wallpaper && $1 == "Image" { print "Image=" image; next }
+    { print }
+  ' "$cfg" > "$tmp" 2>/dev/null || return 1
+  mv -f "$tmp" "$cfg" 2>/dev/null || {
+    rm -f "$tmp" 2>/dev/null || :
+    return 1
+  }
+}
+
 wallpaper_values() {
   awk -F= '
     /^\[Containments\]\[[^]]+\]$/ {
@@ -72,10 +102,11 @@ is_default_wallpaper() {
   esac
 }
 
-# Plasma's desktop service may not be available immediately at autostart.
+# Plasma's desktop service may not be available immediately at autostart. Use
+# both the live D-Bus path and the saved-config fallback for up to two minutes.
 i=0
-while [ "$i" -lt 12 ]; do
-  if set_image "$default_image"; then
+while [ "$i" -lt 24 ]; do
+  if set_image "$default_image" || set_image_config "$default_image"; then
     printf '%s\n' "$default_image" > "$selection" 2>/dev/null || :
     touch "$marker" 2>/dev/null || :
     break

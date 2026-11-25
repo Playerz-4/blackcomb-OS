@@ -26,7 +26,7 @@ PlasmoidItem {
     width: Kirigami.Units.iconSizes.large * 2
     height: Kirigami.Units.iconSizes.large * 2
 
-    Plasmoid.icon: "search"
+    Plasmoid.icon: "system-search"
     Plasmoid.status: notificationModel.unreadNotificationsCount > 0
         ? PlasmaCore.Types.ActiveStatus
         : PlasmaCore.Types.PassiveStatus
@@ -112,7 +112,7 @@ PlasmoidItem {
 
         PlasmaComponents3.ToolButton {
             anchors.centerIn: parent
-            icon.name: "search"
+            icon.name: "system-search"
             text: i18n("Search Center")
             onClicked: root.expanded = !root.expanded
         }

@@ -3,7 +3,8 @@
 #   - use the supplied crescent PNG for the Kickoff launcher button;
 #   - keep the existing taskbar docked on the left edge;
 #   - add RAM, battery, GPU usage and digital clock widgets;
-#   - place Blackcomb Dynamic Music in a dedicated top-right panel;
+#   - place Blackcomb Dynamic Music on the desktop near the top-right, where it
+#     hides itself whenever no MPRIS player is actively playing;
 #   - place Blackcomb Search Center in a dedicated bottom-center panel;
 #   - remove the stock Media Player and Notifications approximations.
 #
@@ -32,8 +33,9 @@ icon_groups=$(mktemp)
 panel_groups=$(mktemp)
 widgets=$(mktemp)
 removed=$(mktemp)
+legacy=$(mktemp)
 clean=$(mktemp)
-trap 'rm -f "$parsed" "$panels" "$desktops" "$icon_groups" "$panel_groups" "$widgets" "$removed" "$clean"' EXIT HUP INT TERM
+trap 'rm -f "$parsed" "$panels" "$desktops" "$icon_groups" "$panel_groups" "$widgets" "$removed" "$legacy" "$clean"' EXIT HUP INT TERM
 
 # Collect existing panel containments, their applet plugins and the highest
 # applet id in one pass. KConfig merges duplicate sections with later values
@@ -79,7 +81,7 @@ awk -F= '
       else if ($1 == "location") location[containment]=$2
       else if ($1 == "formfactor") formfactor[containment]=$2
     } else if ($1 == "plugin") {
-      print "APPLET\t" containment "\t" $2 "\t" section "\t" location[containment]
+      print "APPLET\t" containment "\t" $2 "\t" section "\t" location[containment] "\t" plugin[containment]
       if ($2 == "org.kde.plasma.kickoff") print "ICON\t" applet
       if ($2 == "com.blackcomb.dynamic-music") customMusic[containment]=1
       if ($2 == "com.blackcomb.search-center") customSearch[containment]=1
@@ -90,6 +92,11 @@ awk -F= '
       special = (customMusic[group] || customSearch[group]) ? 1 : 0
       if (plugin[group] == "org.kde.panel") {
         print "PANEL\t" group "\t" location[group] "\t" formfactor[group] "\t" special
+        # The old dedicated music panel must go away: a hidden applet would
+        # otherwise leave an empty strip at the top of the screen.
+        if (customMusic[group] && !customSearch[group]) {
+          print "LEGACY\t" group
+        }
       } else if (plugin[group] == "org.kde.plasma.desktop") {
         print "DESKTOP\t" group "\t" special
       }
@@ -102,31 +109,50 @@ awk -F '\t' '$1 == "PANEL" && $5 != "1" { print $2 }' "$parsed" | sort -u > "$pa
 awk -F '\t' '$1 == "DESKTOP" { print $2 }' "$parsed" | sort -u > "$desktops"
 awk -F '\t' '$1 == "ICON" { print $2 }' "$parsed" | sort -u > "$icon_groups"
 awk -F '\t' '$1 == "PANEL" && ($3 != "5" || $4 != "3") && $5 != "1" { print $2 }' "$parsed" | sort -u > "$panel_groups"
+awk -F '\t' '$1 == "LEGACY" { print $2 }' "$parsed" | sort -u > "$legacy"
+first_desktop=$(awk -F '\t' '$1 == "DESKTOP" { print $2; exit }' "$parsed")
 maxid=$(awk -F '\t' '$1 == "MAXID" && $2 + 0 > m { m = $2 + 0 } END { print m + 0 }' "$parsed")
 
 # Replace the earlier stock-widget approximation. Removing the applet sections
 # (including their shortcut subsections) keeps the config free of duplicate
 # media and notification widgets on later runs.
 awk -F '\t' '
-  $1 == "APPLET" && ($3 == "org.kde.plasma.mediacontroller" || $3 == "org.kde.plasma.notifications") {
+  $1 == "APPLET" && ($3 == "org.kde.plasma.mediacontroller" || $3 == "org.kde.plasma.notifications" || ($3 == "com.blackcomb.dynamic-music" && $6 == "org.kde.panel")) {
     print $4
   }
 ' "$parsed" > "$removed"
-awk -v prefixes="$removed" '
+awk -v prefixes="$removed" -v legacy="$legacy" '
   BEGIN {
     while ((getline prefix < prefixes) > 0) bad[prefix] = 1
     close(prefixes)
+    while ((getline group < legacy) > 0) badcontainment[group] = 1
+    close(legacy)
   }
-  /^\[/ {
-    skip = 0
-    for (prefix in bad) {
-      if (index($0, prefix) == 1) {
-        skip = 1
+  /^\[Containments\]\[[0-9]+\]$/ {
+    skipContainment = 0
+    for (group in badcontainment) {
+      if ($0 == "[" group "]") {
+        skipContainment = 1
         break
       }
     }
+    skipSection = skipContainment
+    if (!skipSection) print
+    next
   }
-  !skip { print }
+  /^\[/ {
+    if (skipContainment) next
+    skipSection = 0
+    for (prefix in bad) {
+      if (index($0, prefix) == 1) {
+        skipSection = 1
+        break
+      }
+    }
+    if (!skipSection) print
+    next
+  }
+  !skipSection { print }
 ' "$cfg" > "$clean"
 cp "$clean" "$cfg"
 
@@ -153,6 +179,15 @@ has_applet_at() {
     $1 == "APPLET" && $3 == p && $5 == l { found=1; exit }
     END { exit !found }
   ' "$parsed"
+}
+
+has_desktop_applet() {
+  plugin=$1
+  while IFS= read -r group; do
+    [ -n "$group" ] || continue
+    if has_applet "$group" "$plugin"; then return 0; fi
+  done < "$desktops"
+  return 1
 }
 
 has_icon() {
@@ -186,20 +221,18 @@ append_widget() {
   esac
 }
 
-# Fallback for sessions without a working Plasma scripting bridge: append the
-# two dedicated panels to the saved layout. When scripting works, it creates
-# and persists them itself, so doing both would duplicate the panels on the
-# next Plasma start. alignment=2 is Qt.AlignRight for the top card; alignment=132
-# is Qt.AlignCenter for the bottom search panel.
+# Fallback for sessions without a working Plasma scripting bridge. Dynamic
+# Music is a desktop widget, not a panel, so HiddenStatus can remove it fully
+# when no player is active. Search Center keeps its bottom-center panel.
+# alignment=132 is Qt.AlignCenter. When scripting works, it creates and
+# persists these itself, so doing both would duplicate them on next start.
 maxcontainment=$(sed -n 's/^\[Containments\]\[\([0-9][0-9]*\)\]$/\1/p' "$cfg" | sort -n | tail -n 1)
 [ -n "$maxcontainment" ] || maxcontainment=0
 
 append_custom_panels() {
-  if ! has_applet_at com.blackcomb.dynamic-music 3; then
-    maxcontainment=$((maxcontainment + 1))
+  if [ -n "$first_desktop" ] && ! has_desktop_applet com.blackcomb.dynamic-music; then
     maxid=$((maxid + 1))
-    printf '\n[Containments][%s]\nactivityId=\nformfactor=2\nlastScreen=0\nlocation=3\nplugin=org.kde.panel\nwallpaperplugin=org.kde.image\nalignment=2\npanelLengthMode=1\n' "$maxcontainment" >> "$cfg"
-    printf '\n[Containments][%s][Applets][%s]\nplugin=com.blackcomb.dynamic-music\n' "$maxcontainment" "$maxid" >> "$cfg"
+    printf '\n[%s][Applets][%s]\nplugin=com.blackcomb.dynamic-music\n' "$first_desktop" "$maxid" >> "$cfg"
   fi
 
   if ! has_applet_at com.blackcomb.search-center 4; then
@@ -211,7 +244,7 @@ append_custom_panels() {
   fi
 }
 
-# Without a session bus, write the panels immediately so the fallback keeps
+# Without a session bus, write the layout immediately so the fallback keeps
 # the usual id order ahead of the system widgets. With a bus, wait for the
 # scripting result below and only fall back if it fails.
 want_config_panels=1
@@ -229,8 +262,8 @@ while IFS= read -r group; do
   printf '\n[%s]\nlocation=5\nformfactor=3\n' "$group" >> "$cfg"
 done < "$panel_groups"
 
-# Add each missing standard widget once per main panel. The dedicated music and
-# search panels are intentionally excluded from the left-side system widgets.
+# Add each missing standard widget once per main panel. The dedicated search
+# panel is intentionally excluded from the left-side system widgets.
 while IFS= read -r group; do
   [ -n "$group" ] || continue
   while IFS= read -r plugin; do
@@ -332,6 +365,55 @@ function ensureCustomPanel(type, location, alignment, height) {
     }
   }
 }
+// Dynamic Music hides itself when no MPRIS player is active. A dedicated
+// panel would remain as an empty strip, so use a positioned desktop widget.
+function removeLegacyMusicPanels() {
+  var kept = [];
+  for (var p = 0; p < allPanels.length; p++) {
+    var widgets = allPanels[p].widgets();
+    if (hasType(widgets, "com.blackcomb.dynamic-music")) {
+      if (hasType(widgets, "com.blackcomb.search-center")) {
+        for (var m = 0; m < widgets.length; m++) {
+          if (widgets[m].type === "com.blackcomb.dynamic-music") {
+            widgets[m].remove();
+            removed++;
+          }
+        }
+        kept.push(allPanels[p]);
+      } else {
+        allPanels[p].remove();
+        removed++;
+      }
+    } else {
+      kept.push(allPanels[p]);
+    }
+  }
+  allPanels = kept;
+}
+function ensureDesktopMusic() {
+  var widget = null;
+  for (var d = 0; d < allDesktops.length && !widget; d++) {
+    var widgets = allDesktops[d].widgets();
+    for (var w = 0; w < widgets.length; w++) {
+      if (widgets[w].type === "com.blackcomb.dynamic-music") {
+        widget = widgets[w];
+        break;
+      }
+    }
+  }
+  if (!widget && allDesktops.length) {
+    widget = allDesktops[0].addWidget("com.blackcomb.dynamic-music");
+    if (widget) added++;
+  }
+  if (!widget) return;
+  var screen = allDesktops.length ? allDesktops[0].screen : 0;
+  var geometry = screenGeometry(screen);
+  var width = Math.min(360, Math.max(240, geometry.width - 16));
+  var height = 72;
+  widget.geometry = new QRectF(Math.max(0, geometry.width - width - 8), 8, width, height);
+  widget.reloadConfig();
+}
+removeLegacyMusicPanels();
 for (var i = 0; i < allPanels.length; i++) {
   var panel = allPanels[i];
   var widgets = panel.widgets();
@@ -363,15 +445,16 @@ for (var i = 0; i < allPanels.length; i++) {
     }
   }
 }
-// Dynamic Music is a compact card on a right-aligned top panel; Search Center
-// opens upward from a centered bottom panel.
-ensureCustomPanel("com.blackcomb.dynamic-music", "top", "right", 72);
+// Search Center opens upward from a centered bottom panel. Dynamic Music is
+// a desktop widget pinned near the top-right, so it disappears completely
+// whenever no MPRIS player is actively playing.
 ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44);
 
 // The earlier desktop Media Player copy is part of the replaced approximation.
 for (var d = 0; d < allDesktops.length; d++) {
   removeStock(allDesktops[d]);
 }
+ensureDesktopMusic();
 print("BLACKCOMB_OK:" + moved + ":" + icons + ":" + added + ":" + removed + ":" + customized);
 EOF
 )

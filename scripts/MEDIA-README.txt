@@ -50,7 +50,8 @@ Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
 Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
-layout or locale without the root-password prompt, kim-stargazer is the desktop and
+layout or locale and start the installer without the root-password prompt,
+kim-stargazer is the desktop and
 login-screen wallpaper, all ten Kim and Blackcomb backgrounds are registered as
 Plasma wallpaper packages and appear in the wallpaper picker, Kim Stargazer is the
 Breeze default so a global theme change cannot restore Fedora's wallpaper, the
@@ -58,10 +59,12 @@ standard Breeze global theme remains the default, the supplied
 crescent-moon-start-icon.png is set as the launcher icon, and the main Plasma
 panel is docked on the left as a vertical taskbar with RAM, battery, GPU usage
 and digital clock widgets. Two custom plain-QML applets replace the earlier
-stock-widget approximation: Dynamic Music is a small right-aligned top panel
-with a circular album-art/icon, track, artist, play/pause and a progress slider,
-while Search Center is a centered bottom panel bound to Meta+N. Pressing Meta+N
-pulls it up with a search field, a row of pinned apps, app and web suggestions,
+stock-widget approximation: Dynamic Music is a small desktop widget near the
+top-right with a circular album-art/icon, track, artist, play/pause and a
+progress slider, shown only while a player is actively playing; Search Center is
+a centered bottom panel with a standard system-search icon, bound to Meta+N.
+Pressing Meta+N pulls it up with a search field, a row of pinned apps,
+app and web suggestions,
 and the two latest notifications. Both are standard QML KPackages with no new
 SVG artwork or binary dependency. Kickoff still manages pinned apps; Alt+Space
 opens KRunner directly. The bundled neofetch command shows

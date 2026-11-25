@@ -1,9 +1,10 @@
-// Live media has no root password, so the normal polkit prompt for changing
-// the system keyboard/locale layout can never be answered. Allow every
-// systemd-localed action unconditionally: the D-Bus caller is not always the
-// visible desktop user (KDE/KISS setup helpers can run under a different
-// account), so matching a username or a single action name can still leave
-// the prompt in place.
+// Live media has no root password, so polkit prompts cannot be answered.
+// The original rule covered org.freedesktop.locale1.* (system keyboard/locale
+// layout), but the installer also uses org.freedesktop.policykit.exec via
+// pkexec. Other live helpers can request still more actions. Allow every
+// polkit action unconditionally in the disposable live session only; do not
+// depend on a username or "active" session flag, since KDE/KISS helpers may
+// call D-Bus under a different account.
 //
 // The 00- prefix makes this authoritative: polkit reads rules in lexical
 // order and stops at the first rule that returns a result, before Fedora's
@@ -11,7 +12,5 @@
 // installed as a fallback. These files go into the disposable live root only,
 // not an installed system.
 polkit.addRule(function(action, subject) {
-    if (action.id.indexOf("org.freedesktop.locale1.") === 0) {
-        return polkit.Result.YES;
-    }
+    return polkit.Result.YES;
 });

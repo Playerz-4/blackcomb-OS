@@ -1,5 +1,5 @@
 #!/bin/sh
-# Apply Blackcomb's keyboard and VM-display fixes to the running live session.
+# Apply Blackcomb's live-session polkit, VM-display and theme fixes.
 # Run from a terminal:  sudo bash /path/to/blackcomb/apply-live-fixes.sh
 # Nothing is changed until you run this, so it cannot affect booting.
 set -eu

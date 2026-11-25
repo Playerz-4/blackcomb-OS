@@ -64,13 +64,14 @@ grep -Fxq 'Image=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' "$wa
 grep -Fxq 'PreviewImage=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' "$wallpaper"
 keyboard="$tmp/extracted/usr/share/blackcomb/live/live-keyboard.rules"
 grep -Fq 'org.freedesktop.locale1.' "$keyboard"
+grep -Fq 'org.freedesktop.policykit.exec' "$keyboard"
 grep -Fq 'return polkit.Result.YES' "$keyboard"
 if grep -Eq 'subject\.(active|user)' "$keyboard"; then
-  echo 'Live keyboard policy must not depend on session or user flags' >&2
+  echo 'Live polkit policy must not depend on session or user flags' >&2
   exit 1
 fi
 pkla="$tmp/extracted/usr/share/blackcomb/live/live-keyboard.pkla"
-grep -Fxq 'Action=org.freedesktop.locale1.*' "$pkla"
+grep -Fxq 'Action=*' "$pkla"
 grep -Fxq 'ResultAny=yes' "$pkla"
 kwin_env="$tmp/extracted/usr/share/blackcomb/live/kwin-vm-env.sh"
 grep -Fxq 'export KWIN_DRM_NO_AMS=1' "$kwin_env"
