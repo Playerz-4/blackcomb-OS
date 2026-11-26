@@ -1,5 +1,5 @@
 #!/bin/sh
-# Apply Blackcomb's live-session polkit, VM-display and theme fixes.
+# Apply Blackcomb's live-session polkit, VM-display, wallpaper and theme fixes.
 # Run from a terminal:  sudo bash /path/to/blackcomb/apply-live-fixes.sh
 # Nothing is changed until you run this, so it cannot affect booting.
 set -eu
@@ -9,6 +9,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 HERE=$(cd -- "$(dirname -- "$0")" && pwd)
 for file in live-keyboard.rules live-keyboard.pkla live-vm-display.sh live-vm-display.desktop \
+            scripts/patch-lock-screen-wallpaper.sh \
             scripts/neofetch scripts/neofetch.conf scripts/neofetch-ascii.conf \
             scripts/neofetch-launcher.sh scripts/neofetch-LICENSE.md \
             assets/branding/crescent-moon-neofetch.txt; do
@@ -21,6 +22,9 @@ chmod 755 /usr/local/bin/blackcomb-vm-display
 cp "$HERE/live-vm-display.desktop" /etc/xdg/autostart/blackcomb-vm-display.desktop
 cp "$HERE/live-keyboard.rules" /etc/polkit-1/rules.d/00-blackcomb-live-keyboard.rules
 cp "$HERE/live-keyboard.pkla" /var/lib/polkit-1/localauthority/50-local.d/00-blackcomb-live-keyboard.pkla
+cp "$HERE/scripts/patch-lock-screen-wallpaper.sh" /usr/local/bin/blackcomb-lock-screen-wallpaper
+chmod 755 /usr/local/bin/blackcomb-lock-screen-wallpaper
+/bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper / || :
 if [ -d "$HERE/themes/opencode" ]; then
   mkdir -p /usr/share/color-schemes
   cp "$HERE"/themes/opencode/*.colors /usr/share/color-schemes/
@@ -52,6 +56,10 @@ if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != root ]; then
     mkdir -p "$user_home/.config/neofetch"
     cp "$HERE/scripts/neofetch.conf" "$user_home/.config/neofetch/config.conf"
     chown -R "$SUDO_USER:$(id -gn "$SUDO_USER")" "$user_home/.config/neofetch" 2>/dev/null || :
+    /bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper \
+      --file "$user_home/.config/kscreenlockerrc" || :
+    chown "$SUDO_USER:$(id -gn "$SUDO_USER")" \
+      "$user_home/.config/kscreenlockerrc" 2>/dev/null || :
   fi
 fi
 echo 'Live-session fixes applied. Log out and back in (or reboot) to use them.'

@@ -102,9 +102,9 @@ for package in "$src/wallpapers"/*; do
   cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/screenshot.png" 2>/dev/null || :
 done
 
-# Install Blackcomb's pure-QML Plasma applets as KPackages. Dynamic Music is
-# placed on a dedicated top-right panel and Search Center on a bottom-center
-# panel by the launcher helper; this loop only makes the applets discoverable.
+# Install Blackcomb's pure-QML Plasma applets as KPackages. Search Center is
+# placed on a bottom-center panel by the launcher helper; this loop only makes
+# the applet discoverable.
 for package in "$src/applets"/*; do
   [ -d "$package" ] || continue
   [ -f "$package/metadata.json" ] || continue
@@ -123,6 +123,16 @@ done
 # Kim selection. This only edits Breeze's defaults file; no custom theme is used.
 if [ -f "$src/patch-breeze-wallpaper.sh" ]; then
   sh "$src/patch-breeze-wallpaper.sh" "$dst" 2>/dev/null || :
+fi
+
+# Patch the main PLM config, kscreenlockerrc and SDDM theme overrides now, and
+# install the script so the display-manager drop-in can reapply the wallpaper
+# after live setup finishes writing its autologin settings.
+cp -f "$src/patch-lock-screen-wallpaper.sh" \
+  "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" 2>/dev/null || :
+chmod 755 "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" 2>/dev/null || :
+if [ -f "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" ]; then
+  sh "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" "$dst" 2>/dev/null || :
 fi
 
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :

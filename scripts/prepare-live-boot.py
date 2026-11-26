@@ -111,7 +111,7 @@ def write_live_session_fixes(boot_dir):
              'live-vm-display.sh', 'live-vm-display.desktop', 'kwin-vm-env.sh',
              'live-keyboard.rules', 'live-keyboard.pkla',
              'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop',
-             'patch-breeze-wallpaper.sh',
+             'patch-breeze-wallpaper.sh', 'patch-lock-screen-wallpaper.sh',
              'blackcomb-launcher.sh',
              'blackcomb-launcher.desktop',
              'neofetch.conf', 'neofetch-ascii.conf', 'neofetch-launcher.sh')
@@ -166,6 +166,7 @@ def write_live_session_fixes(boot_dir):
     (live / 'live-vm-display.sh').chmod(0o755)
     (live / 'blackcomb-wallpaper.sh').chmod(0o755)
     (live / 'patch-breeze-wallpaper.sh').chmod(0o755)
+    (live / 'patch-lock-screen-wallpaper.sh').chmod(0o755)
     (live / 'blackcomb-launcher.sh').chmod(0o755)
     (live / 'neofetch').chmod(0o755)
     (live / 'neofetch-launcher.sh').chmod(0o755)

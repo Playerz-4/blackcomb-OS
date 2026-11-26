@@ -51,23 +51,22 @@ Fedora 45 uses the latter. A per-seat autologin override reinforces the
 liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
 layout or locale and start the installer without the root-password prompt,
-kim-stargazer is the desktop and
-login-screen wallpaper, all ten Kim and Blackcomb backgrounds are registered as
-Plasma wallpaper packages and appear in the wallpaper picker, Kim Stargazer is the
-Breeze default so a global theme change cannot restore Fedora's wallpaper, the
-standard Breeze global theme remains the default, the supplied
-crescent-moon-start-icon.png is set as the launcher icon, and the main Plasma
-panel is docked on the left as a vertical taskbar with RAM, battery, GPU usage
-and digital clock widgets. Two custom plain-QML applets replace the earlier
-stock-widget approximation: Dynamic Music is a small desktop widget near the
-top-right with a circular album-art/icon, track, artist, play/pause and a
-progress slider, shown only while a player is actively playing; Search Center is
-a centered bottom panel with a standard system-search icon, bound to Meta+N.
-Pressing Meta+N pulls it up with a search field, a row of pinned apps,
-app and web suggestions,
-and the two latest notifications. Both are standard QML KPackages with no new
-SVG artwork or binary dependency. Kickoff still manages pinned apps; Alt+Space
-opens KRunner directly. The bundled neofetch command shows
+kim-stargazer is the desktop, Plasma lock-screen and login/greeter wallpaper;
+the main plasmalogin.conf and kscreenlockerrc are patched directly because some
+Plasma Login Manager builds ignore conf.d drop-ins, all ten Kim and Blackcomb
+backgrounds are registered as Plasma wallpaper packages and appear in the
+wallpaper picker, Kim Stargazer is the Breeze default so a global theme change
+cannot restore Fedora's wallpaper, the standard Breeze global theme remains the
+default, the supplied crescent-moon-start-icon.png is set as the launcher icon,
+and the main Plasma panel is docked on the left as a vertical taskbar with RAM,
+battery, GPU usage and digital clock widgets. One custom plain-QML applet
+replaces the earlier stock-widget approximation: Search Center is a centered
+bottom panel with a standard system-search icon, bound to Meta+N. Pressing
+Meta+N pulls it up with a search field, a row of pinned apps, app and web
+suggestions, and the two latest notifications. The earlier Dynamic Music applet
+has been scrapped and its saved panel is removed on upgrade. Search Center is a
+standard QML KPackage with no new SVG artwork or binary dependency. Kickoff
+still manages pinned apps; Alt+Space opens KRunner directly. The bundled neofetch command shows
 that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
 color schemes, selectable in System Settings > Appearance > Color Scheme; the
@@ -103,9 +102,10 @@ Replace the example path with the actual mount path. Setup uses Fedora's DNF
 repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa, ImageMagick,
 Wine, winetricks, cabextract and unzip; neofetch is bundled on this media. Setup
 installs all ten wallpaper packages (with stargazing as the default and the
-Breeze default), the standard Breeze global theme, the left-side vertical taskbar with RAM,
-battery, GPU usage and clock widgets, the custom Dynamic Music and Search Center
-QML applets, the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode
+Breeze default), the same Kim lock-screen/login wallpaper configuration, the
+standard Breeze global theme, the left-side vertical taskbar with RAM,
+battery, GPU usage and clock widgets, the custom Search Center QML applet,
+the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode
 Catppuccin as the default), Wine file associations and the Blackcomb Plymouth theme, using the
 transparent logo. Use Fedora's "sudo dnf upgrade --refresh" for package updates.
 Run "blackcomb-wine" to launch standard Windows apps; native macOS apps

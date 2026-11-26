@@ -61,12 +61,19 @@ with tempfile.TemporaryDirectory() as directory:
     live = boot / 'usr/share/blackcomb/live'
     assert (live / 'wallpapers/kim-stargazer/metadata.json').is_file()
     assert (live / 'wallpapers/blackcomb-aurora/metadata.json').is_file()
-    for applet in ('com.blackcomb.dynamic-music', 'com.blackcomb.search-center'):
-        assert (live / f'applets/{applet}/metadata.json').is_file()
-        assert (live / f'applets/{applet}/contents/ui/main.qml').is_file()
-        assert f'"Id": "{applet}"' in (live / f'applets/{applet}/metadata.json').read_text()
+    applet = 'com.blackcomb.search-center'
+    assert (live / f'applets/{applet}/metadata.json').is_file()
+    assert (live / f'applets/{applet}/contents/ui/main.qml').is_file()
+    assert f'"Id": "{applet}"' in (live / f'applets/{applet}/metadata.json').read_text()
+    assert not (live / 'applets/com.blackcomb.dynamic-music').exists()
     assert (live / 'patch-breeze-wallpaper.sh').is_file()
     assert 'Image=kim-stargazer' in (live / 'patch-breeze-wallpaper.sh').read_text()
+    lock_patch = live / 'patch-lock-screen-wallpaper.sh'
+    assert lock_patch.is_file()
+    lock_patch_text = lock_patch.read_text()
+    assert 'kscreenlockerrc' in lock_patch_text
+    assert 'kim-stargazer.png' in lock_patch_text
+    assert 'theme.conf.user' in lock_patch_text
     assert not (live / 'lookandfeel').exists()
     assert not (live / 'blackpkdgs.sh').exists()
     hook = (boot / 'var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh').read_text()
@@ -75,5 +82,10 @@ with tempfile.TemporaryDirectory() as directory:
     assert 'com.blackcomb.mountain.desktop' not in hook
     assert 'LookAndFeelPackage=org.kde.breeze.desktop' in hook
     assert 'patch-breeze-wallpaper.sh' in hook
+    assert 'patch-lock-screen-wallpaper.sh' in hook
+    assert 'kscreenlockerrc' in hook
+    helper = 'ExecStartPre=-/bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper /'
+    for unit in ('sddm-wait.conf', 'plasmalogin-wait.conf'):
+        assert helper in (live / unit).read_text()
     assert 'blackpkdgs' not in hook
 print('Live GRUB menu tests passed.')

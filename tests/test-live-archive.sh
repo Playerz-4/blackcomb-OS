@@ -22,6 +22,8 @@ grep -Fq '00-blackcomb-live-keyboard.pkla' "$hook"
 grep -Fq 'crescent-moon-start-icon.png' "$hook"
 grep -Fq 'blackcomb-launcher.desktop' "$hook"
 grep -Fq 'patch-breeze-wallpaper.sh' "$hook"
+grep -Fq 'patch-lock-screen-wallpaper.sh' "$hook"
+grep -Fq 'kscreenlockerrc' "$hook"
 grep -Fq 'usr/share/color-schemes' "$hook"
 grep -Fq 'ColorScheme=OpenCode-Catppuccin' "$hook"
 grep -Fq '/usr/share/wallpapers' "$hook"
@@ -52,8 +54,10 @@ if grep -Eq '^[[:space:]]*After=.*plymouth-quit-wait\.service' "$wait"; then
   exit 1
 fi
 grep -Fxq 'ExecStartPre=/bin/sleep 5' "$wait"
-grep -Fxq 'ExecStartPre=/bin/sleep 5' \
-  "$tmp/extracted/usr/share/blackcomb/live/plasmalogin-wait.conf"
+grep -Fxq 'ExecStartPre=-/bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper /' "$wait"
+plm_wait="$tmp/extracted/usr/share/blackcomb/live/plasmalogin-wait.conf"
+grep -Fxq 'ExecStartPre=/bin/sleep 5' "$plm_wait"
+grep -Fxq 'ExecStartPre=-/bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper /' "$plm_wait"
 autologin="$tmp/extracted/usr/share/blackcomb/live/plasmalogin-autologin.conf"
 grep -Fxq '[Autologin][seat0]' "$autologin"
 grep -Fxq 'User=liveuser' "$autologin"
@@ -95,13 +99,21 @@ grep -Fq 'org.kde.plasma.systemmonitor.memory' "$launcher"
 grep -Fq 'org.kde.plasma.battery' "$launcher"
 grep -Fq 'gpu/all/usage' "$launcher"
 grep -Fq 'org.kde.plasma.digitalclock' "$launcher"
-grep -Fq 'com.blackcomb.dynamic-music' "$launcher"
+grep -Fq 'removeScrappedMusic()' "$launcher"
+if grep -Fq 'addWidget("com.blackcomb.dynamic-music")' "$launcher"; then
+  echo 'Scrapped Dynamic Music must not be added in the live launcher' >&2
+  exit 1
+fi
 grep -Fq 'com.blackcomb.search-center' "$launcher"
 grep -Fq 'ensureCustomPanel' "$launcher"
 test -x "$launcher"
 patch_defaults="$tmp/extracted/usr/share/blackcomb/live/patch-breeze-wallpaper.sh"
 test -f "$patch_defaults"
 grep -Fq 'Image=kim-stargazer' "$patch_defaults"
+patch_lock="$tmp/extracted/usr/share/blackcomb/live/patch-lock-screen-wallpaper.sh"
+test -f "$patch_lock"
+grep -Fq 'kscreenlockerrc' "$patch_lock"
+grep -Fq 'kim-stargazer.png' "$patch_lock"
 if [[ -e $tmp/extracted/usr/share/blackcomb/live/blackpkdgs.sh ]]; then
   echo 'blackpkdgs must be removed from the live payload' >&2
   exit 1
@@ -129,12 +141,15 @@ for package in blackcomb-aurora blackcomb-blue-hour blackcomb-glacial-lake \
   grep -Fq "\"Id\": \"$package\"" \
     "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
 done
-for applet in com.blackcomb.dynamic-music com.blackcomb.search-center; do
-  test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
-  test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
-  grep -Fq "\"Id\": \"$applet\"" \
-    "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
-done
+applet=com.blackcomb.search-center
+test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
+test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
+grep -Fq "\"Id\": \"$applet\"" \
+  "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
+if [[ -e $tmp/extracted/usr/share/blackcomb/live/applets/com.blackcomb.dynamic-music ]]; then
+  echo 'Scrapped Dynamic Music must not be in the live archive' >&2
+  exit 1
+fi
 if [[ -e $tmp/extracted/usr/share/blackcomb/live/lookandfeel ]]; then
   echo 'Custom global theme must not be staged in the live archive' >&2
   exit 1

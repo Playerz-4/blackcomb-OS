@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Verify that the launcher helper docks the main taskbar left, sets the
 # crescent PNG as the Kickoff icon, adds the standard system widgets, hosts the
-# two custom applets on dedicated panels, removes the old stock-widget
-# approximation, and stays idempotent.
+# Search Center applet on a dedicated panel, removes the old stock-widget
+# approximation and scrapped Dynamic Music, and stays idempotent.
 set -Eeuo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 tmp=$(mktemp -d)
@@ -52,13 +52,15 @@ for plugin in org.kde.plasma.systemmonitor.memory org.kde.plasma.battery \
   test "$(grep -Ec "^plugin=$plugin\$" "$cfg")" -eq 1
 done
 
-# Dynamic Music is a desktop widget so it can fully disappear while no player
-# is active. Search Center keeps its own centered bottom panel.
-test "$(grep -Ec '^plugin=com\.blackcomb\.dynamic-music$' "$cfg")" -eq 1
+# Dynamic Music is scrapped. Search Center keeps its own centered bottom panel.
+if grep -Fq 'com.blackcomb.dynamic-music' "$cfg"; then
+  echo 'Scrapped Dynamic Music was added to the saved layout' >&2
+  exit 1
+fi
 test "$(grep -Ec '^plugin=com\.blackcomb\.search-center$' "$cfg")" -eq 1
-grep -Fxq '[Containments][3][Applets][3]' "$cfg"
+grep -Fxq '[Containments][4][Applets][3]' "$cfg"
 if grep -Fxq 'location=3' "$cfg"; then
-  echo 'Dynamic Music must not leave an empty top panel' >&2
+  echo 'No empty top panel may be left behind' >&2
   exit 1
 fi
 search_panel=$(sed -n '/^\[Containments\]\[4\]$/,/^\[/p' "$cfg")
@@ -67,7 +69,7 @@ grep -Fxq 'formfactor=2' <<<"$search_panel"
 grep -Fxq 'alignment=132' <<<"$search_panel"
 grep -Fxq 'panelLengthMode=1' <<<"$search_panel"
 grep -Fxq 'plugin=org.kde.panel' <<<"$search_panel"
-grep -Fxq '[Containments][4][Applets][4][Shortcuts]' "$cfg"
+grep -Fxq '[Containments][4][Applets][3][Shortcuts]' "$cfg"
 grep -Fxq 'global=Meta+N' "$cfg"
 
 # The earlier stock-widget approximation must be gone from the saved layout.
@@ -87,15 +89,13 @@ grep -Fq 'addWidgetTo(panel, blackcombWidgets[k], seen)' "$root/scripts/blackcom
 grep -Fq 'memory/physical/usedPercent' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'gpu/all/usage' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'org.kde.plasma.digitalclock' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'com.blackcomb.dynamic-music' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
-if grep -Fq 'ensureCustomPanel("com.blackcomb.dynamic-music"' "$root/scripts/blackcomb-launcher.sh"; then
-  echo 'Dynamic Music must not have a dedicated panel' >&2
+# The obsolete plugin id may appear only in removal/cleanup code.
+grep -Fq 'removeScrappedMusic()' "$root/scripts/blackcomb-launcher.sh"
+if grep -Eq 'addWidget\("com\.blackcomb\.dynamic-music"|ensureCustomPanel\("com\.blackcomb\.dynamic-music"|append_widget.*com\.blackcomb\.dynamic-music' "$root/scripts/blackcomb-launcher.sh"; then
+  echo 'Scrapped Dynamic Music is still being added' >&2
   exit 1
 fi
-grep -Fq 'ensureDesktopMusic()' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'widget.geometry = new QRectF' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'removeLegacyMusicPanels()' "$root/scripts/blackcomb-launcher.sh"
+grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44)' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.location = location' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.alignment = alignment' "$root/scripts/blackcomb-launcher.sh"
@@ -110,11 +110,12 @@ grep -Fq 'Meta+N' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'var allDesktops = desktops();' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
 
-# The custom applets must hide cleanly and use guaranteed Breeze icon names.
-music_qml="$root/applets/com.blackcomb.dynamic-music/contents/ui/main.qml"
+# The remaining custom applet must use guaranteed Breeze icon names.
+if [[ -d $root/applets/com.blackcomb.dynamic-music ]]; then
+  echo 'Scrapped Dynamic Music applet is still present' >&2
+  exit 1
+fi
 search_qml="$root/applets/com.blackcomb.search-center/contents/ui/main.qml"
-grep -Fq 'root.isPlaying' "$music_qml"
-grep -Fq 'PlasmaCore.Types.HiddenStatus' "$music_qml"
 grep -Fq '"system-search"' "$search_qml"
 grep -Fq '"Icon": "system-search"' "$root/applets/com.blackcomb.search-center/metadata.json"
 if grep -Eq 'icon\.name: "search"|Plasmoid\.icon: "search"|"Icon": "search"' "$search_qml" "$root/applets/com.blackcomb.search-center/metadata.json"; then
@@ -151,7 +152,7 @@ PATH="$tmp/bin:$PATH" DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/blackcomb-fake-bus
   HOME="$tmp/dbus-home" XDG_CONFIG_HOME="$tmp/dbus-home/.config" \
   sh "$root/scripts/blackcomb-launcher.sh"
 if grep -Eq '^plugin=com\.blackcomb\.(dynamic-music|search-center)$' "$dbus_cfg"; then
-  echo 'Custom panels were appended even though Plasma scripting succeeded' >&2
+  echo 'The custom panel was appended even though Plasma scripting succeeded' >&2
   exit 1
 fi
 
@@ -199,11 +200,14 @@ if grep -Fq '[Containments][1][Applets][11][Shortcuts]' "$stock_cfg"; then
   echo 'Old notification shortcut survived the upgrade cleanup' >&2
   exit 1
 fi
-grep -Fxq 'plugin=com.blackcomb.dynamic-music' "$stock_cfg"
+if grep -Fq 'com.blackcomb.dynamic-music' "$stock_cfg"; then
+  echo 'Scrapped Dynamic Music survived the upgrade cleanup' >&2
+  exit 1
+fi
 grep -Fxq 'plugin=com.blackcomb.search-center' "$stock_cfg"
 
 # Configs saved by the previous build had a dedicated top music panel. It must
-# be removed, with the applet re-created as a desktop widget.
+# be removed without re-creating the scrapped applet.
 mkdir -p "$tmp/legacy-home/.config"
 legacy_cfg="$tmp/legacy-home/.config/plasma-org.kde.plasma.desktop-appletsrc"
 cat > "$legacy_cfg" <<'EOF'
@@ -248,7 +252,11 @@ if grep -Fxq 'location=3' "$legacy_cfg"; then
   echo 'Old top music panel was not removed' >&2
   exit 1
 fi
-test "$(grep -Ec '^plugin=com\.blackcomb\.dynamic-music$' "$legacy_cfg")" -eq 1
-grep -Fxq '[Containments][3][Applets][7]' "$legacy_cfg"
+if grep -Fq 'com.blackcomb.dynamic-music' "$legacy_cfg"; then
+  echo 'Scrapped Dynamic Music survived the legacy layout cleanup' >&2
+  exit 1
+fi
+grep -Fxq '[Containments][4][Applets][7]' "$legacy_cfg"
+grep -Fxq 'plugin=com.blackcomb.search-center' "$legacy_cfg"
 
 echo 'Plasma taskbar, launcher and panel widget tests passed.'

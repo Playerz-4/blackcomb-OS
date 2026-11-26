@@ -66,7 +66,7 @@ mkdir -p "$work/blackcomb/scripts" "$work/blackcomb/backgrounds" "$work/blackcom
 install -m 755 "$ROOT_DIR/scripts/setup-blackcomb.sh" "$work/blackcomb/setup-blackcomb.sh"
 install -m 755 "$ROOT_DIR/scripts/blackcomb-wine.sh" "$work/blackcomb/scripts/blackcomb-wine.sh"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wine.desktop" "$work/blackcomb/scripts/"
-for script in blackcomb-wallpaper.sh patch-breeze-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
+for script in blackcomb-wallpaper.sh patch-breeze-wallpaper.sh patch-lock-screen-wallpaper.sh blackcomb-launcher.sh install-grub-background.sh create-plymouth-theme.sh install-plymouth-theme.sh; do
   install -m 755 "$ROOT_DIR/scripts/$script" "$work/blackcomb/scripts/$script"
 done
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/scripts/"
