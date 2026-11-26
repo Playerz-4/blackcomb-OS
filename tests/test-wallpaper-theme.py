@@ -19,7 +19,7 @@ for metadata in wallpaper_metadata:
 
 assert (root / 'scripts/patch-breeze-wallpaper.sh').is_file()
 assert 'Image=kim-stargazer' in (root / 'scripts/patch-breeze-wallpaper.sh').read_text()
-assert 'default_image=/usr/share/wallpapers/kim-stargazer' in (root / 'scripts/blackcomb-wallpaper.sh').read_text()
+assert 'default_image=file:///usr/share/backgrounds/blackcomb/kim-stargazer.png' in (root / 'scripts/blackcomb-wallpaper.sh').read_text()
 assert not (root / 'themes/mountain').exists()
 assert not (root / 'scripts/mountain-lookandfeel.conf').exists()
 
