@@ -72,6 +72,9 @@ case " $* " in
     test -f "$payload/scripts/blackcomb-launcher.desktop"
     test -f "$payload/scripts/patch-breeze-wallpaper.sh"
     test -f "$payload/scripts/patch-lock-screen-wallpaper.sh"
+    test -f "$payload/scripts/krunnerrc"
+    test -f "$payload/scripts/kuriikwsfilterrc"
+    test -f "$payload/scripts/sddm-autologin.conf"
     test -f "$payload/scripts/neofetch.conf"
     test -f "$payload/scripts/neofetch-ascii.conf"
     test -f "$payload/scripts/neofetch-launcher.sh"
@@ -117,12 +120,18 @@ test -f usr/share/plymouth/themes/spinner/watermark.png
 test -f usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth
 grep -qx 'Theme=blackcomb-live' etc/plymouth/plymouthd.conf
 test -f var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
+test -f usr/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
+test -f lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
+test -f etc/dracut/hooks/pre-pivot/99-blackcomb-live.sh
 test -f usr/share/blackcomb/live/live-keyboard.rules
 test -f usr/share/blackcomb/live/live-keyboard.pkla
 test -f usr/share/blackcomb/live/sddm-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-wait.conf
 test -f usr/share/blackcomb/live/plasmalogin-autologin.conf
 test -f usr/share/blackcomb/live/plasmalogin-wallpaper.conf
+test -f usr/share/blackcomb/live/sddm-autologin.conf
+test -f usr/share/blackcomb/live/krunnerrc
+test -f usr/share/blackcomb/live/kuriikwsfilterrc
 test -f usr/share/blackcomb/live/crescent-moon-start-icon.png
 test -f usr/share/blackcomb/live/blackcomb-launcher.sh
 test -f usr/share/blackcomb/live/blackcomb-launcher.desktop

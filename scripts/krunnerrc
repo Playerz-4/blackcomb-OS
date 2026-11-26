@@ -1,0 +1,12 @@
+[General]
+FreeFloating=false
+HistoryEnabled=true
+RetainPriorSearch=true
+
+[PlasmaRunnerManager]
+migrated=true
+
+[Plugins]
+# Search Center needs KRunner's web-shortcut runner to produce the live web
+# suggestion when no local result matches. Fedora's default can leave it off.
+krunner_webshortcutsEnabled=true

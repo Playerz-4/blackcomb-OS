@@ -44,6 +44,12 @@ FillMode=2
 EOF
 done
 
+cat > "$tmp/root/etc/sddm.conf" <<'EOF'
+[Autologin]
+User=nobody
+Session=plasmawayland.desktop
+EOF
+
 cat > "$tmp/root/usr/share/sddm/themes/breeze/theme.conf" <<'EOF'
 [General]
 type=image
@@ -52,13 +58,19 @@ EOF
 cp "$tmp/root/usr/share/sddm/themes/breeze/theme.conf" \
   "$tmp/root/usr/share/sddm/themes/breeze/theme.conf.user"
 
-sh "$root/scripts/patch-lock-screen-wallpaper.sh" "$tmp/root"
+sh "$root/scripts/patch-lock-screen-wallpaper.sh" "$tmp/root" --live-autologin
 
 grep -Fxq '[Autologin][seat0]' "$tmp/root/etc/plasmalogin.conf"
 grep -Fxq 'User=liveuser' "$tmp/root/etc/plasmalogin.conf"
 grep -Fxq 'Session=plasma.desktop' "$tmp/root/etc/plasmalogin.conf"
 grep -Fxq 'WallpaperPluginId=org.kde.image' "$tmp/root/etc/plasmalogin.conf"
 grep -Fxq "$image" "$tmp/root/etc/plasmalogin.conf"
+grep -Fxq '[Autologin]' "$tmp/root/etc/plasmalogin.conf"
+grep -Fxq 'User=liveuser' "$tmp/root/etc/plasmalogin.conf"
+grep -Fxq 'Session=plasma.desktop' "$tmp/root/etc/plasmalogin.conf"
+grep -Fxq 'Relogin=true' "$tmp/root/etc/plasmalogin.conf"
+grep -Fxq 'User=liveuser' "$tmp/root/etc/sddm.conf"
+grep -Fxq 'Session=plasma.desktop' "$tmp/root/etc/sddm.conf"
 grep -Fxq 'Timeout=10' "$tmp/root/etc/xdg/kscreenlockerrc"
 grep -Fxq 'WallpaperPlugin=org.kde.image' "$tmp/root/etc/xdg/kscreenlockerrc"
 grep -Fxq 'FillMode=2' "$tmp/root/etc/xdg/kscreenlockerrc"

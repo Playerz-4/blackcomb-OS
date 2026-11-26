@@ -1,0 +1,8 @@
+[General]
+# WebshortcutRunner only offers a plain-text web suggestion when a default
+# provider is set. Enable DuckDuckGo as that fallback for Search Center.
+DefaultWebShortcut=duckduckgo
+EnableWebShortcuts=true
+KeywordDelimiter=\s
+PreferredWebShortcuts=duckduckgo,google,wikipedia
+UsePreferredWebShortcutsOnly=false

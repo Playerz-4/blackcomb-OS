@@ -23,6 +23,8 @@ PlasmoidItem {
     readonly property string query: root.searchField ? root.searchField.text.trim() : ""
     readonly property var resultModel: runnerModel.count > 0 ? runnerModel.modelForRow(0) : null
 
+    onQueryChanged: webSuggestTimer.restart()
+
     width: Kirigami.Units.iconSizes.large * 2
     height: Kirigami.Units.iconSizes.large * 2
 
@@ -85,6 +87,69 @@ PlasmoidItem {
             | NotificationManager.Notifications.CriticalUrgency
     }
 
+    // Explicit web-search providers stay visible even when KRunner has no
+    // local match, so searching the web never depends on a runner being enabled.
+    ListModel {
+        id: searchProviders
+
+        ListElement {
+            provider: "DuckDuckGo"
+            urlTemplate: "https://duckduckgo.com/?q="
+        }
+        ListElement {
+            provider: "Google"
+            urlTemplate: "https://www.google.com/search?q="
+        }
+        ListElement {
+            provider: "Wikipedia"
+            urlTemplate: "https://en.wikipedia.org/wiki/Special:Search?search="
+        }
+    }
+
+    // Live completion terms from Google's public suggestion endpoint. QML's
+    // XMLHttpRequest is enough; no C++ plugin, helper binary or SVG is needed.
+    ListModel {
+        id: liveWebSuggestions
+    }
+
+    Timer {
+        id: webSuggestTimer
+        interval: 250
+        repeat: false
+        onTriggered: root.fetchWebSuggestions(root.query)
+    }
+
+    function fetchWebSuggestions(text) {
+        liveWebSuggestions.clear();
+        if (text.length < 2) {
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "https://suggestqueries.google.com/complete/search?client=firefox&q=" + encodeURIComponent(text), true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4 || root.query !== text) {
+                return;
+            }
+            if (xhr.status < 200 || xhr.status >= 300) {
+                return;
+            }
+            try {
+                var payload = JSON.parse(xhr.responseText);
+                var terms = payload[1] || [];
+                for (var i = 0; i < terms.length && liveWebSuggestions.count < 6; ++i) {
+                    var term = String(terms[i]).trim();
+                    if (term.length > 0) {
+                        liveWebSuggestions.append({ text: term });
+                    }
+                }
+            } catch (error) {
+                // Offline or a changed response shape: the provider buttons
+                // below still give working web search.
+            }
+        };
+        xhr.send();
+    }
+
     function launchFavorite(row) {
         rootModel.favoritesModel.trigger(row, "", null);
         root.expanded = false;
@@ -111,10 +176,40 @@ PlasmoidItem {
         implicitHeight: Kirigami.Units.iconSizes.large * 2
 
         PlasmaComponents3.ToolButton {
+            id: searchButton
             anchors.centerIn: parent
+            width: Kirigami.Units.iconSizes.large
+            height: Kirigami.Units.iconSizes.large
             icon.name: "system-search"
+            icon.width: Kirigami.Units.iconSizes.medium
+            icon.height: Kirigami.Units.iconSizes.medium
             text: i18n("Search Center")
             onClicked: root.expanded = !root.expanded
+
+            // Draw the magnifier in QML so the panel glyph is visible even if
+            // the icon theme lacks the system-search name. No SVG is used.
+            contentItem: Item {
+                Canvas {
+                    anchors.centerIn: parent
+                    width: Kirigami.Units.iconSizes.medium
+                    height: width
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.clearRect(0, 0, width, height);
+                        ctx.strokeStyle = Kirigami.Theme.textColor;
+                        ctx.lineWidth = Math.max(2, width / 10);
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.arc(width * 0.42, height * 0.42, width * 0.24, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(width * 0.60, height * 0.60);
+                        ctx.lineTo(width * 0.82, height * 0.82);
+                        ctx.stroke();
+                    }
+                    Component.onCompleted: requestPaint()
+                }
+            }
         }
 
         Rectangle {
@@ -282,12 +377,50 @@ PlasmoidItem {
                 }
             }
 
-            PlasmaComponents3.ToolButton {
+            Text {
                 Layout.fillWidth: true
-                icon.name: "internet-web-browser"
-                text: i18n("Search the web for “%1”", root.query)
+                text: i18n("Live web suggestions")
+                color: Kirigami.Theme.disabledTextColor
+                font.bold: true
+                visible: root.query.length > 0 && liveWebSuggestions.count > 0
+            }
+
+            Repeater {
+                model: liveWebSuggestions
+
+                delegate: PlasmaComponents3.ToolButton {
+                    Layout.fillWidth: true
+                    icon.name: "internet-web-browser"
+                    text: i18n("Search Google for “%1”", model.text)
+                    visible: root.query.length > 0
+                    onClicked: {
+                        Qt.openUrlExternally("https://www.google.com/search?q=" + encodeURIComponent(model.text));
+                        root.expanded = false;
+                    }
+                }
+            }
+
+            Text {
+                Layout.fillWidth: true
+                text: i18n("Web suggestions")
+                color: Kirigami.Theme.disabledTextColor
+                font.bold: true
                 visible: root.query.length > 0
-                onClicked: root.searchWeb()
+            }
+
+            Repeater {
+                model: searchProviders
+
+                delegate: PlasmaComponents3.ToolButton {
+                    Layout.fillWidth: true
+                    icon.name: "internet-web-browser"
+                    text: i18n("Search %1 for “%2”", model.provider, root.query)
+                    visible: root.query.length > 0
+                    onClicked: {
+                        Qt.openUrlExternally(model.urlTemplate + encodeURIComponent(root.query));
+                        root.expanded = false;
+                    }
+                }
             }
 
             Text {

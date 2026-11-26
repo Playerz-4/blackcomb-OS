@@ -23,6 +23,10 @@ jobs:
           bash -n scripts/*.sh tests/*.sh
           bash tests/test-build.sh
           bash tests/test-live-archive.sh
+          bash tests/test-blackcomb-wallpaper.sh
+          bash tests/test-lock-screen-wallpaper.sh
+          bash tests/test-blackcomb-launcher.sh
+          python3 tests/test-live-boot.py
           bash tests/test-blackcomb-wine.sh
       - name: Build ISO
         env:

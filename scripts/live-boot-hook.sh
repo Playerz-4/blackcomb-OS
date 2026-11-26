@@ -4,14 +4,15 @@
 # fixes into its writable overlay so the next systemd startup sees them.
 #
 # This is deliberately NOT a systemd unit and is not a switch-root dependency:
-# it runs inside the existing dracut-pre-pivot.service and always exits 0, so
+# it runs inside the existing dracut-pre-pivot.service and always returns 0, so
 # a failed copy cannot block switch-root or drop the session into emergency
-# mode. Every operation is best effort.
+# mode. It is sourced by dracut, so use return rather than exit to avoid
+# terminating dracut's init early. Every operation is best effort.
 src=/usr/share/blackcomb/live
 dst=/sysroot
 
-[ -d "$src" ] || exit 0
-[ -d "$dst/etc" ] || exit 0
+[ -d "$src" ] || { return 0 2>/dev/null || exit 0; }
+[ -d "$dst/etc" ] || { return 0 2>/dev/null || exit 0; }
 
 mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/systemd/system/sddm.service.d" \
@@ -19,6 +20,7 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/etc/plasmalogin.conf.d" \
          "$dst/etc/skel/.config" \
          "$dst/etc/skel/.config/neofetch" \
+         "$dst/home/liveuser/.config" \
          "$dst/home/liveuser/.config/neofetch" \
          "$dst/etc/xdg/autostart" \
          "$dst/etc/profile.d" \
@@ -32,7 +34,8 @@ mkdir -p "$dst/etc/systemd/system/plasmalogin.service.d" \
          "$dst/usr/share/blackcomb/branding" \
          "$dst/usr/share/wallpapers" \
          "$dst/usr/share/plasma/plasmoids" \
-         "$dst/usr/share/color-schemes" 2>/dev/null || exit 0
+         "$dst/usr/share/color-schemes" \
+         "$dst/usr/share/kde-settings/kde-profile/default/xdg" 2>/dev/null || { return 0 2>/dev/null || exit 0; }
 
 # Fedora 44+ KDE uses Plasma Login Manager; older media use SDDM. Both can
 # start before Plymouth releases the DRM device (RHBZ 2404966). Wait only for
@@ -44,13 +47,28 @@ cp -f "$src/plasmalogin-wait.conf" \
 cp -f "$src/sddm-wait.conf" \
   "$dst/etc/systemd/system/sddm.service.d/10-blackcomb-wait.conf" 2>/dev/null || :
 
-# Reinforce Fedora's runtime autologin. PLM reads named [Autologin][seatN]
-# groups separately from the main config, so this cannot be overridden by the
-# global User/Session values that livesys writes into /etc/plasmalogin.conf.
+# Reinforce Fedora's runtime autologin in both display managers. PLM reads
+# named [Autologin][seatN] groups separately from the main config, while older
+# builds and SDDM only read the global group. livesys-late writes the main
+# config before the display manager starts; the wait drop-in reapplies these
+# settings with --live-autologin so no greeter password is ever requested.
 cp -f "$src/plasmalogin-autologin.conf" \
   "$dst/etc/plasmalogin.conf.d/99-blackcomb-live.conf" 2>/dev/null || :
+cp -f "$src/sddm-autologin.conf" \
+  "$dst/etc/sddm.conf.d/99-blackcomb-live.conf" 2>/dev/null || :
 cp -f "$src/plasmalogin-wallpaper.conf" \
   "$dst/etc/plasmalogin.conf.d/50-blackcomb-wallpaper.conf" 2>/dev/null || :
+
+# Search Center's live web suggestions need KRunner's webshortcut runner and a
+# default search provider. Write them as user defaults for liveuser, new users
+# created by the installer, and the KDE profile used to seed home directories.
+for config_dir in "$dst/home/liveuser/.config" \
+                  "$dst/etc/skel/.config" \
+                  "$dst/usr/share/kde-settings/kde-profile/default/xdg"; do
+  mkdir -p "$config_dir" 2>/dev/null || :
+  cp -f "$src/krunnerrc" "$config_dir/krunnerrc" 2>/dev/null || :
+  cp -f "$src/kuriikwsfilterrc" "$config_dir/kuriikwsfilterrc" 2>/dev/null || :
+done
 
 # KWin in a VM: legacy DRM mode plus software cursor, per KDE's VirtualBox
 # documentation. Also set from the kernel command line so the greeter inherits
@@ -126,19 +144,31 @@ if [ -f "$src/patch-breeze-wallpaper.sh" ]; then
 fi
 
 # Patch the main PLM config, kscreenlockerrc and SDDM theme overrides now, and
-# install the script so the display-manager drop-in can reapply the wallpaper
-# after live setup finishes writing its autologin settings.
+# install the script so the display-manager drop-in can reapply both the
+# wallpaper and autologin settings after live setup finishes writing them.
 cp -f "$src/patch-lock-screen-wallpaper.sh" \
   "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" 2>/dev/null || :
 if [ -f "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" ]; then
-  sh "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" "$dst" 2>/dev/null || :
+  sh "$dst/usr/local/bin/blackcomb-lock-screen-wallpaper" "$dst" \
+    --live-autologin 2>/dev/null || :
 fi
 
+# Install the desktop wallpaper helper and write its initial config directly.
+# The autostart copy cannot fix a black desktop if Plasma never reaches the
+# saved-layout stage, so the pre-pivot hook seeds every live config location.
 cp -f "$src/blackcomb-wallpaper.sh" "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 chmod 755 "$dst/usr/local/bin/blackcomb-wallpaper" 2>/dev/null || :
 cp -f "$src/blackcomb-wallpaper.desktop" \
   "$dst/etc/xdg/autostart/blackcomb-wallpaper.desktop" 2>/dev/null || :
+if [ -f "$dst/usr/local/bin/blackcomb-wallpaper" ]; then
+  for desktop_cfg in \
+    "$dst/home/liveuser/.config/plasma-org.kde.plasma.desktop-appletsrc" \
+    "$dst/etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc" \
+    "$dst/usr/share/kde-settings/kde-profile/default/xdg/plasma-org.kde.plasma.desktop-appletsrc"; do
+    sh "$dst/usr/local/bin/blackcomb-wallpaper" --file "$desktop_cfg" 2>/dev/null || :
+  done
+fi
 
 # Plasma application-launcher icon supplied with Blackcomb.
 cp -f "$src/crescent-moon-start-icon.png" \
@@ -211,4 +241,4 @@ Theme=org.kde.breeze.desktop
 EOF
 done
 
-exit 0
+return 0 2>/dev/null || exit 0

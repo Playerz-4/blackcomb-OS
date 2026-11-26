@@ -117,6 +117,14 @@ if [[ -d $root/applets/com.blackcomb.dynamic-music ]]; then
 fi
 search_qml="$root/applets/com.blackcomb.search-center/contents/ui/main.qml"
 grep -Fq '"system-search"' "$search_qml"
+grep -Fq 'Canvas {' "$search_qml"
+grep -Fq 'ctx.arc(' "$search_qml"
+grep -Fq 'ListModel {' "$search_qml"
+grep -Fq 'DuckDuckGo' "$search_qml"
+grep -Fq 'Web suggestions' "$search_qml"
+grep -Fq 'XMLHttpRequest' "$search_qml"
+grep -Fq 'suggestqueries.google.com/complete/search' "$search_qml"
+grep -Fq 'Live web suggestions' "$search_qml"
 grep -Fq '"Icon": "system-search"' "$root/applets/com.blackcomb.search-center/metadata.json"
 if grep -Eq 'icon\.name: "search"|Plasmoid\.icon: "search"|"Icon": "search"' "$search_qml" "$root/applets/com.blackcomb.search-center/metadata.json"; then
   echo 'Search Center still uses the non-guaranteed search icon name' >&2

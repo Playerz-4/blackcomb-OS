@@ -4,7 +4,7 @@
 # changed: the standard Breeze theme is kept and no SVG/QML asset is created.
 #
 # Usage:
-#   patch-lock-screen-wallpaper.sh [target-root]
+#   patch-lock-screen-wallpaper.sh [target-root] [--live-autologin]
 #   patch-lock-screen-wallpaper.sh --file CONFIG
 set -eu
 
@@ -165,6 +165,83 @@ patch_theme_user() {
   rm -f "$tmp" 2>/dev/null || :
 }
 
+# Enforce live autologin in the authoritative main config after livesys-late has
+# written its own settings. The --live-autologin flag keeps this off for any
+# installed-system caller of this helper.
+patch_autologin_group() {
+  cfg=$1
+  group=$2
+  [ -n "$cfg" ] || return 0
+  parent=${cfg%/*}
+  [ "$parent" = "$cfg" ] && parent=.
+  mkdir -p "$parent" 2>/dev/null || return 0
+  [ -f "$cfg" ] || : > "$cfg" 2>/dev/null || return 0
+  tmp="$cfg.blackcomb.tmp"
+
+  awk -v group="$group" '
+    function flush() {
+      if (in_group) {
+        if (!user_written) {
+          print "User=liveuser"
+          user_written = 1
+        }
+        if (!session_written) {
+          print "Session=plasma.desktop"
+          session_written = 1
+        }
+        if (!relogin_written) {
+          print "Relogin=true"
+          relogin_written = 1
+        }
+      }
+    }
+    /^\[/ {
+      flush()
+      header = $0
+      sub(/[[:space:]]+$/, "", header)
+      in_group = (header == group)
+      if (in_group) group_seen = 1
+      user_written = 0
+      session_written = 0
+      relogin_written = 0
+      print
+      next
+    }
+    in_group && /^[[:space:]]*User[[:space:]]*=/ {
+      print "User=liveuser"
+      user_written = 1
+      next
+    }
+    in_group && /^[[:space:]]*Session[[:space:]]*=/ {
+      print "Session=plasma.desktop"
+      session_written = 1
+      next
+    }
+    in_group && /^[[:space:]]*Relogin[[:space:]]*=/ {
+      print "Relogin=true"
+      relogin_written = 1
+      next
+    }
+    { print }
+    END {
+      flush()
+      if (!group_seen) {
+        print ""
+        print group
+        print "User=liveuser"
+        print "Session=plasma.desktop"
+        print "Relogin=true"
+      }
+    }
+  ' "$cfg" > "$tmp" 2>/dev/null || {
+    rm -f "$tmp" 2>/dev/null || :
+    return 0
+  }
+
+  cat "$tmp" > "$cfg" 2>/dev/null || :
+  rm -f "$tmp" 2>/dev/null || :
+}
+
 if [ "${1:-}" = "--file" ]; then
   shift
   [ $# -ge 1 ] || exit 0
@@ -172,7 +249,15 @@ if [ "${1:-}" = "--file" ]; then
   exit 0
 fi
 
-root=${1:-/}
+root=/
+live_autologin=0
+for arg in "$@"; do
+  case "$arg" in
+    --live-autologin) live_autologin=1 ;;
+    --*) : ;;
+    *) root=$arg ;;
+  esac
+done
 
 # PLM's main config is authoritative: some releases ignore plasmalogin.conf.d.
 patch_kconfig "$root/etc/plasmalogin.conf"
@@ -188,6 +273,15 @@ if [ -f "$root/usr/share/kde-settings/kde-profile/default/xdg/kscreenlockerrc" ]
 fi
 if [ -d "$root/home/liveuser" ]; then
   patch_kconfig "$root/home/liveuser/.config/kscreenlockerrc"
+fi
+
+# livesys-late writes display-manager settings before the greeter starts. Fix
+# the main files as well as the drop-ins so autologin cannot be overwritten by
+# that ordering on either PLM or SDDM.
+if [ "$live_autologin" -eq 1 ]; then
+  patch_autologin_group "$root/etc/plasmalogin.conf" '[Autologin]'
+  patch_autologin_group "$root/etc/plasmalogin.conf" '[Autologin][seat0]'
+  patch_autologin_group "$root/etc/sddm.conf" '[Autologin]'
 fi
 
 # Keep the SDDM fallback consistent on media that still ships it.

@@ -108,6 +108,7 @@ def write_live_session_fixes(boot_dir):
     live.mkdir(parents=True, exist_ok=True)
     names = ('sddm-wait.conf', 'plasmalogin-wait.conf',
              'plasmalogin-autologin.conf', 'plasmalogin-wallpaper.conf',
+             'sddm-autologin.conf', 'krunnerrc', 'kuriikwsfilterrc',
              'live-vm-display.sh', 'live-vm-display.desktop', 'kwin-vm-env.sh',
              'live-keyboard.rules', 'live-keyboard.pkla',
              'blackcomb-wallpaper.sh', 'blackcomb-wallpaper.desktop',
@@ -171,11 +172,20 @@ def write_live_session_fixes(boot_dir):
     (live / 'neofetch').chmod(0o755)
     (live / 'neofetch-launcher.sh').chmod(0o755)
 
-    hook_dir = boot_dir / 'var/lib/dracut/hooks/pre-pivot'
-    hook_dir.mkdir(parents=True, exist_ok=True)
-    hook = hook_dir / '99-blackcomb-live.sh'
-    hook.write_bytes((scripts / 'live-boot-hook.sh').read_bytes())
-    hook.chmod(0o755)
+    # Dracut releases disagree on the hook directory inside the initramfs:
+    # older code looks in /lib/dracut/hooks, newer code in /usr/lib and
+    # /var/lib, and /etc is a supported override. Install the same basename in
+    # every supported location. Dracut executes only the most privileged one,
+    # so this cannot run the hook twice.
+    for hook_dir_name in ('var/lib/dracut/hooks/pre-pivot',
+                          'usr/lib/dracut/hooks/pre-pivot',
+                          'lib/dracut/hooks/pre-pivot',
+                          'etc/dracut/hooks/pre-pivot'):
+        hook_dir = boot_dir / hook_dir_name
+        hook_dir.mkdir(parents=True, exist_ok=True)
+        hook = hook_dir / '99-blackcomb-live.sh'
+        hook.write_bytes((scripts / 'live-boot-hook.sh').read_bytes())
+        hook.chmod(0o755)
 
 
 def main():

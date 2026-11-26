@@ -66,6 +66,12 @@ with tempfile.TemporaryDirectory() as directory:
     assert (live / f'applets/{applet}/contents/ui/main.qml').is_file()
     assert f'"Id": "{applet}"' in (live / f'applets/{applet}/metadata.json').read_text()
     assert not (live / 'applets/com.blackcomb.dynamic-music').exists()
+    assert (live / 'sddm-autologin.conf').is_file()
+    assert 'User=liveuser' in (live / 'sddm-autologin.conf').read_text()
+    assert (live / 'krunnerrc').is_file()
+    assert 'krunner_webshortcutsEnabled=true' in (live / 'krunnerrc').read_text()
+    assert (live / 'kuriikwsfilterrc').is_file()
+    assert 'DefaultWebShortcut=duckduckgo' in (live / 'kuriikwsfilterrc').read_text()
     assert (live / 'patch-breeze-wallpaper.sh').is_file()
     assert 'Image=kim-stargazer' in (live / 'patch-breeze-wallpaper.sh').read_text()
     lock_patch = live / 'patch-lock-screen-wallpaper.sh'
@@ -76,7 +82,15 @@ with tempfile.TemporaryDirectory() as directory:
     assert 'theme.conf.user' in lock_patch_text
     assert not (live / 'lookandfeel').exists()
     assert not (live / 'blackpkdgs.sh').exists()
+    for hook_dir in ('var/lib/dracut/hooks/pre-pivot',
+                     'usr/lib/dracut/hooks/pre-pivot',
+                     'lib/dracut/hooks/pre-pivot',
+                     'etc/dracut/hooks/pre-pivot'):
+        assert (boot / hook_dir / '99-blackcomb-live.sh').is_file()
     hook = (boot / 'var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh').read_text()
+    assert 'return 0 2>/dev/null || exit 0' in hook
+    assert '--live-autologin' in hook
+    assert 'blackcomb-wallpaper" --file' in hook
     assert '/usr/share/wallpapers' in hook
     assert '/usr/share/plasma/plasmoids' in hook
     assert 'com.blackcomb.mountain.desktop' not in hook
@@ -84,7 +98,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert 'patch-breeze-wallpaper.sh' in hook
     assert 'patch-lock-screen-wallpaper.sh' in hook
     assert 'kscreenlockerrc' in hook
-    helper = 'ExecStartPre=-/bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper /'
+    helper = 'ExecStartPre=-/bin/sh /usr/local/bin/blackcomb-lock-screen-wallpaper / --live-autologin'
     for unit in ('sddm-wait.conf', 'plasmalogin-wait.conf'):
         assert helper in (live / unit).read_text()
     assert 'blackpkdgs' not in hook

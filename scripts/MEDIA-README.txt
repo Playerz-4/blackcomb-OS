@@ -47,13 +47,17 @@ plus a software cursor. They are not safe graphics; modesetting stays on.
 
 LIVE SESSION START-UP, KEYBOARD, SCREEN SIZE, TASKBAR AND THEMES:
 Drop-ins are supplied for both SDDM and Fedora 44+'s Plasma Login Manager;
-Fedora 45 uses the latter. A per-seat autologin override reinforces the
-liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
+Fedora 45 uses the latter. Per-seat autologin overrides, an SDDM fallback and
+display-manager drop-ins that rewrite each main config reinforce the
+liveuser/plasma.desktop session, so no password is requested after livesys-late
+runs. A virtual machine picks a modest screen mode
 (preferring 1024x768) at login, the live user can change the system keyboard
 layout or locale and start the installer without the root-password prompt,
 kim-stargazer is the desktop, Plasma lock-screen and login/greeter wallpaper;
-the main plasmalogin.conf and kscreenlockerrc are patched directly because some
-Plasma Login Manager builds ignore conf.d drop-ins, all twelve Kim and Blackcomb
+the saved desktop layout is seeded with a valid file URL so the first boot does
+not show a bare desktop. The main plasmalogin.conf, sddm.conf and
+kscreenlockerrc are patched directly because some Plasma Login Manager builds
+ignore conf.d drop-ins. All twelve Kim and Blackcomb
 backgrounds, including the two Christmas scenes, are registered as Plasma
 wallpaper packages and appear in the wallpaper picker, Kim Stargazer is the
 Breeze default so a global theme change
@@ -62,9 +66,12 @@ default, the supplied crescent-moon-start-icon.png is set as the launcher icon,
 and the main Plasma panel is docked on the left as a vertical taskbar with RAM,
 battery, GPU usage and digital clock widgets. One custom plain-QML applet
 replaces the earlier stock-widget approximation: Search Center is a centered
-bottom panel with a standard system-search icon, bound to Meta+N. Pressing
-Meta+N pulls it up with a search field, a row of pinned apps, app and web
-suggestions, and the two latest notifications. The earlier Dynamic Music applet
+bottom panel with a QML-drawn magnifier and the standard system-search icon,
+bound to Meta+N. Pressing
+Meta+N pulls it up with a search field, a row of pinned apps, KRunner app
+suggestions, live Google completion terms, DuckDuckGo/Google/Wikipedia web
+searches, and the two latest notifications. The live session enables KRunner's
+web-shortcut runner and a DuckDuckGo default provider. The earlier Dynamic Music applet
 has been scrapped and its saved panel is removed on upgrade. Search Center is a
 standard QML KPackage with no new SVG artwork or binary dependency. Kickoff
 still manages pinned apps; Alt+Space opens KRunner directly. The bundled neofetch command shows
@@ -72,8 +79,9 @@ that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
 color schemes, selectable in System Settings > Appearance > Color Scheme; the
 live session starts with OpenCode Catppuccin. No command is needed for the theme.
-A dracut pre-pivot hook copies these settings into the live session as it starts;
-it adds no boot-critical unit, so booting is unaffected.
+A dracut pre-pivot hook copied into every supported hook directory copies these
+settings into the live session as it starts; it adds no boot-critical unit,
+returns 0, and cannot create an emergency shell.
 
 The apply-live-fixes.sh script on this media is only a manual fallback for
 older Blackcomb media. You do not need it with this build.

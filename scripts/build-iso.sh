@@ -71,7 +71,9 @@ for script in blackcomb-wallpaper.sh patch-breeze-wallpaper.sh patch-lock-screen
 done
 install -m 644 "$ROOT_DIR/scripts/blackcomb-wallpaper.desktop" "$work/blackcomb/scripts/"
 install -m 644 "$ROOT_DIR/scripts/blackcomb-launcher.desktop" "$work/blackcomb/scripts/"
-install -m 644 "$ROOT_DIR/scripts/neofetch.conf" "$ROOT_DIR/scripts/neofetch-ascii.conf" "$work/blackcomb/scripts/"
+install -m 644 "$ROOT_DIR/scripts/neofetch.conf" "$ROOT_DIR/scripts/neofetch-ascii.conf" \
+  "$ROOT_DIR/scripts/krunnerrc" "$ROOT_DIR/scripts/kuriikwsfilterrc" \
+  "$ROOT_DIR/scripts/sddm-autologin.conf" "$work/blackcomb/scripts/"
 install -m 755 "$ROOT_DIR/scripts/neofetch-launcher.sh" "$work/blackcomb/scripts/"
 install -m 755 "$ROOT_DIR/third-party/neofetch/neofetch" "$work/blackcomb/scripts/neofetch"
 install -m 644 "$ROOT_DIR/third-party/neofetch/LICENSE.md" "$work/blackcomb/scripts/neofetch-LICENSE.md"
