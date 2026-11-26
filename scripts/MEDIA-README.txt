@@ -53,9 +53,10 @@ liveuser/plasma.desktop session. A virtual machine picks a modest screen mode
 layout or locale and start the installer without the root-password prompt,
 kim-stargazer is the desktop, Plasma lock-screen and login/greeter wallpaper;
 the main plasmalogin.conf and kscreenlockerrc are patched directly because some
-Plasma Login Manager builds ignore conf.d drop-ins, all ten Kim and Blackcomb
-backgrounds are registered as Plasma wallpaper packages and appear in the
-wallpaper picker, Kim Stargazer is the Breeze default so a global theme change
+Plasma Login Manager builds ignore conf.d drop-ins, all twelve Kim and Blackcomb
+backgrounds, including the two Christmas scenes, are registered as Plasma
+wallpaper packages and appear in the wallpaper picker, Kim Stargazer is the
+Breeze default so a global theme change
 cannot restore Fedora's wallpaper, the standard Breeze global theme remains the
 default, the supplied crescent-moon-start-icon.png is set as the launcher icon,
 and the main Plasma panel is docked on the left as a vertical taskbar with RAM,
@@ -101,8 +102,9 @@ mount this media, and run:
 Replace the example path with the actual mount path. Setup uses Fedora's DNF
 repositories for Firefox, VLC, LibreOffice Writer, KCalc, chafa, ImageMagick,
 Wine, winetricks, cabextract and unzip; neofetch is bundled on this media. Setup
-installs all ten wallpaper packages (with stargazing as the default and the
-Breeze default), the same Kim lock-screen/login wallpaper configuration, the
+installs all twelve wallpaper packages (with stargazing as the default and the
+Breeze default), including the Christmas scenes, the same Kim lock-screen/login
+wallpaper configuration, the
 standard Breeze global theme, the left-side vertical taskbar with RAM,
 battery, GPU usage and clock widgets, the custom Search Center QML applet,
 the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode

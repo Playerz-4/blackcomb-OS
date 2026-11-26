@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Blackcomb Christmas Village background",
+        "Id": "blackcomb-christmas-village",
+        "License": "See project README",
+        "Name": "Blackcomb Christmas Village"
+    },
+    "Keywords": "Blackcomb;Christmas;Village;Snow;Winter;"
+}

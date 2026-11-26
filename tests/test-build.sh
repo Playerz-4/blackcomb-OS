@@ -79,7 +79,11 @@ case " $* " in
     test -f "$payload/scripts/neofetch-LICENSE.md"
     test -f "$payload/scripts/crescent-moon-neofetch.txt"
     test -f "$payload/backgrounds/kim-sunrise.png"
+    test -f "$payload/backgrounds/blackcomb-christmas-village.png"
+    test -f "$payload/backgrounds/kim-christmas-northern-lights.png"
     test -f "$payload/wallpapers/kim-stargazer/metadata.json"
+    test -f "$payload/wallpapers/blackcomb-christmas-village/metadata.json"
+    test -f "$payload/wallpapers/kim-christmas-northern-lights/metadata.json"
     applet=com.blackcomb.search-center
     test -f "$payload/applets/$applet/metadata.json"
     test -f "$payload/applets/$applet/contents/ui/main.qml"
@@ -137,8 +141,12 @@ test -f usr/share/blackcomb/live/blackcomb-aurora.png
 test -f usr/share/blackcomb/live/blackcomb-blue-hour.png
 test -f usr/share/blackcomb/live/blackcomb-midnight.png
 test -f usr/share/blackcomb/live/blackcomb-moonlit-forest.png
+test -f usr/share/blackcomb/live/blackcomb-christmas-village.png
+test -f usr/share/blackcomb/live/kim-christmas-northern-lights.png
 test -f usr/share/blackcomb/live/wallpapers/kim-stargazer/metadata.json
 test -f usr/share/blackcomb/live/wallpapers/blackcomb-aurora/metadata.json
+test -f usr/share/blackcomb/live/wallpapers/blackcomb-christmas-village/metadata.json
+test -f usr/share/blackcomb/live/wallpapers/kim-christmas-northern-lights/metadata.json
 applet=com.blackcomb.search-center
 test -f "usr/share/blackcomb/live/applets/$applet/metadata.json"
 test -f "usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"

@@ -134,9 +134,10 @@ cmp "$theme" "$root/themes/opencode/OpenCode-Catppuccin.colors"
 grep -Fxq 'Name=OpenCode Catppuccin' "$theme"
 grep -Fxq 'ColorScheme=OpenCode-Catppuccin' "$theme"
 test -f "$tmp/extracted/usr/share/blackcomb/live/themes/OpenCode-Nord-Light.colors"
-for package in blackcomb-aurora blackcomb-blue-hour blackcomb-glacial-lake \
-               blackcomb-midnight blackcomb-moonlit-forest blackcomb-nebula \
-               celestial kim-alpine kim-stargazer kim-sunrise; do
+for package in blackcomb-aurora blackcomb-blue-hour blackcomb-christmas-village \
+               blackcomb-glacial-lake blackcomb-midnight blackcomb-moonlit-forest \
+               blackcomb-nebula celestial kim-alpine kim-christmas-northern-lights \
+               kim-stargazer kim-sunrise; do
   test -f "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
   grep -Fq "\"Id\": \"$package\"" \
     "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"

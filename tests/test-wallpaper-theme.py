@@ -5,8 +5,11 @@ from pathlib import Path
 root = Path(__file__).resolve().parent.parent
 
 wallpaper_metadata = sorted((root / 'wallpapers').glob('*/metadata.json'))
-assert len(wallpaper_metadata) == 10
+assert len(wallpaper_metadata) == 12
 backgrounds = {path.stem for path in (root / 'backgrounds').glob('*.png')}
+assert {'blackcomb-christmas-village', 'kim-christmas-northern-lights'} <= {
+    metadata.parent.name for metadata in wallpaper_metadata
+}
 for metadata in wallpaper_metadata:
     data = json.loads(metadata.read_text())
     package = metadata.parent.name
