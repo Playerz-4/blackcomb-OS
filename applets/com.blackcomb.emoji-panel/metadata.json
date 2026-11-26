@@ -1,0 +1,22 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Blackcomb"
+            }
+        ],
+        "Category": "Utilities",
+        "Description": "Meta+. emoji, ASCII art, symbols and clipboard panel",
+        "Id": "com.blackcomb.emoji-panel",
+        "EnabledByDefault": true,
+        "FormFactors": [
+            "desktop"
+        ],
+        "Icon": "face-smile",
+        "License": "See project README",
+        "Name": "Blackcomb Emoji & Clipboard",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
