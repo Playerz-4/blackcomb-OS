@@ -65,10 +65,6 @@ with tempfile.TemporaryDirectory() as directory:
     assert (live / f'applets/{applet}/metadata.json').is_file()
     assert (live / f'applets/{applet}/contents/ui/main.qml').is_file()
     assert f'"Id": "{applet}"' in (live / f'applets/{applet}/metadata.json').read_text()
-    applet = 'com.blackcomb.emoji-panel'
-    assert (live / f'applets/{applet}/metadata.json').is_file()
-    assert (live / f'applets/{applet}/contents/ui/main.qml').is_file()
-    assert f'"Id": "{applet}"' in (live / f'applets/{applet}/metadata.json').read_text()
     assert not (live / 'applets/com.blackcomb.dynamic-music').exists()
     assert (live / 'sddm-autologin.conf').is_file()
     assert 'User=liveuser' in (live / 'sddm-autologin.conf').read_text()

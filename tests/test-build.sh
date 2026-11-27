@@ -91,10 +91,6 @@ case " $* " in
     test -f "$payload/applets/$applet/metadata.json"
     test -f "$payload/applets/$applet/contents/ui/main.qml"
     grep -Fq "\"Id\": \"$applet\"" "$payload/applets/$applet/metadata.json"
-    applet=com.blackcomb.emoji-panel
-    test -f "$payload/applets/$applet/metadata.json"
-    test -f "$payload/applets/$applet/contents/ui/main.qml"
-    grep -Fq "\"Id\": \"$applet\"" "$payload/applets/$applet/metadata.json"
     if [[ -e $payload/applets/com.blackcomb.dynamic-music ]]; then
       echo 'Scrapped Dynamic Music must not be shipped' >&2
       exit 1
@@ -161,9 +157,6 @@ test -f usr/share/blackcomb/live/wallpapers/blackcomb-aurora/metadata.json
 test -f usr/share/blackcomb/live/wallpapers/blackcomb-christmas-village/metadata.json
 test -f usr/share/blackcomb/live/wallpapers/kim-christmas-northern-lights/metadata.json
 applet=com.blackcomb.search-center
-test -f "usr/share/blackcomb/live/applets/$applet/metadata.json"
-test -f "usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
-applet=com.blackcomb.emoji-panel
 test -f "usr/share/blackcomb/live/applets/$applet/metadata.json"
 test -f "usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
 if [[ -e usr/share/blackcomb/live/applets/com.blackcomb.dynamic-music ]]; then
@@ -252,7 +245,6 @@ if grep -Fq 'addWidget("com.blackcomb.dynamic-music")' "$root/scripts/blackcomb-
   exit 1
 fi
 grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'com.blackcomb.emoji-panel' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'ensureCustomPanel' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'patch-lock-screen-wallpaper.sh' "$root/scripts/setup-blackcomb.sh"
 if grep -Fq 'addWidget("org.kde.plasma.mediacontroller")' "$root/scripts/blackcomb-launcher.sh"; then
@@ -264,10 +256,6 @@ if grep -Fq 'addWidget("org.kde.plasma.notifications")' "$root/scripts/blackcomb
   exit 1
 fi
 applet=com.blackcomb.search-center
-test -f "$root/applets/$applet/metadata.json"
-test -f "$root/applets/$applet/contents/ui/main.qml"
-grep -Fq "\"Id\": \"$applet\"" "$root/applets/$applet/metadata.json"
-applet=com.blackcomb.emoji-panel
 test -f "$root/applets/$applet/metadata.json"
 test -f "$root/applets/$applet/contents/ui/main.qml"
 grep -Fq "\"Id\": \"$applet\"" "$root/applets/$applet/metadata.json"

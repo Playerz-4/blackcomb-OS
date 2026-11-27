@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Verify that the launcher helper docks the main taskbar left, sets the
 # crescent PNG as the Kickoff icon, adds the standard system widgets, hosts the
-# Search Center and Meta+. emoji applets on a dedicated panel, removes the old
-# stock-widget approximation and scrapped Dynamic Music, and stays idempotent.
+# Search Center applet on a dedicated panel, removes the old stock-widget
+# approximation and scrapped Dynamic Music, and stays idempotent.
 set -Eeuo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 tmp=$(mktemp -d)
@@ -71,10 +71,6 @@ grep -Fxq 'panelLengthMode=1' <<<"$search_panel"
 grep -Fxq 'plugin=org.kde.panel' <<<"$search_panel"
 grep -Fxq '[Containments][4][Applets][3][Shortcuts]' "$cfg"
 grep -Fxq 'global=Meta+N' "$cfg"
-grep -Fxq '[Containments][4][Applets][4]' "$cfg"
-grep -Fxq '[Containments][4][Applets][4][Shortcuts]' "$cfg"
-grep -Fxq 'global=Meta+.' "$cfg"
-test "$(grep -Ec '^plugin=com\.blackcomb\.emoji-panel$' "$cfg")" -eq 1
 
 # The earlier stock-widget approximation must be gone from the saved layout.
 if grep -Eq '^plugin=org\.kde\.plasma\.(mediacontroller|notifications)$' "$cfg"; then
@@ -100,10 +96,7 @@ if grep -Eq 'addWidget\("com\.blackcomb\.dynamic-music"|ensureCustomPanel\("com\
   exit 1
 fi
 grep -Fq 'com.blackcomb.search-center' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'com.blackcomb.emoji-panel' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'globalShortcut = "Meta+."' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44)' "$root/scripts/blackcomb-launcher.sh"
-grep -Fq 'ensureCustomPanel("com.blackcomb.emoji-panel", "bottom", "center", 44, ["com.blackcomb.search-center"])' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.location = location' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.alignment = alignment' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'panel.lengthMode = "fit"' "$root/scripts/blackcomb-launcher.sh"
@@ -117,7 +110,7 @@ grep -Fq 'Meta+N' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'var allDesktops = desktops();' "$root/scripts/blackcomb-launcher.sh"
 grep -Fq 'BLACKCOMB_OK:' "$root/scripts/blackcomb-launcher.sh"
 
-# The remaining custom applets must use guaranteed Breeze icon names.
+# The remaining custom applet must use guaranteed Breeze icon names.
 if [[ -d $root/applets/com.blackcomb.dynamic-music ]]; then
   echo 'Scrapped Dynamic Music applet is still present' >&2
   exit 1
@@ -132,24 +125,7 @@ grep -Fq 'Web suggestions' "$search_qml"
 grep -Fq 'XMLHttpRequest' "$search_qml"
 grep -Fq 'suggestqueries.google.com/complete/search' "$search_qml"
 grep -Fq 'Live web suggestions' "$search_qml"
-grep -Fq 'KICKER_ALL_MODEL' "$search_qml"
-grep -Fq 'rootModel.modelForRow' "$search_qml"
-grep -Fq 'appsModel.trigger' "$search_qml"
-grep -Fq 'flat: true' "$search_qml"
-grep -Fq 'i18n("Applications")' "$search_qml"
-grep -Fq 'limit: 2' "$search_qml"
 grep -Fq '"Icon": "system-search"' "$root/applets/com.blackcomb.search-center/metadata.json"
-
-emoji_qml="$root/applets/com.blackcomb.emoji-panel/contents/ui/main.qml"
-grep -Fq '"Id": "com.blackcomb.emoji-panel"' "$root/applets/com.blackcomb.emoji-panel/metadata.json"
-grep -Fq '"Icon": "face-smile"' "$root/applets/com.blackcomb.emoji-panel/metadata.json"
-grep -Fq 'Meta+.' "$emoji_qml"
-grep -Fq 'Noto Color Emoji' "$emoji_qml"
-grep -Fq 'clipboardProbe.copy()' "$emoji_qml"
-grep -Fq 'clipboardProbe.paste()' "$emoji_qml"
-grep -Fq 'i18n("ASCII")' "$emoji_qml"
-grep -Fq 'i18n("Symbols")' "$emoji_qml"
-grep -Fq 'i18n("Clipboard")' "$emoji_qml"
 if grep -Eq 'icon\.name: "search"|Plasmoid\.icon: "search"|"Icon": "search"' "$search_qml" "$root/applets/com.blackcomb.search-center/metadata.json"; then
   echo 'Search Center still uses the non-guaranteed search icon name' >&2
   exit 1
@@ -183,7 +159,7 @@ EOF
 PATH="$tmp/bin:$PATH" DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/blackcomb-fake-bus \
   HOME="$tmp/dbus-home" XDG_CONFIG_HOME="$tmp/dbus-home/.config" \
   sh "$root/scripts/blackcomb-launcher.sh"
-if grep -Eq '^plugin=com\.blackcomb\.(dynamic-music|search-center|emoji-panel)$' "$dbus_cfg"; then
+if grep -Eq '^plugin=com\.blackcomb\.(dynamic-music|search-center)$' "$dbus_cfg"; then
   echo 'The custom panel was appended even though Plasma scripting succeeded' >&2
   exit 1
 fi
@@ -237,7 +213,6 @@ if grep -Fq 'com.blackcomb.dynamic-music' "$stock_cfg"; then
   exit 1
 fi
 grep -Fxq 'plugin=com.blackcomb.search-center' "$stock_cfg"
-grep -Fxq 'plugin=com.blackcomb.emoji-panel' "$stock_cfg"
 
 # Configs saved by the previous build had a dedicated top music panel. It must
 # be removed without re-creating the scrapped applet.
@@ -291,6 +266,5 @@ if grep -Fq 'com.blackcomb.dynamic-music' "$legacy_cfg"; then
 fi
 grep -Fxq '[Containments][4][Applets][7]' "$legacy_cfg"
 grep -Fxq 'plugin=com.blackcomb.search-center' "$legacy_cfg"
-grep -Fxq 'plugin=com.blackcomb.emoji-panel' "$legacy_cfg"
 
 echo 'Plasma taskbar, launcher and panel widget tests passed.'

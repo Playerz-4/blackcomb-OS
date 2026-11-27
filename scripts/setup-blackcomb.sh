@@ -23,7 +23,7 @@ if grep -Eq '(^|[[:space:]])(root=live:|rd.live.image)' /proc/cmdline; then
   exit 1
 fi
 command -v dnf >/dev/null || { echo 'DNF is required; this script is for standard Fedora KDE, not an immutable variant.' >&2; exit 1; }
-for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/patch-breeze-wallpaper.sh" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/applets/com.blackcomb.search-center/metadata.json" "$HERE/applets/com.blackcomb.search-center/contents/ui/main.qml" "$HERE/applets/com.blackcomb.emoji-panel/metadata.json" "$HERE/applets/com.blackcomb.emoji-panel/contents/ui/main.qml" "$HERE/scripts/patch-lock-screen-wallpaper.sh" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
+for file in "$HERE/scripts/blackcomb-wallpaper.sh" "$HERE/scripts/blackcomb-wallpaper.desktop" "$HERE/scripts/patch-breeze-wallpaper.sh" "$HERE/scripts/blackcomb-launcher.sh" "$HERE/scripts/blackcomb-launcher.desktop" "$HERE/scripts/install-grub-background.sh" "$HERE/scripts/install-plymouth-theme.sh" "$HERE/scripts/create-plymouth-theme.sh" "$HERE/backgrounds/kim-stargazer.png" "$HERE/assets/branding/grub-background.png" "$HERE/assets/branding/crescent-moon-start-icon.png" "$HERE/assets/branding/blackcomb-launcher.svg" "$HERE/assets/branding/blackcomb-boot-watermark.png" "$HERE/themes/opencode/OpenCode-Catppuccin.colors" "$HERE/wallpapers/kim-stargazer/metadata.json" "$HERE/applets/com.blackcomb.search-center/metadata.json" "$HERE/applets/com.blackcomb.search-center/contents/ui/main.qml" "$HERE/scripts/patch-lock-screen-wallpaper.sh" "$HERE/scripts/blackcomb-wine.sh" "$HERE/scripts/blackcomb-wine.desktop" "$HERE/scripts/neofetch.conf" "$HERE/scripts/neofetch-ascii.conf" "$HERE/scripts/neofetch-launcher.sh" "$HERE/scripts/neofetch" "$HERE/scripts/neofetch-LICENSE.md" "$HERE/assets/branding/crescent-moon-neofetch.txt"; do
   [[ -f $file ]] || { echo "Missing setup kit file: $file" >&2; exit 1; }
 done
 if [[ ${1:-} != --yes ]]; then
@@ -48,9 +48,8 @@ for package in "$HERE"/wallpapers/*; do
     "/usr/share/wallpapers/$name/screenshot.png"
 done
 
-# Install the custom QML applets used by the centered search/notification and
-# emoji/clipboard panels. They are plain KPackages; no new binary or SVG asset
-# is needed.
+# Install the custom QML applet used by the centered search/notification panel.
+# It is a plain KPackage; no new binary or SVG assets are needed.
 for applet in "$HERE"/applets/*; do
   [[ -d $applet && -f $applet/metadata.json ]] || continue
   name=${applet##*/}
