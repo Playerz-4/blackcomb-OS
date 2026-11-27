@@ -8,6 +8,16 @@
 # a failed copy cannot block switch-root or drop the session into emergency
 # mode. It is sourced by dracut, so use return rather than exit to avoid
 # terminating dracut's init early. Every operation is best effort.
+
+# dracut-lib.sh is normally already sourced by dracut's hook runner, but some
+# initramfs layouts execute hooks differently or place the library under /usr.
+# Source it defensively; never fail if it is missing.
+if ! command -v getarg >/dev/null 2>&1; then
+    [ -f /lib/dracut-lib.sh ] && . /lib/dracut-lib.sh 2>/dev/null || :
+    [ -f /usr/lib/dracut-lib.sh ] && . /usr/lib/dracut-lib.sh 2>/dev/null || :
+    [ -f /lib/dracut/modules.d/99base/dracut-lib.sh ] && . /lib/dracut/modules.d/99base/dracut-lib.sh 2>/dev/null || :
+fi
+
 src=/usr/share/blackcomb/live
 dst=/sysroot
 
