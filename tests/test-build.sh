@@ -121,7 +121,10 @@ test -f usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth
 grep -qx 'Theme=blackcomb-live' etc/plymouth/plymouthd.conf
 test -f var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
 test -f usr/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
-test -f lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh
+if [[ -e lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh ]]; then
+  echo 'Overlay must not stage /lib/dracut/hooks; it clobbers usr-merged /lib symlink' >&2
+  exit 1
+fi
 test -f etc/dracut/hooks/pre-pivot/99-blackcomb-live.sh
 test -f usr/share/blackcomb/live/live-keyboard.rules
 test -f usr/share/blackcomb/live/live-keyboard.pkla

@@ -84,9 +84,9 @@ with tempfile.TemporaryDirectory() as directory:
     assert not (live / 'blackpkdgs.sh').exists()
     for hook_dir in ('var/lib/dracut/hooks/pre-pivot',
                      'usr/lib/dracut/hooks/pre-pivot',
-                     'lib/dracut/hooks/pre-pivot',
                      'etc/dracut/hooks/pre-pivot'):
         assert (boot / hook_dir / '99-blackcomb-live.sh').is_file()
+    assert not (boot / 'lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh').exists()
     hook = (boot / 'var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh').read_text()
     assert 'return 0 2>/dev/null || exit 0' in hook
     assert '--live-autologin' in hook

@@ -173,13 +173,13 @@ def write_live_session_fixes(boot_dir):
     (live / 'neofetch-launcher.sh').chmod(0o755)
 
     # Dracut releases disagree on the hook directory inside the initramfs:
-    # older code looks in /lib/dracut/hooks, newer code in /usr/lib and
-    # /var/lib, and /etc is a supported override. Install the same basename in
-    # every supported location. Dracut executes only the most privileged one,
-    # so this cannot run the hook twice.
+    # newer code looks in /usr/lib and /var/lib, and /etc is a supported
+    # override. Do NOT stage /lib/dracut/hooks as a directory: on Fedora's
+    # usr-merged initramfs /lib is a symlink to usr/lib, and a cpio directory
+    # entry would clobber it, breaking /lib/dracut-lib.sh for early dracut.
+    # /usr/lib covers /lib on usr-merged images.
     for hook_dir_name in ('var/lib/dracut/hooks/pre-pivot',
                           'usr/lib/dracut/hooks/pre-pivot',
-                          'lib/dracut/hooks/pre-pivot',
                           'etc/dracut/hooks/pre-pivot'):
         hook_dir = boot_dir / hook_dir_name
         hook_dir.mkdir(parents=True, exist_ok=True)

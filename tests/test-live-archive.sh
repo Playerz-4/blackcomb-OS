@@ -12,9 +12,13 @@ cmp "$tmp/extracted/usr/share/plymouth/themes/spinner/watermark.png" "$root/asse
 grep -Fxq 'Theme=blackcomb-live' "$tmp/extracted/etc/plymouth/plymouthd.conf"
 grep -Fxq 'ModuleName=two-step' "$tmp/extracted/usr/share/plymouth/themes/blackcomb-live/blackcomb-live.plymouth"
 for hook_dir in var/lib/dracut/hooks/pre-pivot usr/lib/dracut/hooks/pre-pivot \
-                lib/dracut/hooks/pre-pivot etc/dracut/hooks/pre-pivot; do
+                etc/dracut/hooks/pre-pivot; do
   test -x "$tmp/extracted/$hook_dir/99-blackcomb-live.sh"
 done
+if [[ -e "$tmp/extracted/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh" ]]; then
+  echo 'Overlay must not stage /lib/dracut/hooks; it clobbers usr-merged /lib symlink' >&2
+  exit 1
+fi
 hook="$tmp/extracted/var/lib/dracut/hooks/pre-pivot/99-blackcomb-live.sh"
 grep -Fq 'return 0 2>/dev/null || exit 0' "$hook"
 grep -Fq -- '--live-autologin' "$hook"
