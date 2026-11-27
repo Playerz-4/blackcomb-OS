@@ -7,7 +7,7 @@
             }
         ],
         "Category": "Utilities",
-        "Description": "Centered search and notification panel with pinned and installed apps, app/web suggestions and recent notifications",
+        "Description": "Centered search and notification panel with pinned apps, app/web suggestions and recent notifications",
         "Id": "com.blackcomb.search-center",
         "EnabledByDefault": true,
         "FormFactors": [
