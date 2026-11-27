@@ -1,9 +1,8 @@
 /*
     Blackcomb Search Center
-    A centered pull-up panel with a search field, pinned applications, an
-    installed-application list, app/web suggestions from KRunner and the two
-    most recent notifications. No image assets are bundled; all glyphs are
-    icon-theme names.
+    A centered pull-up panel with a search field, pinned applications,
+    app/web suggestions from KRunner and the two most recent notifications.
+    No image assets are bundled; all glyphs are icon-theme names.
 */
 pragma ComponentBehavior: Bound
 
@@ -20,7 +19,6 @@ PlasmoidItem {
     id: root
 
     property Item searchField: null
-    property var appsModel: null
 
     readonly property string query: root.searchField ? root.searchField.text.trim() : ""
     readonly property var resultModel: runnerModel.count > 0 ? runnerModel.modelForRow(0) : null
@@ -47,8 +45,6 @@ PlasmoidItem {
         appletInterface: Plasmoid
         showAllApps: true
         showAllAppsCategorized: false
-        paginate: false
-        flat: true
         showRecentApps: false
         showRecentDocs: false
         showRecentFolders: false
@@ -57,17 +53,6 @@ PlasmoidItem {
 
         Component.onCompleted: {
             favoritesModel.initForClient("com.blackcomb.search-center.favorites.instance-" + Plasmoid.id);
-            root.findAppsModel();
-        }
-    }
-
-    // RootModel refreshes when the application database changes. Its flat
-    // "all applications" child model is the same one Kickoff lists, and is
-    // tagged with the KICKER_ALL_MODEL sentinel by Plasma.
-    Connections {
-        target: rootModel
-        function onRefreshed() {
-            root.findAppsModel();
         }
     }
 
@@ -165,26 +150,9 @@ PlasmoidItem {
         xhr.send();
     }
 
-    function findAppsModel() {
-        for (var i = 0; i < rootModel.count; ++i) {
-            var candidate = rootModel.modelForRow(i);
-            if (candidate && candidate.description === "KICKER_ALL_MODEL") {
-                root.appsModel = candidate;
-                return;
-            }
-        }
-    }
-
     function launchFavorite(row) {
         rootModel.favoritesModel.trigger(row, "", null);
         root.expanded = false;
-    }
-
-    function launchApp(row) {
-        if (root.appsModel && row >= 0 && row < root.appsModel.count) {
-            root.appsModel.trigger(row, "", null);
-            root.expanded = false;
-        }
     }
 
     function launchResult(row) {
@@ -346,55 +314,6 @@ PlasmoidItem {
                 color: Kirigami.Theme.disabledTextColor
                 wrapMode: Text.Wrap
                 visible: rootModel.favoritesModel.count === 0
-            }
-
-            Text {
-                Layout.fillWidth: true
-                text: i18n("Applications")
-                color: Kirigami.Theme.disabledTextColor
-                font.bold: true
-                visible: root.query.length === 0
-            }
-
-            // The complete installed-application list. KRunner already filters
-            // these entries while typing, so this list is shown for browsing.
-            ListView {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 12
-                clip: true
-                spacing: Kirigami.Units.smallSpacing
-                model: root.appsModel
-                visible: root.query.length === 0 && root.appsModel && root.appsModel.count > 0
-
-                delegate: Item {
-                    required property int index
-
-                    width: ListView.view.width
-                    height: Kirigami.Units.gridUnit * 2
-
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: Kirigami.Units.smallSpacing
-
-                        Kirigami.Icon {
-                            Layout.preferredWidth: Kirigami.Units.iconSizes.medium
-                            Layout.preferredHeight: Kirigami.Units.iconSizes.medium
-                            source: model.decoration || "application-x-executable"
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: model.display || ""
-                            color: Kirigami.Theme.textColor
-                            elide: Text.ElideRight
-                        }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: root.launchApp(index)
-                    }
-                }
             }
 
             Text {
