@@ -120,9 +120,9 @@ for package in "$src/wallpapers"/*; do
   cp -f "$src/$id.png" "$dst/usr/share/wallpapers/$id/screenshot.png" 2>/dev/null || :
 done
 
-# Install Blackcomb's pure-QML Plasma applets as KPackages. Search Center is
-# placed on a bottom-center panel by the launcher helper; this loop only makes
-# the applet discoverable.
+# Install Blackcomb's pure-QML Plasma applets as KPackages. Search Center and
+# the Meta+. emoji/clipboard panel share a bottom-center panel created by the
+# launcher helper; this loop only makes the applets discoverable.
 for package in "$src/applets"/*; do
   [ -d "$package" ] || continue
   [ -f "$package/metadata.json" ] || continue

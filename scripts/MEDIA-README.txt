@@ -64,17 +64,20 @@ Breeze default so a global theme change
 cannot restore Fedora's wallpaper, the standard Breeze global theme remains the
 default, the supplied crescent-moon-start-icon.png is set as the launcher icon,
 and the main Plasma panel is docked on the left as a vertical taskbar with RAM,
-battery, GPU usage and digital clock widgets. One custom plain-QML applet
-replaces the earlier stock-widget approximation: Search Center is a centered
+battery, GPU usage and digital clock widgets. Two custom plain-QML applets
+replace the earlier stock-widget approximation: Search Center is a centered
 bottom panel with a QML-drawn magnifier and the standard system-search icon,
 bound to Meta+N. Pressing
 Meta+N pulls it up with a search field, a row of pinned apps, KRunner app
 suggestions, live Google completion terms, DuckDuckGo/Google/Wikipedia web
 searches, and the two latest notifications. The live session enables KRunner's
-web-shortcut runner and a DuckDuckGo default provider. The earlier Dynamic Music applet
-has been scrapped and its saved panel is removed on upgrade. Search Center is a
-standard QML KPackage with no new SVG artwork or binary dependency. Kickoff
-still manages pinned apps; Alt+Space opens KRunner directly. The bundled neofetch command shows
+web-shortcut runner and a DuckDuckGo default provider. Meta+. opens the
+companion Emoji & Clipboard panel in the same bar: Google Noto-style emoji,
+ASCII emoticons/kaomoji, symbols and clipboard history; clicking an item copies
+it for Ctrl+V. The earlier Dynamic Music applet has been scrapped and its saved
+panel is removed on upgrade. Both applets are standard QML KPackages with no
+new SVG artwork or binary dependency. Kickoff still manages pinned apps;
+Alt+Space opens KRunner directly. The bundled neofetch command shows
 that crescent image through chafa, or a bundled ASCII rendering of it when chafa
 or ImageMagick is absent. OpenCode's built-in palettes are installed as 61 Plasma
 color schemes, selectable in System Settings > Appearance > Color Scheme; the
@@ -114,8 +117,8 @@ installs all twelve wallpaper packages (with stargazing as the default and the
 Breeze default), including the Christmas scenes, the same Kim lock-screen/login
 wallpaper configuration, the
 standard Breeze global theme, the left-side vertical taskbar with RAM,
-battery, GPU usage and clock widgets, the custom Search Center QML applet,
-the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode
+battery, GPU usage and clock widgets, the custom Search Center and
+Emoji & Clipboard QML applets, the neofetch crescent image, the OpenCode Plasma color schemes (with OpenCode
 Catppuccin as the default), Wine file associations and the Blackcomb Plymouth theme, using the
 transparent logo. Use Fedora's "sudo dnf upgrade --refresh" for package updates.
 Run "blackcomb-wine" to launch standard Windows apps; native macOS apps

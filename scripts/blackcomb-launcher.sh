@@ -3,7 +3,8 @@
 #   - use the supplied crescent PNG for the Kickoff launcher button;
 #   - keep the existing taskbar docked on the left edge;
 #   - add RAM, battery, GPU usage and digital clock widgets;
-#   - place Blackcomb Search Center in a dedicated bottom-center panel;
+#   - place Blackcomb Search Center and the Meta+. emoji/clipboard panel in a
+#     dedicated bottom-center panel;
 #   - remove the stock Media Player and Notifications approximations and any
 #     legacy Dynamic Music panel from an older Blackcomb layout.
 #
@@ -11,7 +12,7 @@
 # LeftEdge. FormFactor is 2 for Horizontal and 3 for Vertical. Applet settings
 # are appended to plasma-org.kde.plasma.desktop-appletsrc so they survive
 # logout, and a guarded Plasma scripting call applies them to the running
-# shell too. The custom applet is a plain QML package; no SVG editing or new
+# shell too. The custom applets are plain QML packages; no SVG editing or new
 # binary dependency is needed.
 set -eu
 
@@ -55,6 +56,7 @@ awk -F= '
       formfactor[containment]=""
       legacyMusic[containment]=0
       customSearch[containment]=0
+      customEmoji[containment]=0
       seen[containment]=1
     }
     next
@@ -84,11 +86,12 @@ awk -F= '
       if ($2 == "org.kde.plasma.kickoff") print "ICON\t" applet
       if ($2 == "com.blackcomb.dynamic-music") legacyMusic[containment]=1
       if ($2 == "com.blackcomb.search-center") customSearch[containment]=1
+      if ($2 == "com.blackcomb.emoji-panel") customEmoji[containment]=1
     }
   }
   END {
     for (group in plugin) {
-      special = (legacyMusic[group] || customSearch[group]) ? 1 : 0
+      special = (legacyMusic[group] || customSearch[group] || customEmoji[group]) ? 1 : 0
       if (plugin[group] == "org.kde.panel") {
         print "PANEL\t" group "\t" location[group] "\t" formfactor[group] "\t" special
         # The old dedicated music panel must go away: a hidden applet would
@@ -207,6 +210,10 @@ append_widget() {
       # Meta+N opens the Blackcomb Search Center from anywhere in Plasma.
       printf '[%s][Applets][%s][Shortcuts]\nglobal=Meta+N\n' "$group" "$id" >> "$cfg"
       ;;
+    com.blackcomb.emoji-panel)
+      # Meta+. opens the emoji/ASCII/symbol/clipboard panel from anywhere.
+      printf '[%s][Applets][%s][Shortcuts]\nglobal=Meta+.\n' "$group" "$id" >> "$cfg"
+      ;;
   esac
 }
 
@@ -218,12 +225,21 @@ maxcontainment=$(sed -n 's/^\[Containments\]\[\([0-9][0-9]*\)\]$/\1/p' "$cfg" | 
 [ -n "$maxcontainment" ] || maxcontainment=0
 
 append_custom_panels() {
-  if ! has_applet_at com.blackcomb.search-center 4; then
+  search_group=$(awk -F '\t' '$1 == "APPLET" && $3 == "com.blackcomb.search-center" && $5 == "4" { print $2; exit }' "$parsed")
+  if [ -z "$search_group" ]; then
     maxcontainment=$((maxcontainment + 1))
+    search_group="Containments][$maxcontainment"
     maxid=$((maxid + 1))
     printf '\n[Containments][%s]\nactivityId=\nformfactor=2\nlastScreen=0\nlocation=4\nplugin=org.kde.panel\nwallpaperplugin=org.kde.image\nalignment=132\npanelLengthMode=1\n' "$maxcontainment" >> "$cfg"
-    printf '\n[Containments][%s][Applets][%s]\nplugin=com.blackcomb.search-center\n' "$maxcontainment" "$maxid" >> "$cfg"
-    printf '[Containments][%s][Applets][%s][Shortcuts]\nglobal=Meta+N\n' "$maxcontainment" "$maxid" >> "$cfg"
+    printf '\n[%s][Applets][%s]\nplugin=com.blackcomb.search-center\n' "$search_group" "$maxid" >> "$cfg"
+    printf '[%s][Applets][%s][Shortcuts]\nglobal=Meta+N\n' "$search_group" "$maxid" >> "$cfg"
+  fi
+  # The emoji panel shares the Search Center panel instead of adding a second
+  # centered strip. Upgrades from earlier builds gain it in place.
+  if ! has_applet "$search_group" com.blackcomb.emoji-panel; then
+    maxid=$((maxid + 1))
+    printf '\n[%s][Applets][%s]\nplugin=com.blackcomb.emoji-panel\n' "$search_group" "$maxid" >> "$cfg"
+    printf '[%s][Applets][%s][Shortcuts]\nglobal=Meta+.\n' "$search_group" "$maxid" >> "$cfg"
   fi
 }
 
@@ -281,6 +297,13 @@ function hasType(widgets, type) {
   }
   return false;
 }
+function hasAnyType(widgets, types) {
+  if (!types) return false;
+  for (var i = 0; i < types.length; i++) {
+    if (hasType(widgets, types[i])) return true;
+  }
+  return false;
+}
 function removeStock(containment) {
   var widgets = containment.widgets();
   for (var i = 0; i < widgets.length; i++) {
@@ -315,11 +338,12 @@ function addWidgetTo(containment, spec, seen) {
     // A missing optional plugin must never break the layout helper.
   }
 }
-function ensureCustomPanel(type, location, alignment, height) {
+function ensureCustomPanel(type, location, alignment, height, siblingTypes) {
   var panel = null;
   var i;
   for (i = 0; i < allPanels.length; i++) {
-    if (hasType(allPanels[i].widgets(), type)) {
+    var existing = allPanels[i].widgets();
+    if (hasType(existing, type) || hasAnyType(existing, siblingTypes)) {
       panel = allPanels[i];
       break;
     }
@@ -336,15 +360,29 @@ function ensureCustomPanel(type, location, alignment, height) {
   panel.height = height;
   var widgets = panel.widgets();
   if (!hasType(widgets, type)) {
-    var widget = panel.addWidget(type);
-    if (widget) {
-      if (type === "com.blackcomb.search-center") widget.globalShortcut = "Meta+N";
-      widget.reloadConfig();
-      added++;
+    try {
+      var widget = panel.addWidget(type);
+      if (widget) {
+        try {
+          if (type === "com.blackcomb.search-center") widget.globalShortcut = "Meta+N";
+          if (type === "com.blackcomb.emoji-panel") widget.globalShortcut = "Meta+.";
+          widget.reloadConfig();
+        } catch (error) {
+          print("Blackcomb: could not configure " + type + ": " + error);
+        }
+        added++;
+      }
+    } catch (error) {
+      print("Blackcomb: could not add " + type + ": " + error);
     }
-  } else if (type === "com.blackcomb.search-center") {
+  } else {
     for (i = 0; i < widgets.length; i++) {
-      if (widgets[i].type === type) widgets[i].globalShortcut = "Meta+N";
+      try {
+        if (widgets[i].type === type && type === "com.blackcomb.search-center") widgets[i].globalShortcut = "Meta+N";
+        if (widgets[i].type === type && type === "com.blackcomb.emoji-panel") widgets[i].globalShortcut = "Meta+.";
+      } catch (error) {
+        print("Blackcomb: could not set shortcut for " + type + ": " + error);
+      }
     }
   }
 }
@@ -355,7 +393,7 @@ function removeScrappedMusic() {
   for (var p = 0; p < allPanels.length; p++) {
     var widgets = allPanels[p].widgets();
     if (hasType(widgets, "com.blackcomb.dynamic-music")) {
-      if (hasType(widgets, "com.blackcomb.search-center")) {
+      if (hasType(widgets, "com.blackcomb.search-center") || hasType(widgets, "com.blackcomb.emoji-panel")) {
         for (var m = 0; m < widgets.length; m++) {
           if (widgets[m].type === "com.blackcomb.dynamic-music") {
             widgets[m].remove();
@@ -379,7 +417,7 @@ for (var i = 0; i < allPanels.length; i++) {
   var widgets = panel.widgets();
   var special = false;
   for (var w = 0; w < widgets.length; w++) {
-    if (widgets[w].type === "com.blackcomb.search-center") {
+    if (widgets[w].type === "com.blackcomb.search-center" || widgets[w].type === "com.blackcomb.emoji-panel") {
       special = true;
     }
   }
@@ -405,8 +443,10 @@ for (var i = 0; i < allPanels.length; i++) {
     }
   }
 }
-// Search Center opens upward from a centered bottom panel.
+// Search Center opens upward from a centered bottom panel. The Meta+. emoji
+// and clipboard applet shares that panel instead of creating a second strip.
 ensureCustomPanel("com.blackcomb.search-center", "bottom", "center", 44);
+ensureCustomPanel("com.blackcomb.emoji-panel", "bottom", "center", 44, ["com.blackcomb.search-center"]);
 
 // Remove the earlier desktop Media Player copy and any scrapped music widget.
 for (var d = 0; d < allDesktops.length; d++) {
