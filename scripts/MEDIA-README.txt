@@ -68,9 +68,10 @@ battery, GPU usage and digital clock widgets. Two custom plain-QML applets
 replace the earlier stock-widget approximation: Search Center is a centered
 bottom panel with a QML-drawn magnifier and the standard system-search icon,
 bound to Meta+N. Pressing
-Meta+N pulls it up with a search field, a row of pinned apps, KRunner app
-suggestions, live Google completion terms, DuckDuckGo/Google/Wikipedia web
-searches, and the two latest notifications. The live session enables KRunner's web-shortcut runner and a
+Meta+N pulls it up with a search field, a row of pinned apps, a browsable list
+of installed applications, KRunner app suggestions, live Google completion
+terms, DuckDuckGo/Google/Wikipedia web searches, and the two latest
+notifications. The live session enables KRunner's web-shortcut runner and a
 DuckDuckGo default provider. Meta+. opens the companion Emoji & Clipboard
 panel in the same bar: Google Noto-style emoji, ASCII emoticons/kaomoji,
 symbols and clipboard history; clicking an item copies it for Ctrl+V. The

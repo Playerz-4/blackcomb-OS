@@ -132,12 +132,12 @@ grep -Fq 'Web suggestions' "$search_qml"
 grep -Fq 'XMLHttpRequest' "$search_qml"
 grep -Fq 'suggestqueries.google.com/complete/search' "$search_qml"
 grep -Fq 'Live web suggestions' "$search_qml"
+grep -Fq 'KICKER_ALL_MODEL' "$search_qml"
+grep -Fq 'rootModel.modelForRow' "$search_qml"
+grep -Fq 'appsModel.trigger' "$search_qml"
+grep -Fq 'flat: true' "$search_qml"
+grep -Fq 'i18n("Applications")' "$search_qml"
 grep -Fq 'limit: 2' "$search_qml"
-# The installed-application browser was scrapped; keep Search Center unchanged.
-if grep -Eq 'KICKER_ALL_MODEL|appsModel|i18n\("Applications"\)|flat: true' "$search_qml"; then
-  echo 'Search Center still contains the scrapped installed-apps browser' >&2
-  exit 1
-fi
 grep -Fq '"Icon": "system-search"' "$root/applets/com.blackcomb.search-center/metadata.json"
 
 emoji_qml="$root/applets/com.blackcomb.emoji-panel/contents/ui/main.qml"

@@ -604,6 +604,8 @@ PlasmoidItem {
                             model: clipboardModel
 
                             delegate: Item {
+                                required property int index
+
                                 width: ListView.view.width
                                 height: Kirigami.Units.gridUnit * 2
 
@@ -645,25 +647,9 @@ PlasmoidItem {
     }
 
     Component.onCompleted: {
-        // Startup is best effort: a missing applet API or clipboard method must
-        // never prevent the shell from finishing its panel layout.
-        try {
-            if (typeof Plasmoid.removeInternalAction === "function") {
-                Plasmoid.removeInternalAction("configure");
-            }
-        } catch (error) {
-            console.warn("Blackcomb emoji panel: could not remove configure action", error);
-        }
-        try {
-            root.loadStaticModels();
-            root.loadEmoji();
-        } catch (error) {
-            console.warn("Blackcomb emoji panel: could not populate lists", error);
-        }
-        try {
-            root.refreshClipboard();
-        } catch (error) {
-            console.warn("Blackcomb emoji panel: clipboard is unavailable", error);
-        }
+        Plasmoid.removeInternalAction("configure");
+        root.loadStaticModels();
+        root.loadEmoji();
+        root.refreshClipboard();
     }
 }

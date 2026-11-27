@@ -360,30 +360,17 @@ function ensureCustomPanel(type, location, alignment, height, siblingTypes) {
   panel.height = height;
   var widgets = panel.widgets();
   if (!hasType(widgets, type)) {
-    // A missing or broken optional plugin must never abort the layout helper.
-    try {
-      var widget = panel.addWidget(type);
-      if (widget) {
-        try {
-          if (type === "com.blackcomb.search-center") widget.globalShortcut = "Meta+N";
-          if (type === "com.blackcomb.emoji-panel") widget.globalShortcut = "Meta+.";
-          widget.reloadConfig();
-        } catch (error) {
-          print("Blackcomb: could not configure " + type + ": " + error);
-        }
-        added++;
-      }
-    } catch (error) {
-      print("Blackcomb: could not add " + type + ": " + error);
+    var widget = panel.addWidget(type);
+    if (widget) {
+      if (type === "com.blackcomb.search-center") widget.globalShortcut = "Meta+N";
+      if (type === "com.blackcomb.emoji-panel") widget.globalShortcut = "Meta+.";
+      widget.reloadConfig();
+      added++;
     }
   } else {
     for (i = 0; i < widgets.length; i++) {
-      try {
-        if (widgets[i].type === type && type === "com.blackcomb.search-center") widgets[i].globalShortcut = "Meta+N";
-        if (widgets[i].type === type && type === "com.blackcomb.emoji-panel") widgets[i].globalShortcut = "Meta+.";
-      } catch (error) {
-        print("Blackcomb: could not set shortcut for " + type + ": " + error);
-      }
+      if (widgets[i].type === type && type === "com.blackcomb.search-center") widgets[i].globalShortcut = "Meta+N";
+      if (widgets[i].type === type && type === "com.blackcomb.emoji-panel") widgets[i].globalShortcut = "Meta+.";
     }
   }
 }
