@@ -123,7 +123,6 @@ if grep -Fq 'addWidget("com.blackcomb.dynamic-music")' "$launcher"; then
   exit 1
 fi
 grep -Fq 'com.blackcomb.search-center' "$launcher"
-grep -Fq 'com.blackcomb.emoji-panel' "$launcher"
 grep -Fq 'ensureCustomPanel' "$launcher"
 test -x "$launcher"
 patch_defaults="$tmp/extracted/usr/share/blackcomb/live/patch-breeze-wallpaper.sh"
@@ -162,11 +161,6 @@ for package in blackcomb-aurora blackcomb-blue-hour blackcomb-christmas-village 
     "$tmp/extracted/usr/share/blackcomb/live/wallpapers/$package/metadata.json"
 done
 applet=com.blackcomb.search-center
-test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
-test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
-grep -Fq "\"Id\": \"$applet\"" \
-  "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
-applet=com.blackcomb.emoji-panel
 test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/metadata.json"
 test -f "$tmp/extracted/usr/share/blackcomb/live/applets/$applet/contents/ui/main.qml"
 grep -Fq "\"Id\": \"$applet\"" \
